@@ -9,7 +9,7 @@ $(document).ready(function () {
   let prevIndex = 0;
   let nextIndex = 0;
   //紀錄目前畫面狀態
-  let isIndex = true;
+  let isIndex = false;
   let isGallery = false;
   let isPreview = false;
   let isFullscreen = false;
@@ -301,6 +301,88 @@ $(document).ready(function () {
         "<"
       );
   }
+  //開始動畫
+  function Opening() {
+    // 總時長-1
+    const time = 3500;
+    // 設置動畫前狀態
+    gsap.set(".title", { zIndex: 2 });
+    gsap.set(
+      ".buttons-container, .btn-wrapper, .tool-bar, .search-btn, .setting-btn, .stop-btn",
+      {
+        autoAlpha: 0,
+      }
+    );
+    // 動畫過程
+    gsap
+      .timeline({
+        defaults: { duration: (time / 1000) * (2 / 7), ease: "power2.out" },
+      })
+      .to(".loading-container", {
+        autoAlpha: 0,
+        duration: (time / 1000) * (4 / 7),
+        delay: 1.5,
+        ease: "power3.in",
+      })
+      .from(".title img", {
+        autoAlpha: 0,
+        delay: 1,
+      })
+      .from(".title img", {
+        x: 180,
+        scale: 3,
+        delay: 1,
+        ease: "bounce.out",
+        duration: (time / 1000) * (3 / 7),
+      })
+      .from(
+        ".title",
+        {
+          top: 0,
+          bottom: 0,
+          right: 0,
+          left: 0,
+          ease: "bounce.out",
+          duration: (time / 1000) * (3 / 7),
+        },
+        "<"
+      )
+      .from(".title h1", {
+        autoAlpha: 0,
+        scale: 1.5,
+      })
+      .to(
+        ".buttons-container, .btn-wrapper",
+        {
+          autoAlpha: 1,
+          stagger: 1,
+          ease: "power4.out",
+        },
+        "<"
+      )
+      .from(
+        ".btn-wrapper",
+        {
+          top: -100,
+          stagger: 1,
+          delay: 1,
+        },
+        "<"
+      )
+      .to(
+        ".tool-bar, .search-btn, .setting-btn, .stop-btn",
+        {
+          autoAlpha: 1,
+          stagger: 1,
+          ease: "power4.out",
+          onComplete: () => {
+            switchView("index");
+            gsap.set(".title", { zIndex: 1 });
+          },
+        },
+        "<-1"
+      );
+  }
   //更新畫面
   function updateTransform(time, ease) {
     gsap.to(image, {
@@ -343,10 +425,8 @@ $(document).ready(function () {
     // 載入動畫
     backgroundAnimation();
 
-    // 載入完成事件
-    setTimeout(() => {
-      $(".loading-container").fadeOut(2000);
-    }, 1500);
+    // 載入完成事件(開頭動畫)
+    Opening();
 
     //按鈕關閉app事件
     $(".stop-btn").on("click", function () {

@@ -28,6 +28,7 @@ $(document).ready(function () {
   let translateX = 0; //位移量
   let translateY = 0;
   //製作漸進模式
+  gsap.defaults({ overwrite: "auto" });
   gsap.registerPlugin(CustomEase);
   CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
 
@@ -81,10 +82,7 @@ $(document).ready(function () {
     let imagesRight = [];
     let imagesMiddle = [];
     // 隨機排序images陣列
-    for (let i = imagesAll.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [imagesAll[i], imagesAll[j]] = [imagesAll[j], imagesAll[i]]; // 交換元素位置
-    }
+    gsap.utils.shuffle(imagesAll);
     // 將images陣列分成左中右
     const cut1 = Math.floor(imagesAll.length / 3);
     const cut2 = Math.floor((2 * imagesAll.length) / 3);
@@ -112,25 +110,26 @@ $(document).ready(function () {
   }
   //按鈕點擊動畫
   function clickAnimation(element) {
-    //transition設定與0.3s的原因來自CSS
+    const time = 400; //總時長
     element.css({
-      transition: "all 0.2s cubic-bezier(0.455, 0.03, 0.515, 0.955)",
+      transition:
+        "all " + time / 1000 / 2 + "s cubic-bezier(0.455, 0.03, 0.515, 0.955)",
       transform: "translateY(15px)",
     });
     setTimeout(() => {
-      element.css({
-        transform: "translateY(0px)",
-      });
       element.removeAttr("style");
       element.css({
-        transition: "all 0.2s cubic-bezier(0.455, 0.03, 0.515, 0.955)",
+        transition:
+          "all " +
+          time / 1000 / 2 +
+          "s cubic-bezier(0.455, 0.03, 0.515, 0.955)",
         opacity: "1",
       });
       setTimeout(() => {
         element.removeAttr("style");
         element.css({ opacity: "1" });
-      }, 200);
-    }, 200);
+      }, time / 2);
+    }, time / 2);
   }
   // 插入圖片至指定容器 (未來也可用來放置圖片牆ex: ($(.image-grid), imagesNature))
   function insertImages(container, list) {
@@ -153,10 +152,10 @@ $(document).ready(function () {
     //開始設置
     switchView("none");
     //時間設置
-    const time = 1000;
+    const time = 1500;
     //動畫過程
     gsap
-      .timeline({ defaults: { duration: time / 1000, ease: "set1" } })
+      .timeline({ defaults: { duration: time / 1000 / 2, ease: "set1" } })
       .to(".content", {
         autoAlpha: 0,
       })
@@ -172,10 +171,10 @@ $(document).ready(function () {
     //開始設置
     switchView("none");
     //時間設置
-    const time = 1000;
+    const time = 1500;
     //動畫過程
     gsap
-      .timeline({ defaults: { duration: time / 1000, ease: "set1" } })
+      .timeline({ defaults: { duration: time / 1000 / 2, ease: "set1" } })
       .to(".gallery", {
         autoAlpha: 0,
         onComplete: () => {
@@ -196,58 +195,44 @@ $(document).ready(function () {
   // 圖片牆至預覽
   function GalleryToPreview() {
     //開始設置
-    switchView("none");
+    switchView("preview");
     $("body").css({ "overflow-y": "hidden" });
     //時間設置
-    const time = 300;
+    const time = 1000;
     //動畫過程
     gsap
       .timeline({
-        defaults: { duration: time / 1000, autoAlpha: 1, ease: "set1" },
+        defaults: { autoAlpha: 1, ease: "set1" },
       })
-      .to(".fullscreen-overlay", {})
-      .to(".close-btn", {}, ">20%")
-      .to(".nextImage-btn", {}, ">20%")
-      .to(".prevImage-btn", {}, ">20%")
-      .to(
-        image,
-        {
-          duration: time / 500,
-          //結束設置
-          onComplete: () => {
-            switchView("preview");
-          },
-        },
-        ">50%"
-      );
+      .to(".fullscreen-overlay", { duration: (time / 1000) * (3 / 5) })
+      .to(image, { duration: (time / 1000) * (3 / 5) }, "<")
+      .to(".close-btn, .nextImage-btn, .prevImage-btn", {
+        stagger: { amount: (time / 1000) * (2 / 5), ease: "none" },
+      });
   }
   //預覽至圖片牆
   function PreviewToGallery() {
     //開始設置
-    switchView("none");
+    switchView("gallery");
+    $("body").css({ "overflow-y": "visible" });
     //時間設置
-    const time = 300;
+    const time = 1000;
     //動畫過程
     gsap
       .timeline({
-        defaults: { duration: time / 1000, autoAlpha: 0, ease: "set1" },
+        defaults: { autoAlpha: 0, ease: "set1" },
       })
-      .to(".prevImage-btn", {}, ">20%")
-      .to(".nextImage-btn", {}, ">20%")
-      .to(".close-btn", {}, ">20%")
-      .to(image, { duration: time / 500 }, ">50%")
-      .to(".fullscreen-overlay", {
-        onComplete: () => {
-          //結束設置
-          switchView("gallery");
-          $("body").css({ "overflow-y": "visible" });
-        },
-      });
+      .to(".close-btn, .nextImage-btn, .prevImage-btn", {
+        stagger: { amount: (time / 1000) * (2 / 5), ease: "none" },
+      })
+      .to(image, { duration: (time / 1000) * (3 / 5) })
+      .to(".fullscreen-overlay", { duration: (time / 1000) * (3 / 5) }, "<");
   }
   //預覽至全螢幕
   function PreviewToFullscreen() {
     //開始設置
     switchView("none");
+    gsap.set(".fullscreen-image-container", { zIndex: 4 });
     //時間設置
     const time = 500;
     //動畫過程
@@ -258,19 +243,23 @@ $(document).ready(function () {
       .to(".close-btn, .nextImage-btn, .prevImage-btn", {
         autoAlpha: 0,
       })
-      .to(image, {
-        maxWidth: "100%",
-        maxHeight: "100%",
-        zIndex: "20",
-        onComplete: () => {
-          switchView("fullscreen");
+      .to(
+        image,
+        {
+          maxWidth: "100%",
+          maxHeight: "100%",
+          onComplete: () => {
+            switchView("fullscreen");
+          },
         },
-      });
+        "<"
+      );
   }
   //全螢幕至預覽
   function FullscreenToPreview() {
     //開始設置
     switchView("none");
+    gsap.set(".fullscreen-image-container", { zIndex: 2 });
     //時間設置
     const time = 500;
     //動畫過程
@@ -281,7 +270,6 @@ $(document).ready(function () {
       .to(image, {
         maxWidth: "85%",
         maxHeight: "85%",
-        zIndex: "1",
         x: 0,
         y: 0,
         scale: 1,
@@ -310,7 +298,7 @@ $(document).ready(function () {
         {
           autoAlpha: 1,
         },
-        "<25%"
+        "<"
       );
   }
   //更新畫面

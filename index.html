@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>1ureka's CG</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" type="text/css" href="./style_global.css" />
+    <link rel="stylesheet" type="text/css" href="./style_background.css" />
+    <link rel="stylesheet" type="text/css" href="./style_index.css" />
+    <link rel="stylesheet" type="text/css" href="./style_gallery.css" />
+    <link rel="stylesheet" type="text/css" href="./style_fullscreen.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/CustomEase.min.js"></script>
+    <script src="./renderer.js"></script>
+  </head>
+  <body>
+    <div class="loading-container">
+      <div class="Loading">Loading</div>
+    </div>
+    <div class="moving-images left">
+      <!-- 左側隨機選擇的圖片將在JavaScript中插入 -->
+    </div>
+    <div class="moving-images middle">
+      <!-- 中間隨機選擇的圖片將在JavaScript中插入 -->
+    </div>
+    <div class="moving-images right">
+      <!-- 右側隨機選擇的圖片將在JavaScript中插入 -->
+    </div>
+    <!-- 主頁內容 -->
+    <div class="content">
+      <div class="title">
+        <img class="ico" src="./images/icon/computer_folder.png" />
+        <h1>1ureka's CG</h1>
+      </div>
+      <div class="buttons-container">
+        <div class="btn-wrapper">
+          <div class="btn" data-image="Nature">Nature</div>
+          <div class="btn-shadow"></div>
+        </div>
+        <div class="btn-wrapper">
+          <div class="btn" data-image="Props">Props</div>
+          <div class="btn-shadow"></div>
+        </div>
+        <div class="btn-wrapper">
+          <div class="btn" data-image="Scene">Scene</div>
+          <div class="btn-shadow"></div>
+        </div>
+      </div>
+      <div class="tool-bar">
+        <div class="search-btn">
+          <img src="./images/icon/search.png" alt="" />
+        </div>
+        <div class="setting-btn">
+          <img src="./images/icon/setting.png" alt="" />
+        </div>
+        <div class="stop-btn">
+          <img src="./images/icon/toggle.png" alt="" />
+        </div>
+      </div>
+    </div>
+    <!-- 圖片牆 -->
+    <div class="gallery">
+      <div class="image-grid">
+        <!-- JavaScript 會自動生成圖片 -->
+      </div>
+      <div class="back-to-home">
+        <img src="./images/icon/home.png" alt="" />
+      </div>
+      <div class="bottom"></div>
+    </div>
+    <!-- 預覽與全螢幕 -->
+    <div class="fullscreen-overlay">
+      <div class="close-btn">×</div>
+      <div class="prevImage-btn">
+        <img src="./images/icon/prev.png" />
+      </div>
+      <div class="nextImage-btn">
+        <img src="./images/icon/next.png" />
+      </div>
+      <div class="fullscreen-image-container">
+        <img src="" alt="" />
+      </div>
+    </div>
+  </body>
+</html>

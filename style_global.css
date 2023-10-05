@@ -1,0 +1,37 @@
+/* 全局 */
+body {
+  background-color: hsl(200, 0%, 10%);
+  margin: 0;
+  padding: 0;
+  font-family: "Montserrat", sans-serif;
+  color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+}
+
+/* 載入畫面 */
+.loading-container {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(
+    ellipse at center,
+    hsl(200, 0%, 10%),
+    hsl(200, 0%, 0%)
+  );
+  z-index: 99;
+  width: 100vw;
+  height: 100vh;
+}
+
+.Loading {
+  font-size: 50px;
+  color: #ffffff;
+}

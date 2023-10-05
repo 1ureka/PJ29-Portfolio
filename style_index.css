@@ -1,0 +1,168 @@
+/* 主頁 */
+.content {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  background: radial-gradient(
+    circle at center,
+    hsla(200, 0%, 10%, 0%),
+    hsla(200, 0%, 10%, 0%),
+    hsla(200, 0%, 10%, 0%),
+    hsla(200, 0%, 10%, 90%)
+  );
+}
+
+.title {
+  display: flex;
+  position: absolute;
+  justify-content: center;
+  align-items: center;
+  top: 30px;
+  left: 30px;
+  padding: 10px 50px 10px 45px;
+  border-radius: 25px;
+  box-shadow: 0px 0px 12px rgba(0, 0, 0, 1);
+  text-align: center;
+  background: radial-gradient(
+    circle at left bottom,
+    hsl(200, 0%, 10%),
+    hsl(200, 0%, 30%)
+  );
+}
+
+.title .ico {
+  width: 120px;
+  height: auto;
+}
+
+.title h1 {
+  font-size: 72px;
+  margin-bottom: 40px;
+}
+
+.buttons-container {
+  display: flex;
+  position: absolute;
+  right: 30px;
+  left: 30px;
+  bottom: 30px;
+  padding-bottom: 60px;
+  padding-top: 60px;
+  border-radius: 10px;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: flex-end;
+  background-color: hsla(200, 0%, 10%, 0.65);
+  box-shadow: 0px 0px 12px rgba(0, 0, 0, 1);
+}
+
+.btn-wrapper {
+  position: relative;
+  display: block;
+  padding: 0 0 20px 20px;
+  color: #ffffff;
+  font-size: 32px;
+  transition: all 0.3s cubic-bezier(0.455, 0.03, 0.515, 0.955);
+}
+
+.btn {
+  z-index: 1;
+  position: relative;
+  background-color: hsl(200, 0%, 15%);
+  text-decoration: none;
+  padding: 20px 50px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.455, 0.03, 0.515, 0.955);
+  box-shadow: 0px 0px 12px rgba(0, 0, 0, 1);
+}
+
+.btn-wrapper:hover {
+  margin: 20px 50px 0 30px;
+  padding: 0 0 0 0;
+  transform: scale(1.25);
+}
+
+.btn:hover {
+  box-shadow: 0px 0px 24px rgba(0, 0, 0, 1);
+}
+
+.btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 101%;
+  height: 101%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  border-radius: 10px;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.455, 0.03, 0.515, 0.955);
+}
+
+.btn:hover::before {
+  opacity: 1;
+}
+
+.btn[data-image="Nature"]::before {
+  background-image: url("./images/jpg/Nature/Nature Instance Assets Preview (Oak Tree B).jpg");
+}
+
+.btn[data-image="Props"]::before {
+  background-image: url("./images/jpg/Props/Bike 1.jpg");
+}
+
+.btn[data-image="Scene"]::before {
+  background-image: url("./images/jpg/Scene/P17.jpg");
+}
+
+.btn-shadow {
+  z-index: 0;
+  width: 90%;
+  height: 80%;
+  border-radius: 10px;
+  position: absolute;
+  top: auto;
+  bottom: 0%;
+  left: 0%;
+  right: auto;
+  background-color: hsl(200, 0%, 50%);
+  opacity: 0.7;
+  box-shadow: 0px 0px 6px rgba(0, 0, 0, 1);
+}
+
+.tool-bar {
+  display: flex;
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: flex-end;
+  width: 350px;
+  border-radius: 10px;
+  background-color: hsla(200, 0%, 10%, 0.65);
+  box-shadow: 0px 0px 12px rgba(0, 0, 0, 1);
+}
+
+.stop-btn,
+.setting-btn,
+.search-btn {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.455, 0.03, 0.515, 0.955);
+  cursor: pointer;
+}
+
+.stop-btn:hover,
+.setting-btn:hover,
+.search-btn:hover {
+  transform: scale(1.2);
+}

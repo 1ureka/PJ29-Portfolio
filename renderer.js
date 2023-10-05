@@ -419,10 +419,15 @@ $(document).ready(function () {
     $(document).on("keydown", function (e) {
       // Esc
       if (e.keyCode === 27) {
+        if (isGallery) {
+          clickAnimation($(".back-to-home"));
+          GalleryToIndex();
+        }
         if (isPreview) {
           clickAnimation($(".close-btn"));
           PreviewToGallery();
-        } else if (isFullscreen) {
+        }
+        if (isFullscreen) {
           FullscreenToPreview();
         }
       }
@@ -454,6 +459,10 @@ $(document).ready(function () {
         }
       }
       if (e.which === 3) {
+        if (isGallery) {
+          clickAnimation($(".back-to-home"));
+          GalleryToIndex();
+        }
         if (isPreview) {
           clickAnimation($(".close-btn"));
           PreviewToGallery();
@@ -491,10 +500,14 @@ $(document).ready(function () {
           enterFtime = Date.now();
         }
         if (isFullscreen) {
+          translateX =
+            translateX - (mouseX - window.innerWidth / 2) / 7 / scale;
+          translateY =
+            translateY - (mouseY - window.innerHeight / 2) / 7 / scale;
           scaleFac = e.shiftKey ? 0.2 : 0.1; //shift可以增加縮放速度
           scale += scaleFac;
           updateTransform(100, "linear");
-          // limitTranslation();
+          limitTranslation();
         }
       }
       // 向下滑時

@@ -30,7 +30,7 @@
   font-size: 75px;
   cursor: pointer;
   z-index: 3;
-  transition: all 0.3s cubic-bezier(0.455, 0.03, 0.515, 0.955);
+  transition: all 0.2s cubic-bezier(0.455, 0.03, 0.515, 0.955);
 }
 
 .close-btn {

@@ -72,7 +72,7 @@
 }
 
 .btn {
-  z-index: 1;
+  z-index: 2;
   position: relative;
   background-color: hsl(200, 0%, 15%);
   text-decoration: none;
@@ -125,7 +125,6 @@
 }
 
 .btn-shadow {
-  z-index: 0;
   width: 90%;
   height: 80%;
   border-radius: 10px;
@@ -156,6 +155,7 @@
 .stop-btn,
 .setting-btn,
 .search-btn {
+  z-index: 2;
   position: relative;
   transition: all 0.2s cubic-bezier(0.455, 0.03, 0.515, 0.955);
   cursor: pointer;

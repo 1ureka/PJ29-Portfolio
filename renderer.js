@@ -131,7 +131,7 @@ $(document).ready(function () {
       }, time / 2);
     }, time / 2);
   }
-  // 插入圖片至指定容器 (未來也可用來放置圖片牆ex: ($(.image-grid), imagesNature))
+  // 插入圖片至指定容器
   function insertImages(container, list) {
     $.each(list, (index) => {
       const img = $("<img>").attr("src", list[index]);
@@ -208,6 +208,13 @@ $(document).ready(function () {
       .to(image, { duration: (time / 1000) * (3 / 5) }, "<")
       .to(".close-btn, .nextImage-btn, .prevImage-btn", {
         stagger: { amount: (time / 1000) * (2 / 5), ease: "none" },
+        onComplete: () => {
+          if (isFullscreen) {
+            gsap.set(".close-btn, .nextImage-btn, .prevImage-btn", {
+              autoAlpha: 0,
+            });
+          }
+        },
       });
   }
   //預覽至圖片牆
@@ -343,6 +350,7 @@ $(document).ready(function () {
           right: 0,
           left: 0,
           ease: "bounce.out",
+          borderRadius: "0px",
           duration: (time / 1000) * (3 / 7),
         },
         "<"

@@ -110,26 +110,140 @@ $(document).ready(function () {
   }
   //按鈕點擊動畫
   function clickAnimation(element) {
-    const time = 400; //總時長
-    element.css({
-      transition:
-        "all " + time / 1000 / 2 + "s cubic-bezier(0.455, 0.03, 0.515, 0.955)",
-      transform: "translateY(15px)",
+    gsap.timeline().to(element, {
+      keyframes: [
+        { y: 25, duration: 0.2, ease: "expo.out" },
+        { y: 0, duration: 0.2, ease: "expo.out" },
+      ],
     });
-    setTimeout(() => {
-      element.removeAttr("style");
-      element.css({
-        transition:
-          "all " +
-          time / 1000 / 2 +
-          "s cubic-bezier(0.455, 0.03, 0.515, 0.955)",
-        opacity: "1",
+  }
+  //懸停動畫(雖然事件但由於具體因此放在同個函式)
+  function hoverAnimation() {
+    $(".btn-wrapper").hover(
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          margin: "20px 50px 0 30px",
+          padding: "0 0 0 0",
+          scale: 1.25,
+        });
+      },
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          margin: "0 0 0 0",
+          padding: "0 0 20px 20px",
+          scale: 1,
+        });
+      }
+    );
+    $(".btn").hover(
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          boxShadow: "0px 0px 24px rgba(0, 0, 0, 1)",
+        });
+      },
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          boxShadow: "0px 0px 12px rgba(0, 0, 0, 1)",
+        });
+      }
+    );
+    $(".stop-btn, .setting-btn, .search-btn").hover(
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1.25,
+        });
+      },
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1,
+        });
+      }
+    );
+    $(document).on("mouseenter", ".image-grid img", function () {
+      gsap.set($(this), {
+        zIndex: 2,
       });
-      setTimeout(() => {
-        element.removeAttr("style");
-        element.css({ opacity: "1" });
-      }, time / 2);
-    }, time / 2);
+      gsap.to($(this), {
+        duration: 0.2,
+        ease: "set1",
+        scale: 1.1,
+      });
+    });
+    $(document).on("mouseleave", ".image-grid img", function () {
+      gsap.to($(this), {
+        duration: 0.2,
+        ease: "set1",
+        scale: 1,
+      });
+      gsap.set($(this), {
+        zIndex: 1,
+        delay: 0.2,
+      });
+    });
+    $(".back-to-home").hover(
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1.25,
+          boxShadow: "0px 0px 24px rgba(0, 0, 0, 1)",
+        });
+      },
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1,
+          boxShadow: "0px 0px 12px rgba(0, 0, 0, 1)",
+        });
+      }
+    );
+    $(".close-btn").hover(
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1.5,
+          rotate: 180,
+        });
+      },
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1,
+          rotate: 0,
+        });
+      }
+    );
+    $(".nextImage-btn, .prevImage-btn").hover(
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1.5,
+        });
+      },
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1,
+        });
+      }
+    );
   }
   // 插入圖片至指定容器
   function insertImages(container, list) {
@@ -239,7 +353,7 @@ $(document).ready(function () {
   function PreviewToFullscreen() {
     //開始設置
     switchView("none");
-    gsap.set(".fullscreen-image-container", { zIndex: 4 });
+    gsap.set(".fullscreen-image-container", { zIndex: 5 });
     //時間設置
     const time = 500;
     //動畫過程
@@ -266,7 +380,7 @@ $(document).ready(function () {
   function FullscreenToPreview() {
     //開始設置
     switchView("none");
-    gsap.set(".fullscreen-image-container", { zIndex: 2 });
+    gsap.set(".fullscreen-image-container", { zIndex: 3 });
     //時間設置
     const time = 500;
     //動畫過程
@@ -371,9 +485,11 @@ $(document).ready(function () {
       .from(
         ".btn-wrapper",
         {
-          top: -100,
+          y: -200,
+          scale: 1.5,
           stagger: 1,
           delay: 1,
+          ease: "bounce.out",
         },
         "<"
       )
@@ -383,12 +499,23 @@ $(document).ready(function () {
           autoAlpha: 1,
           stagger: 1,
           ease: "power4.out",
+        },
+        "<-1"
+      )
+      .from(
+        ".search-btn, .setting-btn, .stop-btn",
+        {
+          y: 200,
+          rotate: 720,
+          stagger: 1,
+          delay: 1,
+          ease: "bounce.out",
           onComplete: () => {
             switchView("index");
             gsap.set(".title", { zIndex: 1 });
           },
         },
-        "<-1"
+        "<"
       );
   }
   //更新畫面
@@ -432,6 +559,7 @@ $(document).ready(function () {
 
     // 載入動畫
     backgroundAnimation();
+    hoverAnimation();
 
     // 載入完成事件(開頭動畫)
     Opening();

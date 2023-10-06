@@ -174,7 +174,7 @@ $(document).ready(function () {
         gsap.to($(this), {
           duration: 0.2,
           ease: "set1",
-          scale: 1.2,
+          scale: 1.25,
         });
       },
       function () {
@@ -182,6 +182,45 @@ $(document).ready(function () {
           duration: 0.2,
           ease: "set1",
           scale: 1,
+        });
+      }
+    );
+    $(document).on("mouseenter", ".image-grid img", function () {
+      gsap.set($(this), {
+        zIndex: 2,
+      });
+      gsap.to($(this), {
+        duration: 0.2,
+        ease: "set1",
+        scale: 1.1,
+      });
+    });
+    $(document).on("mouseleave", ".image-grid img", function () {
+      gsap.to($(this), {
+        duration: 0.2,
+        ease: "set1",
+        scale: 1,
+      });
+      gsap.set($(this), {
+        zIndex: 1,
+        delay: 0.2,
+      });
+    });
+    $(".back-to-home").hover(
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1.25,
+          boxShadow: "0px 0px 24px rgba(0, 0, 0, 1)",
+        });
+      },
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1,
+          boxShadow: "0px 0px 12px rgba(0, 0, 0, 1)",
         });
       }
     );
@@ -294,7 +333,7 @@ $(document).ready(function () {
   function PreviewToFullscreen() {
     //開始設置
     switchView("none");
-    gsap.set(".fullscreen-image-container", { zIndex: 4 });
+    gsap.set(".fullscreen-image-container", { zIndex: 5 });
     //時間設置
     const time = 500;
     //動畫過程
@@ -321,7 +360,7 @@ $(document).ready(function () {
   function FullscreenToPreview() {
     //開始設置
     switchView("none");
-    gsap.set(".fullscreen-image-container", { zIndex: 2 });
+    gsap.set(".fullscreen-image-container", { zIndex: 3 });
     //時間設置
     const time = 500;
     //動畫過程

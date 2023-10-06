@@ -110,26 +110,12 @@ $(document).ready(function () {
   }
   //按鈕點擊動畫
   function clickAnimation(element) {
-    const time = 400; //總時長
-    element.css({
-      transition:
-        "all " + time / 1000 / 2 + "s cubic-bezier(0.455, 0.03, 0.515, 0.955)",
-      transform: "translateY(15px)",
+    gsap.timeline().to(element, {
+      keyframes: [
+        { y: 25, duration: 0.2, ease: "expo.out" },
+        { y: 0, duration: 0.2, ease: "expo.out" },
+      ],
     });
-    setTimeout(() => {
-      element.removeAttr("style");
-      element.css({
-        transition:
-          "all " +
-          time / 1000 / 2 +
-          "s cubic-bezier(0.455, 0.03, 0.515, 0.955)",
-        opacity: "1",
-      });
-      setTimeout(() => {
-        element.removeAttr("style");
-        element.css({ opacity: "1" });
-      }, time / 2);
-    }, time / 2);
   }
   //懸停動畫(雖然事件但由於具體因此放在同個函式)
   function hoverAnimation() {

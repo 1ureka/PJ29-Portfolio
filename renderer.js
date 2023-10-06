@@ -131,6 +131,61 @@ $(document).ready(function () {
       }, time / 2);
     }, time / 2);
   }
+  //懸停動畫(雖然事件但由於具體因此放在同個函式)
+  function hoverAnimation() {
+    $(".btn-wrapper").hover(
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          margin: "20px 50px 0 30px",
+          padding: "0 0 0 0",
+          scale: 1.25,
+        });
+      },
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          margin: "0 0 0 0",
+          padding: "0 0 20px 20px",
+          scale: 1,
+        });
+      }
+    );
+    $(".btn").hover(
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          boxShadow: "0px 0px 24px rgba(0, 0, 0, 1)",
+        });
+      },
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          boxShadow: "0px 0px 12px rgba(0, 0, 0, 1)",
+        });
+      }
+    );
+    $(".stop-btn, .setting-btn, .search-btn").hover(
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1.2,
+        });
+      },
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1,
+        });
+      }
+    );
+  }
   // 插入圖片至指定容器
   function insertImages(container, list) {
     $.each(list, (index) => {
@@ -371,9 +426,11 @@ $(document).ready(function () {
       .from(
         ".btn-wrapper",
         {
-          top: -100,
+          y: -200,
+          scale: 1.5,
           stagger: 1,
           delay: 1,
+          ease: "bounce.out",
         },
         "<"
       )
@@ -383,12 +440,23 @@ $(document).ready(function () {
           autoAlpha: 1,
           stagger: 1,
           ease: "power4.out",
+        },
+        "<-1"
+      )
+      .from(
+        ".search-btn, .setting-btn, .stop-btn",
+        {
+          y: 200,
+          rotate: 720,
+          stagger: 1,
+          delay: 1,
+          ease: "bounce.out",
           onComplete: () => {
             switchView("index");
             gsap.set(".title", { zIndex: 1 });
           },
         },
-        "<-1"
+        "<"
       );
   }
   //更新畫面
@@ -432,6 +500,7 @@ $(document).ready(function () {
 
     // 載入動畫
     backgroundAnimation();
+    hoverAnimation();
 
     // 載入完成事件(開頭動畫)
     Opening();

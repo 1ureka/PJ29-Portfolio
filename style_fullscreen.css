@@ -30,7 +30,6 @@
   font-size: 75px;
   cursor: pointer;
   z-index: 4;
-  transition: all 0.2s cubic-bezier(0.455, 0.03, 0.515, 0.955);
 }
 
 .close-btn {
@@ -53,13 +52,4 @@
 .prevImage-btn img {
   width: 100px;
   height: auto;
-}
-
-.close-btn:hover {
-  transform: scale(1.5) rotate(180deg);
-}
-
-.nextImage-btn:hover,
-.prevImage-btn:hover {
-  transform: scale(1.5);
 }

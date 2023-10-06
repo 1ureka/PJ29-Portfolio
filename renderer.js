@@ -224,6 +224,40 @@ $(document).ready(function () {
         });
       }
     );
+    $(".close-btn").hover(
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1.5,
+          rotate: 180,
+        });
+      },
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1,
+          rotate: 0,
+        });
+      }
+    );
+    $(".nextImage-btn, .prevImage-btn").hover(
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1.5,
+        });
+      },
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1,
+        });
+      }
+    );
   }
   // 插入圖片至指定容器
   function insertImages(container, list) {

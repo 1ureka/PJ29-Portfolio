@@ -150,7 +150,7 @@ $(document).ready(function () {
         gsap.to($(this), {
           duration: 0.2,
           ease: "set1",
-          margin: "20px 50px 0 30px",
+          margin: "0 30px 0 30px",
           padding: "0 0 0 0",
           scale: 1.25,
         });
@@ -160,7 +160,7 @@ $(document).ready(function () {
           duration: 0.2,
           ease: "set1",
           margin: "0 0 0 0",
-          padding: "0 0 20px 20px",
+          padding: "0 0 10px 10px",
           scale: 1,
         });
       }
@@ -181,7 +181,7 @@ $(document).ready(function () {
         });
       }
     );
-    $(".stop-btn, .setting-btn, .search-btn").hover(
+    $(".stop-btn img, .setting-btn img, .search-bar img").hover(
       function () {
         gsap.to($(this), {
           duration: 0.2,
@@ -479,7 +479,7 @@ $(document).ready(function () {
     // 設置動畫前狀態
     gsap.set(".title", { zIndex: 2 });
     gsap.set(
-      ".buttons-container, .btn-wrapper, .tool-bar, .search-btn, .setting-btn, .stop-btn",
+      ".buttons-container, .btn-wrapper, .tool-bar, .search-bar, .setting-btn, .stop-btn",
       {
         autoAlpha: 0,
       }
@@ -544,7 +544,7 @@ $(document).ready(function () {
         "<"
       )
       .to(
-        ".tool-bar, .search-btn, .setting-btn, .stop-btn",
+        ".tool-bar, .search-bar, .setting-btn, .stop-btn",
         {
           autoAlpha: 1,
           stagger: 1,
@@ -553,7 +553,7 @@ $(document).ready(function () {
         "<-1"
       )
       .from(
-        ".search-btn, .setting-btn, .stop-btn",
+        ".search-bar, .setting-btn, .stop-btn",
         {
           y: 200,
           rotate: 720,
@@ -610,9 +610,10 @@ $(document).ready(function () {
     // 載入動畫
     backgroundAnimation();
     hoverAnimation();
-
+    gsap.set(".loading-container", { autoAlpha: 0 });
+    gsap.set(".content", { autoAlpha: 1 });
     // 載入完成事件(開頭動畫)
-    Opening();
+    // Opening();
 
     //按鈕關閉app事件
     $(".stop-btn").on("click", function () {

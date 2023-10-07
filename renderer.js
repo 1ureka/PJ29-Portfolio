@@ -346,7 +346,7 @@ $(document).ready(function () {
       y: -100,
     });
     switchView("preview");
-    $("body").css({ "overflow-y": "hidden" });
+    $(".gallery").css({ "overflow-y": "hidden" });
     //動畫過程
     gsap
       .timeline({
@@ -381,7 +381,7 @@ $(document).ready(function () {
   function PreviewToGallery() {
     //開始設置
     switchView("gallery");
-    $("body").css({ "overflow-y": "scroll" });
+    $(".gallery").css({ "overflow-y": "scroll" });
     //動畫過程
     gsap
       .timeline({

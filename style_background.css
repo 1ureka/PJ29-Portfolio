@@ -39,5 +39,5 @@
 .moving-images img {
   width: 100%;
   height: auto;
-  clip-path: inset(20px round 10px);
+  clip-path: inset(15px round 10px);
 }

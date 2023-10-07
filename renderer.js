@@ -619,6 +619,7 @@ $(document).ready(function () {
     $(document).on("click", ".image-grid img", function () {
       if (isGallery) {
         assignImage($(this).index());
+        clickAnimation($(this));
         GalleryToPreview();
       }
     });

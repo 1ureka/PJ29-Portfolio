@@ -309,19 +309,39 @@ $(document).ready(function () {
   // 圖片牆至預覽
   function GalleryToPreview() {
     //開始設置
+    gsap.set(".close-btn, .nextImage-btn, .prevImage-btn", {
+      autoAlpha: 0,
+      scale: 2,
+      y: -50,
+    });
+    gsap.set(image, {
+      autoAlpha: 0,
+      scale: 1.25,
+      y: -100,
+    });
     switchView("preview");
     $("body").css({ "overflow-y": "hidden" });
-    //時間設置
-    const time = 1000;
     //動畫過程
     gsap
       .timeline({
         defaults: { autoAlpha: 1, ease: "set1" },
       })
-      .to(".fullscreen-overlay", { duration: (time / 1000) * (3 / 5) })
-      .to(image, { duration: (time / 1000) * (3 / 5) }, "<")
+      .to(".fullscreen-overlay", { duration: 0.5 })
+      .to(
+        image,
+        {
+          duration: 0.5,
+          scale: 1,
+          y: 0,
+        },
+        "<"
+      )
       .to(".close-btn, .nextImage-btn, .prevImage-btn", {
-        stagger: { amount: (time / 1000) * (2 / 5), ease: "none" },
+        stagger: { each: 0.2 },
+        ease: "bounce.out",
+        duration: 0.5,
+        scale: 1,
+        y: 0,
         onComplete: () => {
           if (isFullscreen) {
             gsap.set(".close-btn, .nextImage-btn, .prevImage-btn", {
@@ -336,18 +356,22 @@ $(document).ready(function () {
     //開始設置
     switchView("gallery");
     $("body").css({ "overflow-y": "visible" });
-    //時間設置
-    const time = 1000;
     //動畫過程
     gsap
       .timeline({
-        defaults: { autoAlpha: 0, ease: "set1" },
+        defaults: { autoAlpha: 0 },
+        ease: "set1",
       })
       .to(".close-btn, .nextImage-btn, .prevImage-btn", {
-        stagger: { amount: (time / 1000) * (2 / 5), ease: "none" },
+        stagger: { each: 0.2, ease: "set1" },
+        duration: 0.2,
       })
-      .to(image, { duration: (time / 1000) * (3 / 5) })
-      .to(".fullscreen-overlay", { duration: (time / 1000) * (3 / 5) }, "<");
+      .to(image, {
+        duration: 0.5,
+        y: 100,
+        onComplete: () => gsap.set(image, { y: 0 }),
+      })
+      .to(".fullscreen-overlay", { duration: 0.5 }, "<");
   }
   //預覽至全螢幕
   function PreviewToFullscreen() {

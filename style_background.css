@@ -1,27 +1,43 @@
 /* 背景 */
-.moving-images {
+.moving-images-container {
   position: fixed;
-  width: 50vw;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  overflow: hidden;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 0;
 }
 
-.moving-images.left {
-  left: -25vw;
+.moving-images {
+  display: flex;
+  position: fixed;
+  width: 35vw;
+  flex-direction: column;
+  align-items: center;
 }
 
-.moving-images.middle {
-  left: 25vw;
+.moving-images.a {
+  top: -500px;
+  right: 85%;
 }
 
-.moving-images.right {
-  right: -25vw;
+.moving-images.b {
+  right: 50%;
+  bottom: -500px;
+}
+
+.moving-images.c {
+  top: -500px;
+  left: 50%;
+}
+
+.moving-images.d {
+  left: 85%;
+  bottom: -500px;
 }
 
 .moving-images img {
   width: 100%;
   height: auto;
+  clip-path: inset(20px round 10px);
 }

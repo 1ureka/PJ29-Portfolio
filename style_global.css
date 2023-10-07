@@ -9,6 +9,7 @@ body {
   justify-content: center;
   align-items: center;
   user-select: none;
+  overflow: hidden;
 }
 
 /* 載入畫面 */

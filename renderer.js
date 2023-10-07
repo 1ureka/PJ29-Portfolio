@@ -78,35 +78,61 @@ $(document).ready(function () {
   }
   //建立背景動畫
   function backgroundAnimation() {
-    let imagesLeft = [];
-    let imagesRight = [];
-    let imagesMiddle = [];
     // 隨機排序images陣列
     gsap.utils.shuffle(imagesAll);
-    // 將images陣列分成左中右
-    const cut1 = Math.floor(imagesAll.length / 3);
-    const cut2 = Math.floor((2 * imagesAll.length) / 3);
-    const arr1 = imagesAll.slice(0, cut1);
-    const arr2 = imagesAll.slice(cut1, cut2);
-    const arr3 = imagesAll.slice(cut2);
-    imagesLeft = [...arr1, ...arr2, ...arr3];
-    imagesRight = [...arr2, ...arr3, ...arr1];
-    imagesMiddle = [...arr3, ...arr1, ...arr2];
+    // 將陣列分成四份，以特定順序放進四格移動牆
+    // 每個移動牆在移動某陣列的內容時，其他移動牆絕對會在移動其他的三個陣列其中之一
+    // 因此絕對不會重複，若觀察底下建立移動牆的方法，會發現index[0]的位置是在不斷往下的
+    // 並且是1 -> 2 -> 3 -> 4的順序，因此當圖片從第一道移動牆離開後，再次出現也會符合該順序
+    // 但由於1/4的總圖片高度可能大於畫面高度，因此會有再次出現間隔時間=1/4總圖片高度-畫面可以呈現的總圖片高度
+    // 最後，由於移動牆從左到右分別是往上、往下、往上、往下，因此第2與第4個要.reserve()
+    const chunkedArray = [];
+    const chunkSize = Math.floor(imagesAll.length / 4);
+    for (let i = 0; i + chunkSize < imagesAll.length; i += chunkSize) {
+      chunkedArray.push(imagesAll.slice(i, i + chunkSize));
+    }
+    const movingImages1 = [
+      ...chunkedArray[0],
+      ...chunkedArray[1],
+      ...chunkedArray[2],
+      ...chunkedArray[3],
+    ];
+    const movingImages2 = [
+      ...chunkedArray[3],
+      ...chunkedArray[0],
+      ...chunkedArray[1],
+      ...chunkedArray[2],
+    ].reverse();
+    const movingImages3 = [
+      ...chunkedArray[2],
+      ...chunkedArray[3],
+      ...chunkedArray[0],
+      ...chunkedArray[1],
+    ];
+    const movingImages4 = [
+      ...chunkedArray[1],
+      ...chunkedArray[2],
+      ...chunkedArray[3],
+      ...chunkedArray[0],
+    ].reverse();
     // 插入圖片至
     for (let i = 0; i < 2; i++) {
-      insertImages($(".moving-images.left"), imagesLeft);
-      insertImages($(".moving-images.right"), imagesRight);
-      insertImages($(".moving-images.middle"), imagesMiddle);
+      insertImages($(".moving-images.a"), movingImages1);
+      insertImages($(".moving-images.b"), movingImages2);
+      insertImages($(".moving-images.c"), movingImages3);
+      insertImages($(".moving-images.d"), movingImages4);
     }
-    gsap.to(
-      $(".moving-images.left, .moving-images.right, .moving-images.middle"),
-      {
-        duration: (imagesAll.length / 3) * 30,
-        y: "50%",
-        repeat: -1,
-        ease: "linear",
-      }
-    );
+    gsap.set(".moving-images-container", { rotate: 15 });
+    gsap
+      .timeline({
+        defaults: {
+          duration: imagesAll.length * 5,
+          ease: "linear",
+          repeat: -1,
+        },
+      })
+      .to(".moving-images.a, .moving-images.c", { y: "-50%" })
+      .to(".moving-images.b, .moving-images.d", { y: "50%" }, "<");
   }
   //按鈕點擊動畫
   function clickAnimation(element) {
@@ -320,7 +346,7 @@ $(document).ready(function () {
       y: -100,
     });
     switchView("preview");
-    $("body").css({ "overflow-y": "hidden" });
+    $(".gallery").css({ "overflow-y": "hidden" });
     //動畫過程
     gsap
       .timeline({
@@ -355,7 +381,7 @@ $(document).ready(function () {
   function PreviewToGallery() {
     //開始設置
     switchView("gallery");
-    $("body").css({ "overflow-y": "visible" });
+    $(".gallery").css({ "overflow-y": "scroll" });
     //動畫過程
     gsap
       .timeline({

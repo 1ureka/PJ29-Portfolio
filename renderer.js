@@ -290,21 +290,50 @@ $(document).ready(function () {
   //主頁至圖片牆
   function IndexToGallery() {
     //開始設置
+    gsap.set(".gallery", { autoAlpha: 0, y: "100%" });
+    gsap.set(".image-grid img, .back-to-home", { autoAlpha: 0, y: -150 });
     switchView("none");
-    //時間設置
-    const time = 1500;
     //動畫過程
     gsap
-      .timeline({ defaults: { duration: time / 1000 / 2, ease: "set1" } })
+      .timeline({ defaults: { duration: 0.8, ease: "power2.out" } })
       .to(".content", {
         autoAlpha: 0,
+        duration: 0.1,
       })
       .to(".gallery", {
         autoAlpha: 1,
+        y: 0,
         onComplete: () => {
           switchView("gallery");
         },
-      });
+      })
+      .to(
+        ".image-grid img",
+        {
+          stagger: 0.1,
+          ease: "bounce.out",
+          y: 0,
+          autoAlpha: 1,
+        },
+        ">-0.2"
+      )
+      .to(
+        ".image-grid img",
+        {
+          stagger: 0.1,
+          autoAlpha: 1,
+        },
+        "<"
+      )
+      .to(
+        ".back-to-home",
+        {
+          ease: "bounce.out",
+          y: 0,
+          autoAlpha: 1,
+        },
+        "<"
+      );
   }
   //圖片牆至主頁
   function GalleryToIndex() {
@@ -315,7 +344,7 @@ $(document).ready(function () {
     //動畫過程
     gsap
       .timeline({ defaults: { duration: time / 1000 / 2, ease: "set1" } })
-      .to(".gallery", {
+      .to(".gallery, .back-to-home", {
         autoAlpha: 0,
         onComplete: () => {
           window.scrollTo({
@@ -549,7 +578,7 @@ $(document).ready(function () {
 
   // 開始執行：
   // 初始化
-  gsap.set(".gallery, .fullscreen-overlay", { autoAlpha: 0 }); //預設關閉圖片牆與全螢幕
+  gsap.set(".gallery, .fullscreen-overlay, .back-to-home", { autoAlpha: 0 }); //預設關閉圖片牆與全螢幕
   requestImage(afterRequests);
 
   //請求完成後邏輯(主程式)

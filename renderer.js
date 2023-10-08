@@ -150,7 +150,7 @@ $(document).ready(function () {
         gsap.to($(this), {
           duration: 0.2,
           ease: "set1",
-          margin: "20px 50px 0 30px",
+          margin: "0 30px 0 30px",
           padding: "0 0 0 0",
           scale: 1.25,
         });
@@ -160,7 +160,7 @@ $(document).ready(function () {
           duration: 0.2,
           ease: "set1",
           margin: "0 0 0 0",
-          padding: "0 0 20px 20px",
+          padding: "0 0 10px 10px",
           scale: 1,
         });
       }
@@ -181,7 +181,7 @@ $(document).ready(function () {
         });
       }
     );
-    $(".stop-btn, .setting-btn, .search-btn").hover(
+    $(".stop-btn img, .setting-btn img, .search-bar img").hover(
       function () {
         gsap.to($(this), {
           duration: 0.2,
@@ -474,99 +474,52 @@ $(document).ready(function () {
   }
   //開始動畫
   function Opening() {
-    // 總時長-1
-    const time = 3500;
     // 設置動畫前狀態
-    gsap.set(".title", { zIndex: 2 });
-    gsap.set(
-      ".buttons-container, .btn-wrapper, .tool-bar, .search-btn, .setting-btn, .stop-btn",
-      {
-        autoAlpha: 0,
-      }
-    );
+    gsap.set(".buttons-container", { display: "none" });
     // 動畫過程
     gsap
       .timeline({
-        defaults: { duration: (time / 1000) * (2 / 7), ease: "power2.out" },
+        defaults: { duration: 0.5, ease: "power2.out" },
       })
-      .to(".loading-container", {
+      .to(".loading", {
+        delay: 5,
+        y: 375,
+        scale: 0.3,
         autoAlpha: 0,
-        duration: (time / 1000) * (4 / 7),
-        delay: 1.5,
-        ease: "power3.in",
+        duration: 0.5,
+        onComplete: () => gsap.set(".loading-container", { autoAlpha: 0 }),
       })
-      .from(".title img", {
-        autoAlpha: 0,
-        delay: 1,
-      })
-      .from(".title img", {
-        x: 180,
-        scale: 3,
-        delay: 1,
+      .from(
+        ".title img, .title h1",
+        {
+          scale: 2,
+          y: -100,
+          stagger: 0.2,
+          autoAlpha: 0,
+          ease: "bounce.out",
+        },
+        ">-0.2"
+      )
+      .from(".title", {
+        margin: 0,
+        width: "100%",
+        height: "100%",
+        borderRadius: "0px",
         ease: "bounce.out",
-        duration: (time / 1000) * (3 / 7),
+        duration: 1,
+        delay: 1,
+        onComplete: () => gsap.set(".buttons-container", { display: "flex" }),
       })
-      .from(
-        ".title",
-        {
-          top: 0,
-          bottom: 0,
-          right: 0,
-          left: 0,
-          ease: "bounce.out",
-          borderRadius: "0px",
-          duration: (time / 1000) * (3 / 7),
-        },
-        "<"
-      )
-      .from(".title h1", {
+      .from(".search-bar, .setting-btn, .stop-btn, .btn-wrapper", {
         autoAlpha: 0,
-        scale: 1.5,
-      })
-      .to(
-        ".buttons-container, .btn-wrapper",
-        {
-          autoAlpha: 1,
-          stagger: 1,
-          ease: "power4.out",
+        stagger: 0.2,
+        y: -100,
+        scale: 2,
+        ease: "bounce.out",
+        onComplete: () => {
+          switchView("index");
         },
-        "<"
-      )
-      .from(
-        ".btn-wrapper",
-        {
-          y: -200,
-          scale: 1.5,
-          stagger: 1,
-          delay: 1,
-          ease: "bounce.out",
-        },
-        "<"
-      )
-      .to(
-        ".tool-bar, .search-btn, .setting-btn, .stop-btn",
-        {
-          autoAlpha: 1,
-          stagger: 1,
-          ease: "power4.out",
-        },
-        "<-1"
-      )
-      .from(
-        ".search-btn, .setting-btn, .stop-btn",
-        {
-          y: 200,
-          rotate: 720,
-          stagger: 1,
-          delay: 1,
-          ease: "bounce.out",
-          onComplete: () => {
-            switchView("index");
-            gsap.set(".title", { zIndex: 1 });
-          },
-        },
-        "<"
-      );
+      });
   }
   //更新畫面
   function updateTransform(time, ease) {
@@ -596,10 +549,7 @@ $(document).ready(function () {
 
   // 開始執行：
   // 初始化
-  gsap.set(
-    ".gallery, .fullscreen-overlay, .fullscreen-image-container img, .close-btn, .nextImage-btn, .prevImage-btn",
-    { autoAlpha: 0 }
-  ); //預設關閉圖片牆與全螢幕與全螢幕之物件
+  gsap.set(".gallery, .fullscreen-overlay", { autoAlpha: 0 }); //預設關閉圖片牆與全螢幕
   requestImage(afterRequests);
 
   //請求完成後邏輯(主程式)
@@ -610,8 +560,6 @@ $(document).ready(function () {
     // 載入動畫
     backgroundAnimation();
     hoverAnimation();
-
-    // 載入完成事件(開頭動畫)
     Opening();
 
     //按鈕關閉app事件

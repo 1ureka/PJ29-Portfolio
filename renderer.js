@@ -314,7 +314,6 @@ $(document).ready(function () {
           stagger: 0.1,
           ease: "bounce.out",
           y: 0,
-          autoAlpha: 1,
         },
         ">-0.2"
       )
@@ -331,6 +330,12 @@ $(document).ready(function () {
         {
           ease: "bounce.out",
           y: 0,
+        },
+        "<"
+      )
+      .to(
+        ".back-to-home",
+        {
           autoAlpha: 1,
         },
         "<"
@@ -340,27 +345,55 @@ $(document).ready(function () {
   function GalleryToIndex() {
     //開始設置
     switchView("none");
-    //時間設置
-    const time = 1500;
+    gsap.set(".content", { autoAlpha: 0 });
+    gsap.set(".title, .btn-wrapper, .setting-btn, .search-bar, .stop-btn", {
+      y: -150,
+      autoAlpha: 0,
+    });
     //動畫過程
     gsap
-      .timeline({ defaults: { duration: time / 1000 / 2, ease: "set1" } })
+      .timeline({ defaults: { duration: 0.8, ease: "power2.out" } })
       .to(".gallery, .back-to-home", {
         autoAlpha: 0,
+        y: "-100%",
+        ease: "power2.in",
         onComplete: () => {
-          window.scrollTo({
-            top: 0,
-            behavior: "instant",
+          gsap.set(".gallery, .back-to-home", {
+            y: 0,
+            onComplete: () => {
+              window.scrollTo({
+                top: 0,
+                behavior: "instant",
+              });
+              $(".image-grid img").remove();
+            },
           });
-          $(".image-grid img").remove();
         },
       })
       .to(".content", {
         autoAlpha: 1,
+        duration: 0.5,
         onComplete: () => {
           switchView("index");
         },
-      });
+      })
+      .to(
+        ".title, .btn-wrapper, .setting-btn, .search-bar, .stop-btn",
+        {
+          stagger: 0.1,
+          ease: "bounce.out",
+          y: 0,
+        },
+        ">-0.2"
+      )
+      .to(
+        ".title, .btn-wrapper, .setting-btn, .search-bar, .stop-btn",
+        {
+          stagger: 0.1,
+          autoAlpha: 1,
+        },
+        "<"
+      );
   }
   // 圖片牆至預覽
   function GalleryToPreview() {
@@ -513,8 +546,6 @@ $(document).ready(function () {
       })
       .to(".loading", {
         delay: 10,
-        y: 375,
-        scale: 0.3,
         autoAlpha: 0,
         duration: 0.5,
         onComplete: () => gsap.set(".loading-container", { autoAlpha: 0 }),

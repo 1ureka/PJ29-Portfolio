@@ -5,6 +5,7 @@ const fs = require("fs");
 function createWindow() {
   const mainWindow = new BrowserWindow({
     icon: path.join(__dirname, "images/icon/computer_folder.png"),
+    show: false,
     frame: false,
     fullscreen: true,
     webPreferences: {
@@ -12,6 +13,9 @@ function createWindow() {
     },
   });
   mainWindow.loadFile("index.html");
+  mainWindow.once("ready-to-show", () => {
+    mainWindow.show(); // 在準備好時顯示主窗口
+  });
 }
 
 app.whenReady().then(() => {

@@ -299,6 +299,7 @@ $(document).ready(function () {
       .to(".content", {
         autoAlpha: 0,
         duration: 0.1,
+        delay: 0.1,
       })
       .to(".gallery", {
         autoAlpha: 1,
@@ -511,7 +512,7 @@ $(document).ready(function () {
         defaults: { duration: 0.5, ease: "power2.out" },
       })
       .to(".loading", {
-        delay: 5,
+        delay: 10,
         y: 375,
         scale: 0.3,
         autoAlpha: 0,

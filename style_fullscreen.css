@@ -1,12 +1,12 @@
 .fullscreen-overlay {
   display: flex;
   position: fixed;
-  justify-content: center;
-  align-items: center;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  justify-content: center;
+  align-items: center;
   background-color: rgba(0, 0, 0, 0.8);
   z-index: 3;
 }
@@ -26,8 +26,6 @@
 .nextImage-btn,
 .prevImage-btn {
   position: absolute;
-  color: white;
-  font-size: 75px;
   cursor: pointer;
   z-index: 4;
 }
@@ -47,9 +45,13 @@
   left: 30px;
 }
 
-.close-btn img,
+.close-btn img {
+  width: 35px;
+  height: auto;
+}
+
 .nextImage-btn img,
 .prevImage-btn img {
-  width: 100px;
+  width: 85px;
   height: auto;
 }

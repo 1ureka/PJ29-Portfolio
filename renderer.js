@@ -27,6 +27,8 @@ $(document).ready(function () {
   let lastY = 0;
   let translateX = 0; //位移量
   let translateY = 0;
+  // 用於追蹤返回頂部按鈕可見性
+  let top_isVisible = false;
   //製作漸進模式
   gsap.defaults({ overwrite: "auto" });
   gsap.registerPlugin(CustomEase);
@@ -236,6 +238,24 @@ $(document).ready(function () {
         });
       }
     );
+    $(".top-btn").hover(
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1.25,
+          boxShadow: "0px 0px 24px rgba(0, 0, 0, 1)",
+        });
+      },
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1,
+          boxShadow: "0px 0px 12px rgba(0, 0, 0, 1)",
+        });
+      }
+    );
     $(".close-btn").hover(
       function () {
         gsap.to($(this), {
@@ -379,7 +399,10 @@ $(document).ready(function () {
         {
           autoAlpha: 0,
           duration: 0.3,
-          onComplete: () => gsap.set("top-btn", { y: 150 }),
+          onComplete: () => {
+            gsap.set("top-btn", { y: 150 });
+            top_isVisible = false;
+          },
         },
         "<"
       )
@@ -650,16 +673,17 @@ $(document).ready(function () {
       if (isIndex) {
         if ($(this).attr("data-image") === "Nature") {
           insertImages($(".image-grid"), imagesNature);
-          images = $(".image-grid img");
+          $(".top-btn img").attr("src", "./images/icon/top (green).png");
         }
         if ($(this).attr("data-image") === "Props") {
           insertImages($(".image-grid"), imagesProps);
-          images = $(".image-grid img");
+          $(".top-btn img").attr("src", "./images/icon/top (blue).png");
         }
         if ($(this).attr("data-image") === "Scene") {
           insertImages($(".image-grid"), imagesScene);
-          images = $(".image-grid img");
+          $(".top-btn img").attr("src", "./images/icon/top (yellow).png");
         }
+        images = $(".image-grid img");
         clickAnimation($(this).parent());
         IndexToGallery();
       }
@@ -703,6 +727,26 @@ $(document).ready(function () {
       if (isGallery) {
         clickAnimation($(this));
         GalleryToIndex();
+      }
+    });
+
+    // 按鈕返回頂部
+    $(".top-btn").on("click", function () {
+      if (isGallery) {
+        gsap
+          .timeline()
+          .to($(this), {
+            keyframes: [
+              { y: 25, duration: 0.2, ease: "expo.out" },
+              { y: 0, duration: 0.2, ease: "expo.out" },
+            ],
+            onStart: () => $(".gallery").scrollTop(0),
+          })
+          .to($(this), {
+            y: 150,
+            ease: "power2.in",
+            onComplete: () => (top_isVisible = false),
+          });
       }
     });
 
@@ -800,6 +844,12 @@ $(document).ready(function () {
           updateTransform(100, "linear");
           limitTranslation();
         }
+        if (isGallery) {
+          if ($(".gallery").scrollTop() < 100 && top_isVisible) {
+            gsap.to(".top-btn", { y: 150, ease: "power2.in" });
+            top_isVisible = false;
+          }
+        }
       }
       // 向下滑時
       else {
@@ -812,6 +862,12 @@ $(document).ready(function () {
             scaleFac = e.shiftKey ? 0.2 : 0.1;
             scale -= scaleFac;
             updateTransform(100, "linear");
+          }
+        }
+        if (isGallery) {
+          if ($(".gallery").scrollTop() >= 100 && !top_isVisible) {
+            gsap.to(".top-btn", { y: 0, ease: "power2.out" });
+            top_isVisible = true;
           }
         }
       }

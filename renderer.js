@@ -674,14 +674,17 @@ $(document).ready(function () {
         if ($(this).attr("data-image") === "Nature") {
           insertImages($(".image-grid"), imagesNature);
           $(".top-btn img").attr("src", "./images/icon/top (green).png");
+          $(".back-to-home img").attr("src", "./images/icon/home (green).png");
         }
         if ($(this).attr("data-image") === "Props") {
           insertImages($(".image-grid"), imagesProps);
           $(".top-btn img").attr("src", "./images/icon/top (blue).png");
+          $(".back-to-home img").attr("src", "./images/icon/home (blue).png");
         }
         if ($(this).attr("data-image") === "Scene") {
           insertImages($(".image-grid"), imagesScene);
           $(".top-btn img").attr("src", "./images/icon/top (yellow).png");
+          $(".back-to-home img").attr("src", "./images/icon/home (yellow).png");
         }
         images = $(".image-grid img");
         clickAnimation($(this).parent());

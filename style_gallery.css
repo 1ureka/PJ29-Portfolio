@@ -34,14 +34,9 @@
   height: 100px;
 }
 
-.back-to-home {
-  display: flex;
+.back-to-home,
+.top-btn {
   position: fixed;
-  padding: 0;
-  bottom: 45px;
-  left: 75px;
-  justify-content: center;
-  align-items: center;
   border-radius: 10px;
   background: hsla(200, 0%, 10%, 0.65);
   box-shadow: 0px 0px 12px rgba(0, 0, 0, 1);
@@ -49,7 +44,22 @@
   z-index: 2;
 }
 
+.back-to-home {
+  bottom: 45px;
+  left: 75px;
+}
+
 .back-to-home img {
   width: 65px;
+  height: auto;
+}
+
+.top-btn {
+  bottom: 45px;
+  right: 75px;
+}
+
+.top-btn img {
+  width: 35px;
   height: auto;
 }

@@ -16,7 +16,7 @@ $(document).ready(function () {
   // 紀錄圖片牆之圖片陣列
   let images = [];
   //紀錄預覽/全螢幕圖片容器
-  const image = $(".fullscreen-image-container img");
+  let image;
   //紀錄全螢幕模式所需變數
   let scale = 1;
   let scaleFac = 0.1;
@@ -300,12 +300,15 @@ $(document).ready(function () {
   }
   //指派圖片
   function assignImage(index) {
+    if (image) image.remove();
     //更新指標
     currentIndex = index;
     prevIndex = (currentIndex - 1 + images.length) % images.length;
     nextIndex = (currentIndex + 1) % images.length;
     //更新當前圖片的html物件
-    image.attr("src", images.eq(currentIndex).attr("src"));
+    const list = [images.eq(currentIndex).attr("src")];
+    insertImages($(".fullscreen-image-container"), list);
+    image = $(".fullscreen-image-container img");
   }
   //主頁至圖片牆
   function IndexToGallery() {
@@ -494,7 +497,7 @@ $(document).ready(function () {
       .to(image, {
         duration: 0.5,
         y: 100,
-        onComplete: () => gsap.set(image, { y: 0 }),
+        onComplete: () => image.remove(),
       })
       .to(".fullscreen-overlay", { duration: 0.5 }, "<");
   }

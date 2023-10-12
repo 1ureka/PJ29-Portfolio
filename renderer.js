@@ -1,12 +1,12 @@
 $(document).ready(function () {
   // 紀錄圖片庫(字串url組成)
-  let imagesAll = [];
-  const imagesNature = [];
-  const imagesProps = [];
-  const imagesScene = [];
+  let jpgUrl = [];
+  const natureUrl = [];
+  const propsUrl = [];
+  const sceneUrl = [];
   let pngUrl = [];
   // 紀錄圖片陣列(DOM物件)
-  let images = []; //圖片牆
+  let imagesGallery = []; //圖片牆
   let imagesPNG = []; //所有PNG
   //紀錄預覽/全螢幕圖片(DOM物件)
   let image;
@@ -41,13 +41,13 @@ $(document).ready(function () {
   async function requestImage(callback) {
     const imagePaths = await window.electronAPI.getImages();
     imagePaths[0].forEach((imagePath) => {
-      imagesNature.push(`file://${imagePath}`);
+      natureUrl.push(`file://${imagePath}`);
     });
     imagePaths[1].forEach((imagePath) => {
-      imagesProps.push(`file://${imagePath}`);
+      propsUrl.push(`file://${imagePath}`);
     });
     imagePaths[2].forEach((imagePath) => {
-      imagesScene.push(`file://${imagePath}`);
+      sceneUrl.push(`file://${imagePath}`);
     });
     callback();
   }
@@ -82,8 +82,8 @@ $(document).ready(function () {
   }
   //建立背景動畫
   function backgroundAnimation() {
-    // 隨機排序images陣列
-    gsap.utils.shuffle(imagesAll);
+    // 隨機排序jpgUrl陣列
+    gsap.utils.shuffle(jpgUrl);
     // 將陣列分成四份，以特定順序放進四格移動牆
     // 每個移動牆在移動某陣列的內容時，其他移動牆絕對會在移動其他的三個陣列其中之一
     // 因此絕對不會重複，若觀察底下建立移動牆的方法，會發現index[0]的位置是在不斷往下的
@@ -91,9 +91,9 @@ $(document).ready(function () {
     // 但由於1/4的總圖片高度可能大於畫面高度，因此會有再次出現間隔時間=1/4總圖片高度-畫面可以呈現的總圖片高度
     // 最後，由於移動牆從左到右分別是往上、往下、往上、往下，因此第2與第4個要.reserve()
     const chunkedArray = [];
-    const chunkSize = Math.floor(imagesAll.length / 4);
-    for (let i = 0; i + chunkSize < imagesAll.length; i += chunkSize) {
-      chunkedArray.push(imagesAll.slice(i, i + chunkSize));
+    const chunkSize = Math.floor(jpgUrl.length / 4);
+    for (let i = 0; i + chunkSize < jpgUrl.length; i += chunkSize) {
+      chunkedArray.push(jpgUrl.slice(i, i + chunkSize));
     }
     const movingImages1 = [
       ...chunkedArray[0],
@@ -130,7 +130,7 @@ $(document).ready(function () {
     gsap
       .timeline({
         defaults: {
-          duration: imagesAll.length * 5,
+          duration: jpgUrl.length * 5,
           ease: "linear",
           repeat: -1,
         },
@@ -305,25 +305,25 @@ $(document).ready(function () {
     if (image) image.remove();
     //更新指標
     currentIndex = index;
-    prevIndex = (currentIndex - 1 + images.length) % images.length;
-    nextIndex = (currentIndex + 1) % images.length;
+    prevIndex =
+      (currentIndex - 1 + imagesGallery.length) % imagesGallery.length;
+    nextIndex = (currentIndex + 1) % imagesGallery.length;
     //更新當前圖片的html物件
-    const path = images
+    const path = imagesGallery
       .eq(currentIndex)
       .attr("src")
       .replace("\\jpg\\", "\\png\\")
       .replace(".jpg", ".png");
     const pngImg = imagesPNG[pngUrl.indexOf(path)];
-    console.log(pngImg);
     $(pngImg).appendTo(".fullscreen-image-container");
     image = $(".fullscreen-image-container img");
   }
   //載入PNG圖片
   function loadPNG() {
-    const imagesUrl = imagesAll.map((e) =>
+    const urls = jpgUrl.map((e) =>
       e.replace("\\jpg\\", "\\png\\").replace(".jpg", ".png")
     );
-    const promises = imagesUrl.map((url) => {
+    const promises = urls.map((url) => {
       const img = new Image();
       img.src = url;
 
@@ -696,7 +696,7 @@ $(document).ready(function () {
   //請求完成後邏輯(主程式)
   async function afterRequests() {
     // 製作總圖片陣列
-    imagesAll = [...imagesNature, ...imagesProps, ...imagesScene];
+    jpgUrl = [...natureUrl, ...propsUrl, ...sceneUrl];
 
     // 載入PNG
     await loadPNG();
@@ -717,21 +717,21 @@ $(document).ready(function () {
     $(".btn").on("click", function () {
       if (isIndex) {
         if ($(this).attr("data-image") === "Nature") {
-          insertImages($(".image-grid"), imagesNature);
+          insertImages($(".image-grid"), natureUrl);
           $(".top-btn img").attr("src", "./images/icon/top (green).png");
           $(".back-to-home img").attr("src", "./images/icon/home (green).png");
         }
         if ($(this).attr("data-image") === "Props") {
-          insertImages($(".image-grid"), imagesProps);
+          insertImages($(".image-grid"), propsUrl);
           $(".top-btn img").attr("src", "./images/icon/top (blue).png");
           $(".back-to-home img").attr("src", "./images/icon/home (blue).png");
         }
         if ($(this).attr("data-image") === "Scene") {
-          insertImages($(".image-grid"), imagesScene);
+          insertImages($(".image-grid"), sceneUrl);
           $(".top-btn img").attr("src", "./images/icon/top (yellow).png");
           $(".back-to-home img").attr("src", "./images/icon/home (yellow).png");
         }
-        images = $(".image-grid img");
+        imagesGallery = $(".image-grid img");
         clickAnimation($(this).parent());
         IndexToGallery();
       }

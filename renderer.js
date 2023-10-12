@@ -1,9 +1,15 @@
 $(document).ready(function () {
-  // 定義圖片庫(字串url組成)
+  // 紀錄圖片庫(字串url組成)
   let imagesAll = [];
   const imagesNature = [];
   const imagesProps = [];
   const imagesScene = [];
+  let pngUrl = [];
+  // 紀錄圖片陣列(DOM物件)
+  let images = []; //圖片牆
+  let imagesPNG = []; //所有PNG
+  //紀錄預覽/全螢幕圖片(DOM物件)
+  let image;
   // 紀錄預覽圖片指針
   let currentIndex = 0;
   let prevIndex = 0;
@@ -13,10 +19,6 @@ $(document).ready(function () {
   let isGallery = false;
   let isPreview = false;
   let isFullscreen = false;
-  // 紀錄圖片牆之圖片陣列
-  let images = [];
-  //紀錄預覽/全螢幕圖片容器
-  let image;
   //紀錄全螢幕模式所需變數
   let scale = 1;
   let scaleFac = 0.1;
@@ -306,9 +308,34 @@ $(document).ready(function () {
     prevIndex = (currentIndex - 1 + images.length) % images.length;
     nextIndex = (currentIndex + 1) % images.length;
     //更新當前圖片的html物件
-    const list = [images.eq(currentIndex).attr("src")];
-    insertImages($(".fullscreen-image-container"), list);
+    const path = images
+      .eq(currentIndex)
+      .attr("src")
+      .replace("\\jpg\\", "\\png\\")
+      .replace(".jpg", ".png");
+    const pngImg = imagesPNG[pngUrl.indexOf(path)];
+    console.log(pngImg);
+    $(pngImg).appendTo(".fullscreen-image-container");
     image = $(".fullscreen-image-container img");
+  }
+  //載入PNG圖片
+  function loadPNG() {
+    const imagesUrl = imagesAll.map((e) =>
+      e.replace("\\jpg\\", "\\png\\").replace(".jpg", ".png")
+    );
+    const promises = imagesUrl.map((url) => {
+      const img = new Image();
+      img.src = url;
+
+      return new Promise((resolve) => {
+        img.onload = () => {
+          imagesPNG.push(img);
+          pngUrl.push(url);
+          resolve();
+        };
+      });
+    });
+    return Promise.all(promises);
   }
   //主頁至圖片牆
   function IndexToGallery() {
@@ -649,15 +676,30 @@ $(document).ready(function () {
 
   // 開始執行：
   // 初始化
+  // gsap.set(".title",{
+  //   margin: 0,
+  //   width: "100%",
+  //   height: "100%",
+  //   borderRadius: "0px",
+  // })
+  // gsap.set(".title img, .title h1, .search-bar, .setting-btn, .stop-btn, .btn-wrapper",{
+  //   scale: 2,
+  //   y: -100,
+  //   autoAlpha:0
+  // })
+  // gsap.set(".buttons-container", { display: "none" });
   gsap.set(".gallery, .fullscreen-overlay, .back-to-home, .top-btn", {
     autoAlpha: 0,
-  }); //預設關閉圖片牆與全螢幕
+  });
   requestImage(afterRequests);
 
   //請求完成後邏輯(主程式)
-  function afterRequests() {
+  async function afterRequests() {
     // 製作總圖片陣列
     imagesAll = [...imagesNature, ...imagesProps, ...imagesScene];
+
+    // 載入PNG
+    await loadPNG();
 
     // 載入動畫
     backgroundAnimation();

@@ -1,9 +1,15 @@
 $(document).ready(function () {
-  // 定義圖片庫(字串url組成)
-  let imagesAll = [];
-  const imagesNature = [];
-  const imagesProps = [];
-  const imagesScene = [];
+  // 紀錄圖片庫(字串url組成)
+  let jpgUrl = [];
+  const natureUrl = [];
+  const propsUrl = [];
+  const sceneUrl = [];
+  let pngUrl = [];
+  // 紀錄圖片陣列(DOM物件)
+  let imagesGallery = []; //圖片牆
+  let imagesPNG = []; //所有PNG
+  //紀錄預覽/全螢幕圖片(DOM物件)
+  let image;
   // 紀錄預覽圖片指針
   let currentIndex = 0;
   let prevIndex = 0;
@@ -13,10 +19,6 @@ $(document).ready(function () {
   let isGallery = false;
   let isPreview = false;
   let isFullscreen = false;
-  // 紀錄圖片牆之圖片陣列
-  let images = [];
-  //紀錄預覽/全螢幕圖片容器
-  const image = $(".fullscreen-image-container img");
   //紀錄全螢幕模式所需變數
   let scale = 1;
   let scaleFac = 0.1;
@@ -39,13 +41,13 @@ $(document).ready(function () {
   async function requestImage(callback) {
     const imagePaths = await window.electronAPI.getImages();
     imagePaths[0].forEach((imagePath) => {
-      imagesNature.push(`file://${imagePath}`);
+      natureUrl.push(`file://${imagePath}`);
     });
     imagePaths[1].forEach((imagePath) => {
-      imagesProps.push(`file://${imagePath}`);
+      propsUrl.push(`file://${imagePath}`);
     });
     imagePaths[2].forEach((imagePath) => {
-      imagesScene.push(`file://${imagePath}`);
+      sceneUrl.push(`file://${imagePath}`);
     });
     callback();
   }
@@ -80,8 +82,8 @@ $(document).ready(function () {
   }
   //建立背景動畫
   function backgroundAnimation() {
-    // 隨機排序images陣列
-    gsap.utils.shuffle(imagesAll);
+    // 隨機排序jpgUrl陣列
+    gsap.utils.shuffle(jpgUrl);
     // 將陣列分成四份，以特定順序放進四格移動牆
     // 每個移動牆在移動某陣列的內容時，其他移動牆絕對會在移動其他的三個陣列其中之一
     // 因此絕對不會重複，若觀察底下建立移動牆的方法，會發現index[0]的位置是在不斷往下的
@@ -89,9 +91,9 @@ $(document).ready(function () {
     // 但由於1/4的總圖片高度可能大於畫面高度，因此會有再次出現間隔時間=1/4總圖片高度-畫面可以呈現的總圖片高度
     // 最後，由於移動牆從左到右分別是往上、往下、往上、往下，因此第2與第4個要.reserve()
     const chunkedArray = [];
-    const chunkSize = Math.floor(imagesAll.length / 4);
-    for (let i = 0; i + chunkSize < imagesAll.length; i += chunkSize) {
-      chunkedArray.push(imagesAll.slice(i, i + chunkSize));
+    const chunkSize = Math.floor(jpgUrl.length / 4);
+    for (let i = 0; i + chunkSize < jpgUrl.length; i += chunkSize) {
+      chunkedArray.push(jpgUrl.slice(i, i + chunkSize));
     }
     const movingImages1 = [
       ...chunkedArray[0],
@@ -128,7 +130,7 @@ $(document).ready(function () {
     gsap
       .timeline({
         defaults: {
-          duration: imagesAll.length * 5,
+          duration: jpgUrl.length * 5,
           ease: "linear",
           repeat: -1,
         },
@@ -300,12 +302,35 @@ $(document).ready(function () {
   }
   //指派圖片
   function assignImage(index) {
+    if (image) image.remove();
     //更新指標
     currentIndex = index;
-    prevIndex = (currentIndex - 1 + images.length) % images.length;
-    nextIndex = (currentIndex + 1) % images.length;
+    prevIndex =
+      (currentIndex - 1 + imagesGallery.length) % imagesGallery.length;
+    nextIndex = (currentIndex + 1) % imagesGallery.length;
     //更新當前圖片的html物件
-    image.attr("src", images.eq(currentIndex).attr("src"));
+    const path =
+      imagesGallery.eq(currentIndex).attr("src") + "?timestamp=" + Date.now();
+    insertImages($(".fullscreen-image-container"), [path]);
+    image = $(".fullscreen-image-container img");
+  }
+  //載入PNG圖片(未實裝)
+  function loadPNG() {
+    const urls = jpgUrl.map((e) =>
+      e.replace("\\jpg\\", "\\png\\").replace(".jpg", ".png")
+    );
+    const promises = urls.map((url) => {
+      const img = $("<img>").attr("src", url);
+
+      return new Promise((resolve) => {
+        img.on("load", () => {
+          imagesPNG.push(img);
+          pngUrl.push(url);
+          resolve();
+        });
+      });
+    });
+    return Promise.all(promises);
   }
   //主頁至圖片牆
   function IndexToGallery() {
@@ -494,7 +519,7 @@ $(document).ready(function () {
       .to(image, {
         duration: 0.5,
         y: 100,
-        onComplete: () => gsap.set(image, { y: 0 }),
+        onComplete: () => image.remove(),
       })
       .to(".fullscreen-overlay", { duration: 0.5 }, "<");
   }
@@ -573,8 +598,6 @@ $(document).ready(function () {
   }
   //開始動畫
   function Opening() {
-    // 設置動畫前狀態
-    gsap.set(".buttons-container", { display: "none" });
     // 動畫過程
     gsap
       .timeline({
@@ -586,32 +609,32 @@ $(document).ready(function () {
         duration: 0.5,
         onComplete: () => gsap.set(".loading-container", { autoAlpha: 0 }),
       })
-      .from(
+      .to(
         ".title img, .title h1",
         {
-          scale: 2,
-          y: -100,
+          scale: 1,
+          y: 0,
           stagger: 0.2,
-          autoAlpha: 0,
+          autoAlpha: 1,
           ease: "bounce.out",
         },
         ">-0.2"
       )
-      .from(".title", {
-        margin: 0,
-        width: "100%",
-        height: "100%",
-        borderRadius: "0px",
+      .to(".title", {
+        margin: "30px",
+        width: "auto",
+        height: "auto",
+        borderRadius: "25px",
         ease: "bounce.out",
         duration: 1,
         delay: 1,
         onComplete: () => gsap.set(".buttons-container", { display: "flex" }),
       })
-      .from(".search-bar, .setting-btn, .stop-btn, .btn-wrapper", {
-        autoAlpha: 0,
+      .to(".search-bar, .setting-btn, .stop-btn, .btn-wrapper", {
+        scale: 1,
+        y: 0,
         stagger: 0.2,
-        y: -100,
-        scale: 2,
+        autoAlpha: 1,
         ease: "bounce.out",
         onComplete: () => {
           switchView("index");
@@ -646,15 +669,33 @@ $(document).ready(function () {
 
   // 開始執行：
   // 初始化
+  gsap.set(".title", {
+    margin: 0,
+    width: "100%",
+    height: "100%",
+    borderRadius: "0px",
+  });
+  gsap.set(
+    ".title img, .title h1, .search-bar, .setting-btn, .stop-btn, .btn-wrapper",
+    {
+      scale: 2,
+      y: -100,
+      autoAlpha: 0,
+    }
+  );
+  gsap.set(".buttons-container", { display: "none" });
   gsap.set(".gallery, .fullscreen-overlay, .back-to-home, .top-btn", {
     autoAlpha: 0,
-  }); //預設關閉圖片牆與全螢幕
+  });
   requestImage(afterRequests);
 
   //請求完成後邏輯(主程式)
-  function afterRequests() {
+  async function afterRequests() {
     // 製作總圖片陣列
-    imagesAll = [...imagesNature, ...imagesProps, ...imagesScene];
+    jpgUrl = [...natureUrl, ...propsUrl, ...sceneUrl];
+
+    // 載入PNG
+    await loadPNG();
 
     // 載入動畫
     backgroundAnimation();
@@ -672,21 +713,21 @@ $(document).ready(function () {
     $(".btn").on("click", function () {
       if (isIndex) {
         if ($(this).attr("data-image") === "Nature") {
-          insertImages($(".image-grid"), imagesNature);
+          insertImages($(".image-grid"), natureUrl);
           $(".top-btn img").attr("src", "./images/icon/top (green).png");
           $(".back-to-home img").attr("src", "./images/icon/home (green).png");
         }
         if ($(this).attr("data-image") === "Props") {
-          insertImages($(".image-grid"), imagesProps);
+          insertImages($(".image-grid"), propsUrl);
           $(".top-btn img").attr("src", "./images/icon/top (blue).png");
           $(".back-to-home img").attr("src", "./images/icon/home (blue).png");
         }
         if ($(this).attr("data-image") === "Scene") {
-          insertImages($(".image-grid"), imagesScene);
+          insertImages($(".image-grid"), sceneUrl);
           $(".top-btn img").attr("src", "./images/icon/top (yellow).png");
           $(".back-to-home img").attr("src", "./images/icon/home (yellow).png");
         }
-        images = $(".image-grid img");
+        imagesGallery = $(".image-grid img");
         clickAnimation($(this).parent());
         IndexToGallery();
       }

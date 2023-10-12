@@ -292,6 +292,24 @@ $(document).ready(function () {
         });
       }
     );
+    $(".text-container div").hover(
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1.2,
+          color: "#EA81AF",
+        });
+      },
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1,
+          color: "#ffffff",
+        });
+      }
+    );
   }
   // 插入圖片至指定容器
   function insertImages(container, list) {
@@ -302,6 +320,8 @@ $(document).ready(function () {
   }
   //指派圖片
   function assignImage(index) {
+    if ($(".text-container div").text() != ".jpg")
+      $(".text-container div").text(".jpg");
     if (image) image.remove();
     //更新指標
     currentIndex = index;
@@ -535,7 +555,7 @@ $(document).ready(function () {
       .timeline({
         defaults: { duration: time / 1000, ease: "set1" },
       })
-      .to(".close-btn, .nextImage-btn, .prevImage-btn", {
+      .to(".close-btn, .nextImage-btn, .prevImage-btn, .text-container", {
         autoAlpha: 0,
       })
       .to(
@@ -554,7 +574,6 @@ $(document).ready(function () {
   function FullscreenToPreview() {
     //開始設置
     switchView("none");
-    gsap.set(".fullscreen-image-container", { zIndex: 3 });
     //時間設置
     const time = 500;
     //動畫過程
@@ -583,13 +602,14 @@ $(document).ready(function () {
           onComplete: () => {
             // 所有變數回歸最初始狀態
             scale = 1;
+            gsap.set(".fullscreen-image-container", { zIndex: 3 });
             switchView("preview");
           },
         },
         "<"
       )
       .to(
-        ".close-btn , .nextImage-btn, .prevImage-btn",
+        ".close-btn , .nextImage-btn, .prevImage-btn, .text-container",
         {
           autoAlpha: 1,
         },
@@ -604,7 +624,7 @@ $(document).ready(function () {
         defaults: { duration: 0.5, ease: "power2.out" },
       })
       .to(".loading", {
-        delay: 10,
+        delay: 7,
         autoAlpha: 0,
         duration: 0.5,
         onComplete: () => gsap.set(".loading-container", { autoAlpha: 0 }),
@@ -763,6 +783,18 @@ $(document).ready(function () {
       if (isPreview) {
         clickAnimation($(this));
         PreviewToGallery();
+      }
+    });
+
+    // 按鈕切換副檔名事件
+    $(".text-container div").on("click", function () {
+      if (isPreview) {
+        clickAnimation($(this));
+        if ($(this).text() === ".jpg") {
+          $(this).text(".png");
+        } else {
+          $(this).text(".jpg");
+        }
       }
     });
 

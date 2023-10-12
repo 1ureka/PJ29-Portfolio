@@ -315,7 +315,7 @@ $(document).ready(function () {
       .replace("\\jpg\\", "\\png\\")
       .replace(".jpg", ".png");
     const pngImg = imagesPNG[pngUrl.indexOf(path)];
-    $(pngImg).appendTo(".fullscreen-image-container");
+    pngImg.appendTo(".fullscreen-image-container");
     image = $(".fullscreen-image-container img");
   }
   //載入PNG圖片
@@ -324,15 +324,14 @@ $(document).ready(function () {
       e.replace("\\jpg\\", "\\png\\").replace(".jpg", ".png")
     );
     const promises = urls.map((url) => {
-      const img = new Image();
-      img.src = url;
+      const img = $("<img>").attr("src", url);
 
       return new Promise((resolve) => {
-        img.onload = () => {
+        img.on("load", () => {
           imagesPNG.push(img);
           pngUrl.push(url);
           resolve();
-        };
+        });
       });
     });
     return Promise.all(promises);

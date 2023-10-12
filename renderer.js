@@ -309,16 +309,12 @@ $(document).ready(function () {
       (currentIndex - 1 + imagesGallery.length) % imagesGallery.length;
     nextIndex = (currentIndex + 1) % imagesGallery.length;
     //更新當前圖片的html物件
-    const path = imagesGallery
-      .eq(currentIndex)
-      .attr("src")
-      .replace("\\jpg\\", "\\png\\")
-      .replace(".jpg", ".png");
-    const pngImg = imagesPNG[pngUrl.indexOf(path)];
-    pngImg.appendTo(".fullscreen-image-container");
+    const path =
+      imagesGallery.eq(currentIndex).attr("src") + "?timestamp=" + Date.now();
+    insertImages($(".fullscreen-image-container"), [path]);
     image = $(".fullscreen-image-container img");
   }
-  //載入PNG圖片
+  //載入PNG圖片(未實裝)
   function loadPNG() {
     const urls = jpgUrl.map((e) =>
       e.replace("\\jpg\\", "\\png\\").replace(".jpg", ".png")
@@ -602,8 +598,6 @@ $(document).ready(function () {
   }
   //開始動畫
   function Opening() {
-    // 設置動畫前狀態
-    gsap.set(".buttons-container", { display: "none" });
     // 動畫過程
     gsap
       .timeline({
@@ -615,32 +609,32 @@ $(document).ready(function () {
         duration: 0.5,
         onComplete: () => gsap.set(".loading-container", { autoAlpha: 0 }),
       })
-      .from(
+      .to(
         ".title img, .title h1",
         {
-          scale: 2,
-          y: -100,
+          scale: 1,
+          y: 0,
           stagger: 0.2,
-          autoAlpha: 0,
+          autoAlpha: 1,
           ease: "bounce.out",
         },
         ">-0.2"
       )
-      .from(".title", {
-        margin: 0,
-        width: "100%",
-        height: "100%",
-        borderRadius: "0px",
+      .to(".title", {
+        margin: "30px",
+        width: "auto",
+        height: "auto",
+        borderRadius: "25px",
         ease: "bounce.out",
         duration: 1,
         delay: 1,
         onComplete: () => gsap.set(".buttons-container", { display: "flex" }),
       })
-      .from(".search-bar, .setting-btn, .stop-btn, .btn-wrapper", {
-        autoAlpha: 0,
+      .to(".search-bar, .setting-btn, .stop-btn, .btn-wrapper", {
+        scale: 1,
+        y: 0,
         stagger: 0.2,
-        y: -100,
-        scale: 2,
+        autoAlpha: 1,
         ease: "bounce.out",
         onComplete: () => {
           switchView("index");
@@ -675,18 +669,21 @@ $(document).ready(function () {
 
   // 開始執行：
   // 初始化
-  // gsap.set(".title",{
-  //   margin: 0,
-  //   width: "100%",
-  //   height: "100%",
-  //   borderRadius: "0px",
-  // })
-  // gsap.set(".title img, .title h1, .search-bar, .setting-btn, .stop-btn, .btn-wrapper",{
-  //   scale: 2,
-  //   y: -100,
-  //   autoAlpha:0
-  // })
-  // gsap.set(".buttons-container", { display: "none" });
+  gsap.set(".title", {
+    margin: 0,
+    width: "100%",
+    height: "100%",
+    borderRadius: "0px",
+  });
+  gsap.set(
+    ".title img, .title h1, .search-bar, .setting-btn, .stop-btn, .btn-wrapper",
+    {
+      scale: 2,
+      y: -100,
+      autoAlpha: 0,
+    }
+  );
+  gsap.set(".buttons-container", { display: "none" });
   gsap.set(".gallery, .fullscreen-overlay, .back-to-home, .top-btn", {
     autoAlpha: 0,
   });

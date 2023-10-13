@@ -635,11 +635,10 @@ $(document).ready(function () {
       .timeline({
         defaults: { duration: 0.5, ease: "power2.out" },
       })
-      .to(".loading", {
+      .to(".loading-container", {
         delay: 7,
         autoAlpha: 0,
         duration: 0.5,
-        onComplete: () => gsap.set(".loading-container", { autoAlpha: 0 }),
       })
       .to(
         ".title img, .title h1",
@@ -660,7 +659,10 @@ $(document).ready(function () {
         ease: "bounce.out",
         duration: 1,
         delay: 1,
-        onComplete: () => gsap.set(".buttons-container", { display: "flex" }),
+        onComplete: () => {
+          gsap.set(".buttons-container", { display: "flex" });
+          switchView("index");
+        },
       })
       .to(".search-bar, .setting-btn, .stop-btn, .btn-wrapper", {
         scale: 1,
@@ -668,9 +670,6 @@ $(document).ready(function () {
         stagger: 0.2,
         autoAlpha: 1,
         ease: "bounce.out",
-        onComplete: () => {
-          switchView("index");
-        },
       });
   }
   //更新畫面
@@ -701,6 +700,10 @@ $(document).ready(function () {
 
   // 開始執行：
   // 初始化
+  gsap.set(".gallery, .fullscreen-overlay, .back-to-home, .top-btn", {
+    autoAlpha: 0,
+  });
+  gsap.set(".buttons-container", { display: "none" });
   gsap.set(".title", {
     margin: 0,
     width: "100%",
@@ -715,10 +718,6 @@ $(document).ready(function () {
       autoAlpha: 0,
     }
   );
-  gsap.set(".buttons-container", { display: "none" });
-  gsap.set(".gallery, .fullscreen-overlay, .back-to-home, .top-btn", {
-    autoAlpha: 0,
-  });
   requestImage(afterRequests);
 
   //請求完成後邏輯(主程式)

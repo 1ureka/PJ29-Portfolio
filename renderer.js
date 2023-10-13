@@ -319,7 +319,7 @@ $(document).ready(function () {
     });
   }
   //指派圖片
-  function assignImage(index) {
+  function assignJPG(index) {
     if ($(".text-container div").text() != ".jpg")
       $(".text-container div").text(".jpg");
     if (image) image.remove();
@@ -331,7 +331,13 @@ $(document).ready(function () {
     //更新當前圖片的html物件
     const path =
       imagesGallery.eq(currentIndex).attr("src") + "?timestamp=" + Date.now();
+    const name = imagesGallery
+      .eq(currentIndex)
+      .attr("src")
+      .match(/[^/\\]+$/)[0]
+      .replace(/\.jpg/, "");
     insertImages($(".fullscreen-image-container"), [path]);
+    $(".text-container p").text(name);
     image = $(".fullscreen-image-container img");
   }
   //載入PNG圖片(未實裝)
@@ -756,7 +762,7 @@ $(document).ready(function () {
     // 按鈕圖片事件
     $(document).on("click", ".image-grid img", function () {
       if (isGallery) {
-        assignImage($(this).index());
+        assignJPG($(this).index());
         clickAnimation($(this));
         GalleryToPreview();
       }
@@ -766,7 +772,7 @@ $(document).ready(function () {
     $(".prevImage-btn").on("click", function () {
       if (isPreview) {
         clickAnimation($(this));
-        assignImage(prevIndex);
+        assignJPG(prevIndex);
       }
     });
 
@@ -774,7 +780,7 @@ $(document).ready(function () {
     $(".nextImage-btn").on("click", function () {
       if (isPreview) {
         clickAnimation($(this));
-        assignImage(nextIndex);
+        assignJPG(nextIndex);
       }
     });
 
@@ -845,14 +851,14 @@ $(document).ready(function () {
       // 左側箭頭
       if (e.which === 37) {
         if (isPreview) {
-          assignImage(prevIndex);
+          assignJPG(prevIndex);
           clickAnimation($(".prevImage-btn"));
         }
       }
       // 右側箭頭
       if (e.which === 39) {
         if (isPreview) {
-          assignImage(nextIndex);
+          assignJPG(nextIndex);
           clickAnimation($(".nextImage-btn"));
         }
       }

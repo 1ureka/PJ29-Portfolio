@@ -4,10 +4,8 @@ $(document).ready(function () {
   const natureUrl = [];
   const propsUrl = [];
   const sceneUrl = [];
-  let pngUrl = [];
   // 紀錄圖片陣列(DOM物件)
-  let imagesGallery = []; //圖片牆
-  let imagesPNG = []; //所有PNG
+  let imagesGallery = [];
   //紀錄預覽/全螢幕圖片(DOM物件)
   let image;
   // 紀錄預覽圖片指針

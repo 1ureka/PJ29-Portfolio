@@ -84,12 +84,10 @@ $(document).ready(function () {
   function backgroundAnimation() {
     // 隨機排序jpgUrl陣列
     gsap.utils.shuffle(jpgUrl);
-    // 將陣列分成四份，以特定順序放進四格移動牆
-    // 每個移動牆在移動某陣列的內容時，其他移動牆絕對會在移動其他的三個陣列其中之一
-    // 因此絕對不會重複，若觀察底下建立移動牆的方法，會發現index[0]的位置是在不斷往下的
-    // 並且是1 -> 2 -> 3 -> 4的順序，因此當圖片從第一道移動牆離開後，再次出現也會符合該順序
-    // 但由於1/4的總圖片高度可能大於畫面高度，因此會有再次出現間隔時間=1/4總圖片高度-畫面可以呈現的總圖片高度
-    // 最後，由於移動牆從左到右分別是往上、往下、往上、往下，因此第2與第4個要.reserve()
+    // 將陣列分成四份，以特定順序放進四格移動牆，因此絕對不會重複
+    // 圖片會從最左邊一路往右逐次出現，直到再次回來，由於1/4的總圖片高度大於畫面高度
+    // 因此會有再次出現間隔時間=(1/4)*總圖片高度-畫面可以呈現的總圖片高度
+    // 由於移動牆從左到右分別是往上、往下、往上、往下，因此第2與第4個要.reserve()
     const chunkedArray = [];
     const chunkSize = Math.floor(jpgUrl.length / 4);
     for (let i = 0; i + chunkSize < jpgUrl.length; i += chunkSize) {
@@ -318,73 +316,53 @@ $(document).ready(function () {
       img.appendTo(container);
     });
   }
-  //指派圖片(JPG)
-  function assignJPG(index) {
-    //前置準備
-    if ($(".text-container div").text() != ".jpg")
-      $(".text-container div").text(".jpg");
+  //指派圖片
+  function assignImage(index, format) {
+    //若有圖片則先刪除
     if (image) image.remove();
+
+    //定義變數
+    const extension = $(".text-container div");
+    const totalIndex = imagesGallery.length;
+    let path = "";
+
     //更新指標
     currentIndex = index;
-    prevIndex =
-      (currentIndex - 1 + imagesGallery.length) % imagesGallery.length;
-    nextIndex = (currentIndex + 1) % imagesGallery.length;
-    //更新當前圖片的html物件
-    const path =
-      imagesGallery.eq(currentIndex).attr("src") + "?timestamp=" + Date.now();
+    prevIndex = (currentIndex - 1 + totalIndex) % totalIndex;
+    nextIndex = (currentIndex + 1) % totalIndex;
+
+    //查找url
+    switch (format) {
+      case "jpg":
+        extension.text(".jpg");
+        path =
+          imagesGallery.eq(currentIndex).attr("src") +
+          "?timestamp=" +
+          Date.now();
+        break;
+      case "png":
+        extension.text(".png");
+        path = imagesGallery
+          .eq(currentIndex)
+          .attr("src")
+          .replace("\\jpg\\", "\\png\\")
+          .replace(".jpg", ".png");
+        break;
+    }
+
+    //查找名字
     const name = imagesGallery
       .eq(currentIndex)
       .attr("src")
       .match(/[^/\\]+$/)[0]
       .replace(/\.jpg/, "");
-    insertImages($(".fullscreen-image-container"), [path]);
-    $(".text-container p").text(name);
-    image = $(".fullscreen-image-container img");
-  }
-  //指派圖片(PNG)
-  function assignPNG(index) {
-    //前置準備
-    if ($(".text-container div").text() != ".png")
-      $(".text-container div").text(".png");
-    if (image) image.remove();
-    //更新指標
-    currentIndex = index;
-    prevIndex =
-      (currentIndex - 1 + imagesGallery.length) % imagesGallery.length;
-    nextIndex = (currentIndex + 1) % imagesGallery.length;
-    //更新當前圖片的html物件
-    const path = imagesGallery
-      .eq(currentIndex)
-      .attr("src")
-      .replace("\\jpg\\", "\\png\\")
-      .replace(".jpg", ".png");
-    const name = imagesGallery
-      .eq(currentIndex)
-      .attr("src")
-      .match(/[^/\\]+$/)[0]
-      .replace(/\.jpg/, ""); // 由於imagesGallery都是jpg因此仍然是替換jpg
-    const img = imagesPNG[pngUrl.indexOf(path)];
-    $(".text-container p").text(name);
-    img.appendTo(".fullscreen-image-container");
-    image = $(".fullscreen-image-container img");
-  }
-  //載入PNG圖片
-  function loadPNG() {
-    const urls = jpgUrl.map((e) =>
-      e.replace("\\jpg\\", "\\png\\").replace(".jpg", ".png")
-    );
-    const promises = urls.map((url) => {
-      const img = $("<img>").attr("src", url);
 
-      return new Promise((resolve) => {
-        img.on("load", () => {
-          imagesPNG.push(img);
-          pngUrl.push(url);
-          resolve();
-        });
-      });
-    });
-    return Promise.all(promises);
+    //更新DOM
+    $(".text-container p").text(name);
+    insertImages($(".fullscreen-image-container"), [path]);
+
+    //指派給全域變數
+    image = $(".fullscreen-image-container img");
   }
   //主頁至圖片牆
   function IndexToGallery() {
@@ -744,12 +722,9 @@ $(document).ready(function () {
   requestImage(afterRequests);
 
   //請求完成後邏輯(主程式)
-  async function afterRequests() {
+  function afterRequests() {
     // 製作總圖片陣列
     jpgUrl = [...natureUrl, ...propsUrl, ...sceneUrl];
-
-    // 載入PNG
-    await loadPNG();
 
     // 載入動畫
     backgroundAnimation();
@@ -790,7 +765,7 @@ $(document).ready(function () {
     // 按鈕圖片事件
     $(document).on("click", ".image-grid img", function () {
       if (isGallery) {
-        assignJPG($(this).index());
+        assignImage($(this).index(), "jpg");
         clickAnimation($(this));
         GalleryToPreview();
       }
@@ -800,7 +775,7 @@ $(document).ready(function () {
     $(".prevImage-btn").on("click", function () {
       if (isPreview) {
         clickAnimation($(this));
-        assignJPG(prevIndex);
+        assignImage(prevIndex, "jpg");
       }
     });
 
@@ -808,7 +783,7 @@ $(document).ready(function () {
     $(".nextImage-btn").on("click", function () {
       if (isPreview) {
         clickAnimation($(this));
-        assignJPG(nextIndex);
+        assignImage(nextIndex, "jpg");
       }
     });
 
@@ -825,9 +800,9 @@ $(document).ready(function () {
       if (isPreview) {
         clickAnimation($(this));
         if ($(this).text() === ".jpg") {
-          assignPNG(currentIndex);
+          assignImage(currentIndex, "png");
         } else {
-          assignJPG(currentIndex);
+          assignImage(currentIndex, "jpg");
         }
       }
     });
@@ -879,14 +854,14 @@ $(document).ready(function () {
       // 左側箭頭
       if (e.which === 37) {
         if (isPreview) {
-          assignJPG(prevIndex);
+          assignImage(prevIndex, "jpg");
           clickAnimation($(".prevImage-btn"));
         }
       }
       // 右側箭頭
       if (e.which === 39) {
         if (isPreview) {
-          assignJPG(nextIndex);
+          assignImage(nextIndex, "jpg");
           clickAnimation($(".nextImage-btn"));
         }
       }

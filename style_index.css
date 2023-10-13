@@ -139,6 +139,7 @@
 .search-bar {
   z-index: 2;
   position: relative;
+  padding: 10px;
   background-color: hsla(200, 0%, 10%, 0.65);
   box-shadow: 0px 0px 12px rgba(0, 0, 0, 1);
   border-radius: 10px;
@@ -155,10 +156,11 @@
   background-color: hsla(200, 0%, 10%, 0.5);
   border-radius: 10px;
   width: 100%;
-  padding: 10px;
+  padding: 5px;
+  margin-left: 10px;
   border-width: 0;
   color: #ffffff;
-  font-size: 16px;
+  font-size: 24px;
   font-family: "Montserrat";
   box-shadow: inset 0px 0px 12px rgba(0, 0, 0, 0.5);
 }
@@ -171,6 +173,6 @@
 .setting-btn img,
 .search-bar img {
   cursor: pointer;
-  width: 55px;
+  width: 40px;
   height: auto;
 }

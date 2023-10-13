@@ -318,8 +318,9 @@ $(document).ready(function () {
       img.appendTo(container);
     });
   }
-  //指派圖片
+  //指派圖片(JPG)
   function assignJPG(index) {
+    //前置準備
     if ($(".text-container div").text() != ".jpg")
       $(".text-container div").text(".jpg");
     if (image) image.remove();
@@ -340,7 +341,34 @@ $(document).ready(function () {
     $(".text-container p").text(name);
     image = $(".fullscreen-image-container img");
   }
-  //載入PNG圖片(未實裝)
+  //指派圖片(PNG)
+  function assignPNG(index) {
+    //前置準備
+    if ($(".text-container div").text() != ".png")
+      $(".text-container div").text(".png");
+    if (image) image.remove();
+    //更新指標
+    currentIndex = index;
+    prevIndex =
+      (currentIndex - 1 + imagesGallery.length) % imagesGallery.length;
+    nextIndex = (currentIndex + 1) % imagesGallery.length;
+    //更新當前圖片的html物件
+    const path = imagesGallery
+      .eq(currentIndex)
+      .attr("src")
+      .replace("\\jpg\\", "\\png\\")
+      .replace(".jpg", ".png");
+    const name = imagesGallery
+      .eq(currentIndex)
+      .attr("src")
+      .match(/[^/\\]+$/)[0]
+      .replace(/\.jpg/, ""); // 由於imagesGallery都是jpg因此仍然是替換jpg
+    const img = imagesPNG[pngUrl.indexOf(path)];
+    $(".text-container p").text(name);
+    img.appendTo(".fullscreen-image-container");
+    image = $(".fullscreen-image-container img");
+  }
+  //載入PNG圖片
   function loadPNG() {
     const urls = jpgUrl.map((e) =>
       e.replace("\\jpg\\", "\\png\\").replace(".jpg", ".png")
@@ -797,9 +825,9 @@ $(document).ready(function () {
       if (isPreview) {
         clickAnimation($(this));
         if ($(this).text() === ".jpg") {
-          $(this).text(".png");
+          assignPNG(currentIndex);
         } else {
-          $(this).text(".jpg");
+          assignJPG(currentIndex);
         }
       }
     });

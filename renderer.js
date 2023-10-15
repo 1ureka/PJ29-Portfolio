@@ -145,7 +145,7 @@ $(document).ready(function () {
   }
   //懸停動畫(雖然事件但由於具體因此放在同個函式)
   function hoverAnimation() {
-    $(".btn-wrapper").hover(
+    $(".page-btn").hover(
       function () {
         gsap.to($(this), {
           duration: 0.2,
@@ -165,7 +165,7 @@ $(document).ready(function () {
         });
       }
     );
-    $(".btn").hover(
+    $(".page-btn-title").hover(
       function () {
         gsap.to($(this), {
           duration: 0.2,
@@ -181,7 +181,7 @@ $(document).ready(function () {
         });
       }
     );
-    $(".stop-btn img, .setting-btn img, .search-bar img").hover(
+    $(".stop-btn, .setting-btn, .search-btn").hover(
       function () {
         gsap.to($(this), {
           duration: 0.2,
@@ -425,7 +425,7 @@ $(document).ready(function () {
     //開始設置
     switchView("none");
     gsap.set(".content", { autoAlpha: 0 });
-    gsap.set(".title, .btn-wrapper, .setting-btn, .search-bar, .stop-btn", {
+    gsap.set(".title, .page-btn, .setting-bar, .search-bar, .close-bar", {
       y: -150,
       autoAlpha: 0,
     });
@@ -469,7 +469,7 @@ $(document).ready(function () {
         },
       })
       .to(
-        ".title, .btn-wrapper, .setting-btn, .search-bar, .stop-btn",
+        ".title, .page-btn, .setting-bar, .search-bar, .close-bar",
         {
           stagger: 0.1,
           ease: "bounce.out",
@@ -478,7 +478,7 @@ $(document).ready(function () {
         ">-0.2"
       )
       .to(
-        ".title, .btn-wrapper, .setting-btn, .search-bar, .stop-btn",
+        ".title, .page-btn, .setting-bar, .search-bar, .close-bar",
         {
           stagger: 0.1,
           autoAlpha: 1,
@@ -658,11 +658,11 @@ $(document).ready(function () {
         duration: 1,
         delay: 1,
         onComplete: () => {
-          gsap.set(".buttons-container", { display: "flex" });
+          gsap.set(".page-btn-container", { display: "flex" });
           switchView("index");
         },
       })
-      .to(".search-bar, .setting-btn, .stop-btn, .btn-wrapper", {
+      .to(".search-bar, .setting-bar, .close-bar, .page-btn", {
         scale: 1,
         y: 0,
         stagger: 0.2,
@@ -701,7 +701,7 @@ $(document).ready(function () {
   gsap.set(".gallery, .fullscreen-overlay, .back-to-home, .top-btn", {
     autoAlpha: 0,
   });
-  gsap.set(".buttons-container", { display: "none" });
+  gsap.set(".page-btn-container", { display: "none" });
   gsap.set(".title", {
     margin: 0,
     width: "100%",
@@ -709,7 +709,7 @@ $(document).ready(function () {
     borderRadius: "0px",
   });
   gsap.set(
-    ".title img, .title h1, .search-bar, .setting-btn, .stop-btn, .btn-wrapper",
+    ".title img, .title h1, .search-bar, .setting-bar, .close-bar, .page-btn",
     {
       scale: 2,
       y: -100,
@@ -736,7 +736,7 @@ $(document).ready(function () {
     });
 
     //按鈕分頁事件
-    $(".btn").on("click", function () {
+    $(".page-btn-title").on("click", function () {
       if (isIndex) {
         if ($(this).attr("data-image") === "Nature") {
           insertImages($(".image-grid"), natureUrl);

@@ -40,7 +40,7 @@
   margin-bottom: 40px;
 }
 
-.buttons-container {
+.page-btn-container {
   display: flex;
   position: relative;
   flex-direction: row;
@@ -50,7 +50,7 @@
   width: 45%;
 }
 
-.btn-wrapper {
+.page-btn {
   position: relative;
   display: block;
   padding: 0 0 10px 10px;
@@ -58,7 +58,7 @@
   font-size: 24px;
 }
 
-.btn {
+.page-btn-title {
   z-index: 2;
   position: relative;
   background-color: hsla(200, 0%, 10%, 0.9);
@@ -68,7 +68,7 @@
   box-shadow: 0px 0px 12px rgba(0, 0, 0, 1);
 }
 
-.btn::before {
+.page-btn-title::before {
   content: "";
   position: absolute;
   top: 0;
@@ -83,19 +83,19 @@
   transition: all 0.2s cubic-bezier(0.455, 0.03, 0.515, 0.955);
 }
 
-.btn:hover::before {
+.page-btn-title:hover::before {
   opacity: 1;
 }
 
-.btn[data-image="Nature"]::before {
+.page-btn-title[data-image="Nature"]::before {
   background-image: url("./images/jpg/Nature/Nature Instance Assets Preview (Oak Tree B).jpg");
 }
 
-.btn[data-image="Props"]::before {
+.page-btn-title[data-image="Props"]::before {
   background-image: url("./images/jpg/Props/Bike 1.jpg");
 }
 
-.btn[data-image="Scene"]::before {
+.page-btn-title[data-image="Scene"]::before {
   background-image: url("./images/jpg/Scene/P17.jpg");
 }
 
@@ -123,7 +123,7 @@
 .btn-shadow.red {
   background-color: #ffff7a;
 }
-.tool-bar {
+.tool-bar-container {
   display: flex;
   position: absolute;
   bottom: 30px;
@@ -134,8 +134,8 @@
   border-radius: 10px;
 }
 
-.stop-btn,
-.setting-btn,
+.close-bar,
+.setting-bar,
 .search-bar {
   z-index: 2;
   position: relative;
@@ -169,9 +169,9 @@
   outline: 0;
 }
 
-.stop-btn img,
-.setting-btn img,
-.search-bar img {
+.stop-btn,
+.setting-btn,
+.search-btn {
   cursor: pointer;
   width: 40px;
   height: auto;

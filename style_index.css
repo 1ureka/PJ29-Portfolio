@@ -183,14 +183,52 @@
 
 /* 關閉列 */
 .close-bar {
-  display: flex;
-}
-
-.restart-btn,
-.stop-lable,
-.restart-lable {
-  position: absolute;
   color: #ffffff;
   font-size: 24px;
   font-family: "Montserrat";
+  padding: 0;
+  width: 60px;
+  height: 60px;
+}
+
+.stop-btn,
+.restart-btn {
+  position: absolute;
+  right: 10px;
+}
+
+.stop-btn {
+  bottom: 10px;
+}
+
+.restart-btn {
+  top: 10px;
+}
+
+.restart-lable,
+.stop-lable {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  width: 100px;
+  height: 40px;
+  left: 0;
+}
+
+.stop-lable {
+  bottom: 10px;
+}
+
+.restart-lable {
+  top: 10px;
+}
+
+.close-bar .line {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  right: 57px;
+  width: 0;
+  border: 1px solid #ffffff;
 }

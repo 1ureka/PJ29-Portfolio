@@ -152,29 +152,13 @@ $(document).ready(function () {
         defaults: { duration: 0.2, ease: "set1", overwrite: false },
       })
       .to(".close-bar", {
-        paddingTop: "70px",
-        paddingLeft: "110px",
+        width: "160px",
+        height: "120px",
       })
       .to(
-        ".restart-btn",
+        ".close-bar .line",
         {
-          bottom: "70px",
-        },
-        "<"
-      )
-      .to(
-        ".stop-lable",
-        {
-          right: "72px",
-          bottom: "17.5px",
-        },
-        "<"
-      )
-      .to(
-        ".restart-lable",
-        {
-          right: "65px",
-          bottom: "75px",
+          autoAlpha: 1,
         },
         "<"
       )
@@ -187,35 +171,13 @@ $(document).ready(function () {
         paused: true,
         defaults: { duration: 0.2, ease: "set1", overwrite: false },
       })
-      .to(".restart-btn, .stop-lable, .restart-lable", {
+      .to(".restart-btn, .stop-lable, .restart-lable, .close-bar .line", {
         autoAlpha: 0,
       })
       .to(".close-bar", {
-        paddingTop: "10px",
-        paddingLeft: "10px",
-      })
-      .to(
-        ".restart-btn",
-        {
-          bottom: "0px",
-        },
-        "<"
-      )
-      .to(
-        ".stop-lable",
-        {
-          right: "0px",
-        },
-        "<"
-      )
-      .to(
-        ".restart-lable",
-        {
-          bottom: "0px",
-          right: "0px",
-        },
-        "<"
-      );
+        width: "60px",
+        height: "60px",
+      });
 
     //hover事件偵測
     $(".page-btn").hover(
@@ -797,13 +759,17 @@ $(document).ready(function () {
     }
   }
 
-  // 初始化
+  // 初始化 #1
   // 分頁
   gsap.set(".gallery, .fullscreen-overlay, .back-to-home, .top-btn", {
     autoAlpha: 0,
   });
   // 主頁
-  gsap.set(".restart-btn, .stop-lable, .restart-lable", { autoAlpha: 0 });
+  gsap.set(".restart-btn, .stop-lable, .restart-lable, .close-bar .line", {
+    autoAlpha: 0,
+  });
+
+  // 初始化 #2
   // 開頭動畫
   gsap.set(".page-btn-container", { display: "none" });
   gsap.set(".title", {

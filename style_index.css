@@ -123,6 +123,7 @@
 .btn-shadow.red {
   background-color: #ffff7a;
 }
+
 .tool-bar-container {
   display: flex;
   position: absolute;
@@ -131,6 +132,7 @@
   left: 30px;
   flex-direction: row;
   justify-content: space-between;
+  align-items: end;
   border-radius: 10px;
 }
 
@@ -145,6 +147,16 @@
   border-radius: 10px;
 }
 
+.stop-btn,
+.setting-btn,
+.search-btn,
+.restart-btn {
+  cursor: pointer;
+  width: 40px;
+  height: auto;
+}
+
+/* 搜尋列 */
 .search-bar {
   display: flex;
   align-items: center;
@@ -169,10 +181,16 @@
   outline: 0;
 }
 
-.stop-btn,
-.setting-btn,
-.search-btn {
-  cursor: pointer;
-  width: 40px;
-  height: auto;
+/* 關閉列 */
+.close-bar {
+  display: flex;
+}
+
+.restart-btn,
+.stop-lable,
+.restart-lable {
+  position: absolute;
+  color: #ffffff;
+  font-size: 24px;
+  font-family: "Montserrat";
 }

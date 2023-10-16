@@ -145,6 +145,79 @@ $(document).ready(function () {
   }
   //懸停動畫(雖然事件但由於具體因此放在同個函式)
   function hoverAnimation() {
+    //需使用到pause()的時間軸
+    const toCloseBar = gsap
+      .timeline({
+        paused: true,
+        defaults: { duration: 0.2, ease: "set1", overwrite: false },
+      })
+      .to(".close-bar", {
+        paddingTop: "70px",
+        paddingLeft: "110px",
+      })
+      .to(
+        ".restart-btn",
+        {
+          bottom: "70px",
+        },
+        "<"
+      )
+      .to(
+        ".stop-lable",
+        {
+          right: "72px",
+          bottom: "17.5px",
+        },
+        "<"
+      )
+      .to(
+        ".restart-lable",
+        {
+          right: "65px",
+          bottom: "75px",
+        },
+        "<"
+      )
+      .to(".restart-btn, .stop-lable, .restart-lable", {
+        stagger: 0.1,
+        autoAlpha: 1,
+      });
+    const exCloseBar = gsap
+      .timeline({
+        paused: true,
+        defaults: { duration: 0.2, ease: "set1", overwrite: false },
+      })
+      .to(".restart-btn, .stop-lable, .restart-lable", {
+        autoAlpha: 0,
+      })
+      .to(".close-bar", {
+        paddingTop: "10px",
+        paddingLeft: "10px",
+      })
+      .to(
+        ".restart-btn",
+        {
+          bottom: "0px",
+        },
+        "<"
+      )
+      .to(
+        ".stop-lable",
+        {
+          right: "0px",
+        },
+        "<"
+      )
+      .to(
+        ".restart-lable",
+        {
+          bottom: "0px",
+          right: "0px",
+        },
+        "<"
+      );
+
+    //hover事件偵測
     $(".page-btn").hover(
       function () {
         gsap.to($(this), {
@@ -194,6 +267,34 @@ $(document).ready(function () {
           duration: 0.2,
           ease: "set1",
           scale: 1,
+        });
+      }
+    );
+    $(".close-bar").hover(
+      function () {
+        exCloseBar.pause();
+        toCloseBar.restart();
+      },
+      function () {
+        toCloseBar.pause();
+        exCloseBar.restart();
+      }
+    );
+    $(".restart-btn").hover(
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1.25,
+          rotate: 360,
+        });
+      },
+      function () {
+        gsap.to($(this), {
+          duration: 0.2,
+          ease: "set1",
+          scale: 1,
+          rotate: 0,
         });
       }
     );
@@ -696,11 +797,14 @@ $(document).ready(function () {
     }
   }
 
-  // 開始執行：
   // 初始化
+  // 分頁
   gsap.set(".gallery, .fullscreen-overlay, .back-to-home, .top-btn", {
     autoAlpha: 0,
   });
+  // 主頁
+  gsap.set(".restart-btn, .stop-lable, .restart-lable", { autoAlpha: 0 });
+  // 開頭動畫
   gsap.set(".page-btn-container", { display: "none" });
   gsap.set(".title", {
     margin: 0,

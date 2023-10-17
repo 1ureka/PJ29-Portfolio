@@ -38,13 +38,13 @@ $(document).ready(function () {
   //要求圖片
   async function requestImage(callback) {
     const imagePaths = await window.electronAPI.getImages();
-    imagePaths[0].forEach((imagePath) => {
+    imagePaths["Nature"].forEach((imagePath) => {
       natureUrl.push(`file://${imagePath}`);
     });
-    imagePaths[1].forEach((imagePath) => {
+    imagePaths["Props"].forEach((imagePath) => {
       propsUrl.push(`file://${imagePath}`);
     });
-    imagePaths[2].forEach((imagePath) => {
+    imagePaths["Scene"].forEach((imagePath) => {
       sceneUrl.push(`file://${imagePath}`);
     });
     callback();
@@ -802,6 +802,13 @@ $(document).ready(function () {
     $(".stop-btn").on("click", function () {
       if (isIndex) {
         window.electronAPI.closeApp();
+      }
+    });
+
+    //按鈕重啟app事件
+    $(".restart-btn").on("click", function () {
+      if (isIndex) {
+        window.electronAPI.restartApp();
       }
     });
 

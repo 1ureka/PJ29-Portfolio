@@ -22,28 +22,28 @@ app.whenReady().then(() => {
   createWindow();
 });
 
-app.on("window-all-closed", function () {
-  if (process.platform !== "darwin") app.quit();
+ipcMain.on("closeApp", () => {
+  app.quit();
 });
 
-ipcMain.on("close-app", () => {
-  app.quit(); // 關閉應用程序
+ipcMain.on("restartApp", () => {
+  app.relaunch();
+  app.quit();
 });
 
 ipcMain.handle("getImages", async () => {
-  const projectFolder = path.join(__dirname, "images/jpg");
+  const mainfolder = path.join(__dirname, "images/jpg");
   const subfolders = ["Nature", "Props", "Scene"];
   const imagePaths = {};
 
-  for (const [index, subfolder] of subfolders.entries()) {
-    const subfolderPath = path.join(projectFolder, subfolder);
+  for (const subfolder of subfolders) {
+    const subfolderPath = path.join(mainfolder, subfolder);
     try {
-      const files = await fs.promises.readdir(subfolderPath);
-      const subfolderImageFiles = files.filter((file) => file.endsWith(".jpg"));
-      const subfolderImagePaths = subfolderImageFiles.map((file) =>
-        path.join(subfolderPath, file)
-      );
-      imagePaths[index] = subfolderImagePaths;
+      const allFiles = await fs.promises.readdir(subfolderPath);
+      const jpgFiles = allFiles.filter((file) => file.endsWith(".jpg"));
+      const jpgPaths = jpgFiles.map((file) => path.join(subfolderPath, file));
+
+      imagePaths[subfolder] = jpgPaths;
     } catch (error) {
       console.error(`Error reading image files in ${subfolder}:`, error);
     }

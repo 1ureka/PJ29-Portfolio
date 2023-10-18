@@ -124,6 +124,7 @@
   background-color: #ffff7a;
 }
 
+/* 下方工具列(全局) */
 .tool-bar-container {
   display: flex;
   position: absolute;
@@ -139,18 +140,14 @@
 .close-bar,
 .setting-bar,
 .search-bar {
-  z-index: 2;
   position: relative;
-  padding: 10px;
   background-color: hsla(200, 0%, 10%, 0.65);
   box-shadow: 0px 0px 12px rgba(0, 0, 0, 1);
   border-radius: 10px;
+  z-index: 2;
 }
 
-.stop-btn,
-.setting-btn,
-.search-btn,
-.restart-btn {
+.tool-bar-container img {
   cursor: pointer;
   width: 40px;
   height: auto;
@@ -160,7 +157,7 @@
 .search-bar {
   display: flex;
   align-items: center;
-  padding-right: 10px;
+  padding: 10px;
   width: 25%;
 }
 
@@ -231,4 +228,126 @@
   right: 57px;
   width: 0;
   border: 1px solid #ffffff;
+}
+
+/*設定選單*/
+.setting-bar {
+  display: flex;
+  justify-items: center;
+  align-items: center;
+  width: 350px;
+  height: 220px;
+  padding: 10px;
+  color: #ffffff;
+  font-size: 24px;
+  font-family: "Montserrat";
+}
+
+.setting-btn {
+  position: relative;
+}
+
+.setting-menu {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  bottom: 0;
+  left: 0;
+  top: 0;
+  right: 0;
+  padding: 10px;
+}
+
+.setting-bar .line-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 10px;
+  height: 100%;
+}
+
+.setting-bar .line {
+  width: 0;
+  height: 100%;
+  border: 1px solid #ffffff;
+}
+
+/*設定選單(全局)*/
+.options-input,
+.options-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  height: 100%;
+}
+
+.options-title img,
+.options-input img {
+  width: 40px;
+  height: 40px;
+}
+
+/*設定選單(左側)*/
+.options-title div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+/*設定選單(右側)*/
+.options-animation,
+.options-language,
+.options-color {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  width: 100%;
+  height: 100%;
+}
+
+/* 色彩設定 */
+.color-picker-bottom {
+  width: 24px;
+  height: 24px;
+  margin: 10px;
+  border-radius: 5px;
+  border: 0;
+  padding: 0;
+  z-index: 0;
+}
+
+.color-picker-background,
+.color-picker-interface {
+  position: relative;
+}
+
+.color-picker-top {
+  position: absolute;
+  top: 9px;
+  bottom: 9px;
+  right: 9px;
+  left: 9px;
+  border-radius: 5px;
+  background-color: black;
+  box-shadow: inset 0px 0px 3px rgba(0, 0, 0, 1);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 語言設定 */
+.options-language div {
+  cursor: pointer;
+  border-radius: 10px;
+  background: hsla(200, 0%, 10%, 0.65);
+  box-shadow: 0px 0px 3px rgba(0, 0, 0, 1);
+  color: #ffffff;
+  padding: 5px;
+  margin: 5px;
 }

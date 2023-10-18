@@ -733,6 +733,29 @@ $(document).ready(function () {
         ease: "bounce.out",
       });
   }
+  //開啟設定選單
+  function ToSettingMenu() {
+    gsap
+      .timeline({ default: { duration: 0.2, ease: "set1" } })
+      .to(".setting-btn", {
+        onStart: () => gsap.set(".setting-menu", { autoAlpha: 1 }),
+        autoAlpha: 0,
+      })
+      .to(".setting-bar", {
+        width: "360px",
+        height: "180px",
+      })
+      .to(
+        ".setting-bar .line",
+        {
+          autoAlpha: 1,
+        },
+        "<"
+      )
+      .to(".options-input, .options-title", {
+        autoAlpha: 1,
+      });
+  }
   //更新畫面
   function updateTransform(time, ease) {
     gsap.to(image, {
@@ -768,6 +791,12 @@ $(document).ready(function () {
   gsap.set(".restart-btn, .stop-lable, .restart-lable, .close-bar .line", {
     autoAlpha: 0,
   });
+  gsap.set(
+    ".setting-menu, .options-input, .options-title, .setting-bar .line",
+    {
+      autoAlpha: 0,
+    }
+  );
 
   // 初始化 #2
   // 開頭動畫
@@ -810,6 +839,12 @@ $(document).ready(function () {
       if (isIndex) {
         window.electronAPI.restartApp();
       }
+    });
+
+    //按鈕設定事件
+    $(".setting-btn").on("click", function () {
+      clickAnimation($(this));
+      ToSettingMenu();
     });
 
     //按鈕分頁事件

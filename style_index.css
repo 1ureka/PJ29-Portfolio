@@ -180,12 +180,12 @@
 
 /* 關閉列 */
 .close-bar {
+  width: 60px;
+  height: 60px;
+  padding: 0;
   color: #ffffff;
   font-size: 24px;
   font-family: "Montserrat";
-  padding: 0;
-  width: 60px;
-  height: 60px;
 }
 
 .stop-btn,
@@ -233,10 +233,10 @@
 /*設定選單*/
 .setting-bar {
   display: flex;
-  justify-items: center;
+  justify-content: center;
   align-items: center;
-  width: 350px;
-  height: 220px;
+  width: auto;
+  height: auto;
   padding: 10px;
   color: #ffffff;
   font-size: 24px;
@@ -252,7 +252,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-around;
+  justify-content: space-between;
   bottom: 0;
   left: 0;
   top: 0;
@@ -260,18 +260,12 @@
   padding: 10px;
 }
 
-.setting-bar .line-container {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 10px;
-  height: 100%;
-}
-
 .setting-bar .line {
+  position: absolute;
+  bottom: 10px;
+  top: 10px;
+  left: 67px;
   width: 0;
-  height: 100%;
   border: 1px solid #ffffff;
 }
 
@@ -285,12 +279,6 @@
   height: 100%;
 }
 
-.options-title img,
-.options-input img {
-  width: 40px;
-  height: 40px;
-}
-
 /*設定選單(左側)*/
 .options-title div {
   display: flex;
@@ -298,6 +286,10 @@
   align-items: center;
   width: 100%;
   height: 100%;
+}
+
+.options-title img {
+  cursor: default;
 }
 
 /*設定選單(右側)*/

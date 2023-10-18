@@ -719,29 +719,6 @@ $(document).ready(function () {
         ease: "bounce.out",
       });
   }
-  //開啟設定選單
-  function ToSettingMenu() {
-    gsap
-      .timeline({ default: { duration: 0.2, ease: "set1" } })
-      .to(".setting-btn", {
-        onStart: () => gsap.set(".setting-menu", { autoAlpha: 1 }),
-        autoAlpha: 0,
-      })
-      .to(".setting-bar", {
-        width: "360px",
-        height: "180px",
-      })
-      .to(
-        ".setting-bar .line",
-        {
-          autoAlpha: 1,
-        },
-        "<"
-      )
-      .to(".options-input, .options-title", {
-        autoAlpha: 1,
-      });
-  }
   //更新畫面
   function updateTransform(time, ease) {
     gsap.to(image, {
@@ -769,11 +746,10 @@ $(document).ready(function () {
   }
 
   // 初始化 #1
-  // 分頁
+  // 隱藏元素
   gsap.set(".gallery, .fullscreen-overlay, .back-to-home, .top-btn", {
     autoAlpha: 0,
   });
-  // 主頁
   gsap.set(".restart-btn, .stop-lable, .restart-lable, .close-bar .line", {
     autoAlpha: 0,
   });
@@ -785,7 +761,7 @@ $(document).ready(function () {
   );
 
   // 初始化 #2
-  // 開頭動畫
+  // 開頭動畫開始位置
   gsap.set(".page-btn-container", { display: "none" });
   gsap.set(".title", {
     margin: 0,
@@ -801,16 +777,43 @@ $(document).ready(function () {
       autoAlpha: 0,
     }
   );
+
+  // 初始化 #3
+  // 載入Url
   requestImage(afterRequests);
 
   //請求完成後邏輯(主程式)
   function afterRequests() {
-    // 製作總圖片陣列
+    // 初始化 #4
+    // 寫入Url
     jpgUrl = [...natureUrl, ...propsUrl, ...sceneUrl];
 
-    // 載入動畫
+    // 初始化 #5
+    // 註冊動畫
     backgroundAnimation();
     hoverAnimation();
+    const ToSettingMenu = gsap
+      .timeline({ paused: true, default: { duration: 0.2, ease: "set1" } })
+      .to(".setting-btn", {
+        onStart: () => gsap.set(".setting-menu", { autoAlpha: 1 }),
+        autoAlpha: 0,
+      })
+      .to(".setting-bar", {
+        width: "360px",
+        height: "180px",
+      })
+      .to(
+        ".setting-bar .line",
+        {
+          autoAlpha: 1,
+        },
+        "<"
+      )
+      .to(".options-input, .options-title", {
+        autoAlpha: 1,
+      });
+
+    // 開場
     Opening();
 
     //按鈕關閉app事件
@@ -830,7 +833,7 @@ $(document).ready(function () {
     //按鈕設定事件
     $(".setting-btn").on("click", function () {
       clickAnimation($(this));
-      ToSettingMenu();
+      ToSettingMenu.play();
     });
 
     //按鈕分頁事件

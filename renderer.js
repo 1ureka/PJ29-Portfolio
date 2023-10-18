@@ -166,18 +166,6 @@ $(document).ready(function () {
         stagger: 0.1,
         autoAlpha: 1,
       });
-    const exCloseBar = gsap
-      .timeline({
-        paused: true,
-        defaults: { duration: 0.2, ease: "set1", overwrite: false },
-      })
-      .to(".restart-btn, .stop-lable, .restart-lable, .close-bar .line", {
-        autoAlpha: 0,
-      })
-      .to(".close-bar", {
-        width: "60px",
-        height: "60px",
-      });
 
     //hover事件偵測
     $(".page-btn").hover(
@@ -234,12 +222,10 @@ $(document).ready(function () {
     );
     $(".close-bar").hover(
       function () {
-        exCloseBar.pause();
-        toCloseBar.restart();
+        toCloseBar.play();
       },
       function () {
-        toCloseBar.pause();
-        exCloseBar.restart();
+        toCloseBar.reverse();
       }
     );
     $(".restart-btn").hover(

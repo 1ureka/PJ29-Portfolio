@@ -1068,6 +1068,9 @@ $(document).ready(async function () {
       imagesGallery = $(".image-grid img");
       clickAnimation($(this).parent());
       IndexToGallery();
+      if (isSetting) {
+        ExSettingMenu();
+      }
     }
   });
 

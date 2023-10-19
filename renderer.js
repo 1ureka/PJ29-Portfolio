@@ -27,6 +27,7 @@ $(document).ready(async function () {
   let lastY = 0;
   let translateX = 0; //位移量
   let translateY = 0;
+  let lastUpdate; // 滑鼠上次位置定時器
   // 用於追蹤返回頂部按鈕可見性
   let top_isVisible = false;
   //製作漸進模式
@@ -977,8 +978,13 @@ $(document).ready(async function () {
         $("body").css("cursor", "grab");
         drag = true;
         //初始化當次拖動的最後滑鼠位置
-        lastX = e.pageX;
-        lastY = e.pageY;
+        lastX = mouseX;
+        lastY = mouseY;
+        //獲取速度 lim t->0 ((當前位置-最後位置)/t) = speed
+        lastUpdate = setInterval(() => {
+          lastX = mouseX;
+          lastY = mouseY;
+        }, 1);
       }
     }
     if (e.which === 3) {
@@ -1020,7 +1026,6 @@ $(document).ready(async function () {
     if (e.originalEvent.deltaY < 0) {
       if (isPreview) {
         PreviewToFullscreen();
-        enterFtime = Date.now();
       }
       if (isFullscreen) {
         translateX = translateX - (mouseX - window.innerWidth / 2) / 7 / scale;
@@ -1068,13 +1073,8 @@ $(document).ready(async function () {
       //按住時的邏輯
       if (drag) {
         $("body").css("cursor", "grabbing");
-        //獲取速度 lim t->0 ((當前位置-最後位置)/t) = speed
-        lastUpdate = setInterval(() => {
-          lastX = mouseX;
-          lastY = mouseY;
-        }, 1);
-        deltaX = (mouseX - lastX) / scale;
-        deltaY = (mouseY - lastY) / scale;
+        const deltaX = (mouseX - lastX) / scale;
+        const deltaY = (mouseY - lastY) / scale;
         //速度計算完成後若不為0則更新畫面
         if (deltaX != 0 || deltaY != 0) {
           translateX = translateX + deltaX;

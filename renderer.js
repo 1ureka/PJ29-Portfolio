@@ -727,37 +727,47 @@ $(document).ready(async function () {
   //進設定選單分類
   function ToSettingOptions(option) {
     let width;
+    let container;
     settingView = option;
 
     switch (option) {
       case "animation":
-        option = ".options-animation";
+        container = ".options-animation";
+        elements = ".options-animation .option";
         width = 180;
         break;
       case "language":
-        option = ".options-language";
+        container = ".options-language";
+        elements = ".options-language div";
         width = 180;
         break;
       case "color":
-        option = ".options-color";
+        container = ".options-color";
+        elements = ".options-color .option";
         width = 180;
         break;
       case "lable":
-        option = ".options-lable";
+        container = ".options-lable";
+        elements = ".options-lable div";
         width = 160;
         break;
     }
 
-    gsap.set(option, { width: width });
+    gsap.set(container, { width: width });
 
     if (toSettingOption) toSettingOption.kill();
 
     toSettingOption = gsap
       .timeline({ default: { duration: 0.1, ease: "set1" } })
       .to(
-        ".options-lable, .options-animation, .options-language, .options-color",
+        ".options-lable div, .options-animation .option, .options-language div, .options-color .option",
         {
           autoAlpha: 0,
+          onComplete: () =>
+            gsap.set(
+              ".options-lable, .options-animation, .options-language, .options-color",
+              { autoAlpha: 0 }
+            ),
         }
       )
       .to(".setting-bar", {
@@ -765,8 +775,10 @@ $(document).ready(async function () {
         height: "240px",
       })
       .to(
-        option,
+        elements,
         {
+          onStart: () => gsap.set(container, { autoAlpha: 1 }),
+          stagger: 0.05,
           autoAlpha: 1,
         },
         "<"
@@ -815,15 +827,47 @@ $(document).ready(async function () {
 
     exSettingMenu = gsap
       .timeline({ default: { duration: 0.2, ease: "set1" } })
-      .to(".options-icon img, .options-lable div", {
+      .to(".options-icon img", {
         stagger: 0.1,
         autoAlpha: 0,
-        onComplete: () =>
-          gsap.set(
-            ".options-icon, .options-lable, .options-animation, .options-language, .options-color",
-            { autoAlpha: 0 }
-          ),
+        onComplete: () => gsap.set(".options-icon", { autoAlpha: 0 }),
       })
+      .to(
+        ".options-lable div",
+        {
+          stagger: 0.1,
+          autoAlpha: 0,
+          onComplete: () => gsap.set(".options-lable", { autoAlpha: 0 }),
+        },
+        "<"
+      )
+      .to(
+        ".options-animation .option",
+        {
+          stagger: 0.1,
+          autoAlpha: 0,
+          onComplete: () => gsap.set(".options-animation", { autoAlpha: 0 }),
+        },
+        "<"
+      )
+      .to(
+        ".options-language div",
+        {
+          stagger: 0.1,
+          autoAlpha: 0,
+          onComplete: () => gsap.set(".options-language", { autoAlpha: 0 }),
+        },
+        "<"
+      )
+      .to(
+        ".options-color .option",
+        {
+          stagger: 0.1,
+          autoAlpha: 0,
+          onComplete: () => gsap.set(".options-color", { autoAlpha: 0 }),
+        },
+        "<"
+      )
       .to(".setting-bar", {
         width: "60px",
         height: "60px",
@@ -884,7 +928,13 @@ $(document).ready(async function () {
     gsap.set(".options-lable, .options-lable div", {
       autoAlpha: 0,
     });
-    gsap.set(".options-animation, .options-language, .options-color", {
+    gsap.set(".options-animation, .options-animation .option", {
+      autoAlpha: 0,
+    });
+    gsap.set(".options-language, .options-language div", {
+      autoAlpha: 0,
+    });
+    gsap.set(".options-color, .options-color .option", {
       autoAlpha: 0,
     });
 

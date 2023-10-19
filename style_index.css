@@ -235,76 +235,96 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  width: auto;
-  height: auto;
-  padding: 10px;
+  width: 60px;
+  height: 60px;
   color: #ffffff;
   font-size: 24px;
   font-family: "Montserrat";
 }
 
-.setting-btn {
-  position: relative;
-}
-
-.setting-menu {
-  position: absolute;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  bottom: 0;
-  left: 0;
-  top: 0;
-  right: 0;
-  padding: 10px;
-}
-
-.setting-bar .line {
-  position: absolute;
-  bottom: 10px;
-  top: 10px;
-  left: 67px;
-  width: 0;
-  border: 1px solid #ffffff;
-}
-
-/*設定選單(全局)*/
-.options-input,
-.options-title {
+/*設定選單(左側)*/
+.options-icon {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-around;
-  height: 100%;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 60px;
+  height: 240px;
 }
 
-/*設定選單(左側)*/
-.options-title div {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-}
-
-.options-title img {
-  cursor: default;
+/*設定選單(中間)*/
+.setting-bar .line {
+  position: absolute;
+  bottom: 10px;
+  top: 10px;
+  left: 57px;
+  width: 0;
+  border: 1px solid #ffffff;
 }
 
 /*設定選單(右側)*/
+.options-lable {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 160px;
+  height: 240px;
+}
+
+.options-lable div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/*設定選單(分類)*/
 .options-animation,
 .options-language,
 .options-color {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: space-around;
+  position: absolute;
+  right: 0;
+  height: 100%;
+}
+
+.option {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
 }
 
+/* 動畫設定 */
+.options-animation .option div {
+  margin-right: 10px;
+}
+
+/* 語言設定 */
+.options-language div {
+  cursor: pointer;
+  border-radius: 10px;
+  background: hsla(200, 0%, 10%, 0.65);
+  box-shadow: 0px 0px 3px rgba(0, 0, 0, 1);
+  color: #ffffff;
+  padding: 5px;
+}
 /* 色彩設定 */
+.options-color img {
+  cursor: default;
+}
+
 .color-picker-bottom {
   width: 24px;
   height: 24px;
@@ -331,13 +351,8 @@
   pointer-events: none;
 }
 
-/* 語言設定 */
-.options-language div {
-  cursor: pointer;
-  border-radius: 10px;
-  background: hsla(200, 0%, 10%, 0.65);
-  box-shadow: 0px 0px 3px rgba(0, 0, 0, 1);
-  color: #ffffff;
-  padding: 5px;
-  margin: 5px;
+/*temp*/
+.setting-bar img {
+  width: 40px;
+  height: 40px;
 }

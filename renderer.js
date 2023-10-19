@@ -17,6 +17,7 @@ $(document).ready(async function () {
   let isGallery = false;
   let isPreview = false;
   let isFullscreen = false;
+  let settingView = "lable";
   //紀錄全螢幕模式所需變數
   let scale = 1;
   let scaleFac = 0.1;
@@ -85,7 +86,7 @@ $(document).ready(async function () {
     // 將陣列分成四份，以特定順序放進四格移動牆，因此絕對不會重複
     // 圖片會從最左邊一路往右逐次出現，直到再次回來，由於1/4的總圖片高度大於畫面高度
     // 因此會有再次出現間隔時間=(1/4)*總圖片高度-畫面可以呈現的總圖片高度
-    // 由於移動牆從左到右分別是往上、往下、往上、往下，因此第2與第4個要.reserve()
+    // 由於移動牆從左到右分別是往上、往下、往上、往下，因此第2與第4個要.reverse()
     const chunkedArray = [];
     const chunkSize = Math.floor(jpgUrl.length / 4);
     for (let i = 0; i + chunkSize < jpgUrl.length; i += chunkSize) {
@@ -722,19 +723,66 @@ $(document).ready(async function () {
       updateTransform(300, "set1");
     }
   }
+  //進設定選單分類
+  function ToSettingOptions(option) {
+    let width;
+    settingView = option;
+
+    switch (option) {
+      case "animation":
+        option = ".options-animation";
+        width = 180;
+        break;
+      case "language":
+        option = ".options-language";
+        width = 180;
+        break;
+      case "color":
+        option = ".options-color";
+        width = 180;
+        break;
+      case "lable":
+        option = ".options-lable";
+        width = 160;
+        break;
+    }
+
+    gsap.set(option, { width: width });
+
+    if (toSettingOption) toSettingOption.kill();
+
+    toSettingOption = gsap
+      .timeline({ default: { duration: 0.1, ease: "set1" } })
+      .to(
+        ".options-lable, .options-animation, .options-language, .options-color",
+        {
+          autoAlpha: 0,
+        }
+      )
+      .to(".setting-bar", {
+        width: width + 60,
+        height: "240px",
+      })
+      .to(
+        option,
+        {
+          autoAlpha: 1,
+        },
+        "<"
+      );
+  }
   //製作時間軸變數
   function registerTimeline(name) {
     switch (name) {
-      case "ToSetting":
+      case "toSetting":
         return gsap
           .timeline({ paused: true, default: { duration: 0.2, ease: "set1" } })
           .to(".setting-btn", {
-            onStart: () => gsap.set(".setting-menu", { autoAlpha: 1 }),
             autoAlpha: 0,
           })
           .to(".setting-bar", {
-            width: "360px",
-            height: "180px",
+            width: "220px",
+            height: "240px",
           })
           .to(
             ".setting-bar .line",
@@ -743,10 +791,10 @@ $(document).ready(async function () {
             },
             "<"
           )
-          .to(".options-input, .options-title", {
+          .to(".options-icon, .options-lable", {
             autoAlpha: 1,
           });
-      case "ToCloseBar":
+      case "toCloseBar":
         return gsap
           .timeline({
             paused: true,
@@ -779,12 +827,15 @@ $(document).ready(async function () {
     gsap.set(".restart-btn, .stop-lable, .restart-lable, .close-bar .line", {
       autoAlpha: 0,
     });
-    gsap.set(
-      ".setting-menu, .options-input, .options-title, .setting-bar .line",
-      {
-        autoAlpha: 0,
-      }
-    );
+    gsap.set(".setting-menu, .setting-bar .line", {
+      autoAlpha: 0,
+    });
+    gsap.set(".options-icon, .options-lable", {
+      autoAlpha: 0,
+    });
+    gsap.set(".options-animation, .options-language, .options-color", {
+      autoAlpha: 0,
+    });
 
     // 初始化 #2
     // 開頭動畫開始位置
@@ -817,8 +868,10 @@ $(document).ready(async function () {
 
   // 開始執行
   await initialize();
-  const toSetting = registerTimeline("ToSetting");
-  const toCloseBar = registerTimeline("ToCloseBar");
+  // 定義與註冊時間軸變數
+  let toSettingOption;
+  const toSetting = registerTimeline("toSetting");
+  const toCloseBar = registerTimeline("toCloseBar");
   // 開場
   Opening();
 
@@ -838,8 +891,46 @@ $(document).ready(async function () {
 
   //按鈕設定事件
   $(".setting-btn").on("click", function () {
-    clickAnimation($(this));
-    toSetting.play();
+    if (isIndex) {
+      clickAnimation($(this));
+      toSetting.play();
+    }
+  });
+
+  //按鈕設定動畫分類事件
+  $(".animation-btn").on("click", function () {
+    if (isIndex) {
+      clickAnimation($(this));
+      if (settingView != "animation") {
+        ToSettingOptions("animation");
+      } else {
+        ToSettingOptions("lable");
+      }
+    }
+  });
+
+  //按鈕設定語言分類事件
+  $(".language-btn").on("click", function () {
+    if (isIndex) {
+      clickAnimation($(this));
+      if (settingView != "language") {
+        ToSettingOptions("language");
+      } else {
+        ToSettingOptions("lable");
+      }
+    }
+  });
+
+  //按鈕設定色彩分類事件
+  $(".color-btn").on("click", function () {
+    if (isIndex) {
+      clickAnimation($(this));
+      if (settingView != "color") {
+        ToSettingOptions("color");
+      } else {
+        ToSettingOptions("lable");
+      }
+    }
   });
 
   //按鈕分頁事件

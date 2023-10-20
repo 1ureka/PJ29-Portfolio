@@ -937,6 +937,8 @@ $(document).ready(async function () {
     gsap.set(".options-color, .options-color .option", {
       autoAlpha: 0,
     });
+    gsap.set(".animation-btn, .language-btn, color-btn", { scale: 1.15 });
+    gsap.set(".bottom-btn", { rotate: 180, scale: 0.9 });
 
     // 初始化 #2
     // 開頭動畫開始位置

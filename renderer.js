@@ -726,6 +726,7 @@ $(document).ready(async function () {
   function ToSettingOptions(option) {
     let width;
     let container;
+    let elements;
     settingView = option;
 
     switch (option) {
@@ -809,7 +810,15 @@ $(document).ready(async function () {
         autoAlpha: 1,
       })
       .to(
-        ".options-icon img, .options-lable div",
+        ".options-icon img",
+        {
+          stagger: 0.1,
+          autoAlpha: 1,
+        },
+        "<"
+      )
+      .to(
+        ".options-lable div",
         {
           stagger: 0.1,
           autoAlpha: 1,

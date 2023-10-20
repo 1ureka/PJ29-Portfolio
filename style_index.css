@@ -202,8 +202,8 @@
   top: 10px;
 }
 
-.restart-lable,
-.stop-lable {
+.restart-lable-container,
+.stop-lable-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -211,14 +211,21 @@
   width: 100px;
   height: 40px;
   left: 0;
+  clip-path: inset(0 0 0 0);
 }
 
-.stop-lable {
+.stop-lable-container {
   bottom: 10px;
 }
 
-.restart-lable {
+.restart-lable-container {
   top: 10px;
+}
+
+.restart-lable-red,
+.stop-lable-red {
+  position: absolute;
+  color: #ea81af;
 }
 
 .close-bar .line {

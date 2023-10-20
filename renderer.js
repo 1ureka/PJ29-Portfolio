@@ -184,7 +184,7 @@ $(document).ready(async function () {
         });
       }
     );
-    $(".stop-btn, .setting-btn, .search-btn").hover(
+    $(".setting-btn, .search-btn").hover(
       function () {
         gsap.to($(this), {
           duration: 0.2,
@@ -201,29 +201,27 @@ $(document).ready(async function () {
       }
     );
     $(".close-bar").hover(
-      function () {
+      () => {
         toCloseBar.play();
       },
-      function () {
+      () => {
         toCloseBar.reverse();
       }
     );
-    $(".restart-btn").hover(
-      function () {
-        gsap.to($(this), {
-          duration: 0.2,
-          ease: "set1",
-          scale: 1.25,
-          rotate: 360,
-        });
+    $(".stop-btn").hover(
+      () => {
+        hoverStopBtn.play();
       },
-      function () {
-        gsap.to($(this), {
-          duration: 0.2,
-          ease: "set1",
-          scale: 1,
-          rotate: 0,
-        });
+      () => {
+        hoverStopBtn.reverse();
+      }
+    );
+    $(".restart-btn").hover(
+      () => {
+        hoverRestartBtn.play();
+      },
+      () => {
+        hoverRestartBtn.reverse();
       }
     );
     $(document).on("mouseenter", ".image-grid img", function () {
@@ -903,10 +901,56 @@ $(document).ready(async function () {
             },
             "<"
           )
-          .to(".restart-btn, .stop-lable, .restart-lable", {
+          .to(".restart-btn, .stop-lable-container, .restart-lable-container", {
             stagger: 0.1,
             autoAlpha: 1,
           });
+      case "HoverStopBtn":
+        return gsap
+          .timeline({
+            paused: true,
+            defaults: { duration: 0.2, ease: "set1", overwrite: false },
+          })
+          .to(".stop-btn", {
+            scale: 1.25,
+          })
+          .to(
+            ".stop-lable-white",
+            {
+              y: 40,
+            },
+            "<"
+          )
+          .to(
+            ".stop-lable-red",
+            {
+              y: 0,
+            },
+            "<"
+          );
+      case "HoverRestartBtn":
+        return gsap
+          .timeline({
+            paused: true,
+            defaults: { duration: 0.2, ease: "set1", overwrite: false },
+          })
+          .to(".restart-btn", {
+            scale: 1.25,
+          })
+          .to(
+            ".restart-lable-white",
+            {
+              y: 40,
+            },
+            "<"
+          )
+          .to(
+            ".restart-lable-red",
+            {
+              y: 0,
+            },
+            "<"
+          );
     }
   }
   //初始化
@@ -916,8 +960,14 @@ $(document).ready(async function () {
     gsap.set(".gallery, .fullscreen-overlay, .back-to-home, .top-btn", {
       autoAlpha: 0,
     });
-    gsap.set(".restart-btn, .stop-lable, .restart-lable, .close-bar .line", {
+    gsap.set(".restart-btn, .close-bar .line", {
       autoAlpha: 0,
+    });
+    gsap.set(".stop-lable-container, .restart-lable-container", {
+      autoAlpha: 0,
+    });
+    gsap.set(".stop-lable-red, .restart-lable-red", {
+      y: -40,
     });
     gsap.set(".setting-menu, .setting-bar .line", {
       autoAlpha: 0,
@@ -962,11 +1012,6 @@ $(document).ready(async function () {
     // 載入Url
     await requestImage();
     jpgUrl = [...natureUrl, ...propsUrl, ...sceneUrl];
-
-    // 初始化 #4
-    // 註冊動畫
-    backgroundAnimation();
-    hoverAnimation();
   }
 
   // 開始執行
@@ -976,6 +1021,10 @@ $(document).ready(async function () {
   let toSettingMenu;
   let exSettingMenu;
   const toCloseBar = registerTimeline("toCloseBar");
+  const hoverStopBtn = registerTimeline("HoverStopBtn");
+  const hoverRestartBtn = registerTimeline("HoverRestartBtn");
+  backgroundAnimation();
+  hoverAnimation();
   // 開場
   Opening();
 

@@ -224,6 +224,38 @@ $(document).ready(async function () {
         hoverRestartBtn.reverse();
       }
     );
+    $(".animation-btn").hover(
+      () => {
+        hoverAnimationBtn.play();
+      },
+      () => {
+        hoverAnimationBtn.reverse();
+      }
+    );
+    $(".language-btn").hover(
+      () => {
+        hoverLanguageBtn.play();
+      },
+      () => {
+        hoverLanguageBtn.reverse();
+      }
+    );
+    $(".color-btn").hover(
+      () => {
+        hoverColorBtn.play();
+      },
+      () => {
+        hoverColorBtn.reverse();
+      }
+    );
+    $(".bottom-btn").hover(
+      () => {
+        hoverBottomBtn.play();
+      },
+      () => {
+        hoverBottomBtn.reverse();
+      }
+    );
     $(document).on("mouseenter", ".image-grid img", function () {
       gsap.set($(this), {
         zIndex: 2,
@@ -818,7 +850,7 @@ $(document).ready(async function () {
         "<"
       )
       .to(
-        ".options-lable div",
+        ".options-lable > div",
         {
           stagger: 0.1,
           autoAlpha: 1,
@@ -840,7 +872,7 @@ $(document).ready(async function () {
         onComplete: () => gsap.set(".options-icon", { autoAlpha: 0 }),
       })
       .to(
-        ".options-lable div",
+        ".options-lable > div",
         {
           stagger: 0.1,
           autoAlpha: 0,
@@ -960,6 +992,98 @@ $(document).ready(async function () {
             },
             "<"
           );
+      case "HoverAnimationBtn":
+        return gsap
+          .timeline({
+            paused: true,
+            defaults: { duration: 0.2, ease: "set1", overwrite: false },
+          })
+          .to(".animation-btn", {
+            scale: 1.35,
+          })
+          .to(
+            ".animation-lable-white",
+            {
+              y: 40,
+            },
+            "<"
+          )
+          .to(
+            ".animation-lable-red",
+            {
+              y: 0,
+            },
+            "<"
+          );
+      case "HoverLanguageBtn":
+        return gsap
+          .timeline({
+            paused: true,
+            defaults: { duration: 0.2, ease: "set1", overwrite: false },
+          })
+          .to(".language-btn", {
+            scale: 1.35,
+          })
+          .to(
+            ".language-lable-white",
+            {
+              y: 40,
+            },
+            "<"
+          )
+          .to(
+            ".language-lable-red",
+            {
+              y: 0,
+            },
+            "<"
+          );
+      case "HoverColorBtn":
+        return gsap
+          .timeline({
+            paused: true,
+            defaults: { duration: 0.2, ease: "set1", overwrite: false },
+          })
+          .to(".color-btn", {
+            scale: 1.35,
+          })
+          .to(
+            ".color-lable-white",
+            {
+              y: 40,
+            },
+            "<"
+          )
+          .to(
+            ".color-lable-red",
+            {
+              y: 0,
+            },
+            "<"
+          );
+      case "HoverBottomBtn":
+        return gsap
+          .timeline({
+            paused: true,
+            defaults: { duration: 0.2, ease: "set1", overwrite: false },
+          })
+          .to(".bottom-btn", {
+            scale: 1.15,
+          })
+          .to(
+            ".bottom-lable-white",
+            {
+              y: 40,
+            },
+            "<"
+          )
+          .to(
+            ".bottom-lable-red",
+            {
+              y: 0,
+            },
+            "<"
+          );
     }
   }
   //初始化
@@ -984,7 +1108,7 @@ $(document).ready(async function () {
     gsap.set(".options-icon, .options-icon img", {
       autoAlpha: 0,
     });
-    gsap.set(".options-lable, .options-lable div", {
+    gsap.set(".options-lable, .options-lable > div", {
       autoAlpha: 0,
     });
     gsap.set(".options-animation, .options-animation .option", {
@@ -995,6 +1119,12 @@ $(document).ready(async function () {
     });
     gsap.set(".options-color, .options-color .option", {
       autoAlpha: 0,
+    });
+    gsap.set(".animation-lable-red, .language-lable-red", {
+      y: -40,
+    });
+    gsap.set(".color-lable-red, .bottom-lable-red", {
+      y: -40,
     });
     gsap.set(".animation-btn, .language-btn, color-btn", { scale: 1.15 });
     gsap.set(".bottom-btn", { rotate: 180, scale: 0.9 });
@@ -1025,15 +1155,25 @@ $(document).ready(async function () {
 
   // 開始執行
   await initialize();
-  // 定義與註冊時間軸變數
+
+  // 定義時間軸變數(不可反轉)
   let toSettingOption;
   let toSettingMenu;
   let exSettingMenu;
+
+  // 註冊時間軸變數(可反轉)
   const toCloseBar = registerTimeline("toCloseBar");
   const hoverStopBtn = registerTimeline("HoverStopBtn");
   const hoverRestartBtn = registerTimeline("HoverRestartBtn");
+  const hoverAnimationBtn = registerTimeline("HoverAnimationBtn");
+  const hoverLanguageBtn = registerTimeline("HoverLanguageBtn");
+  const hoverColorBtn = registerTimeline("HoverColorBtn");
+  const hoverBottomBtn = registerTimeline("HoverBottomBtn");
+
+  // 註冊動畫
   backgroundAnimation();
   hoverAnimation();
+
   // 開場
   Opening();
 

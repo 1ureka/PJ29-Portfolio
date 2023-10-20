@@ -285,10 +285,21 @@
   height: 240px;
 }
 
-.options-lable div {
+.options-lable > div {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: auto;
+  height: 40px;
+  clip-path: inset(0 0 0 0);
+}
+
+.animation-lable-red,
+.language-lable-red,
+.color-lable-red,
+.bottom-lable-red {
+  position: absolute;
+  color: #ea81af;
 }
 
 /*設定選單(分類)*/

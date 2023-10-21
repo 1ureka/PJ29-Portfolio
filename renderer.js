@@ -1126,6 +1126,7 @@ $(document).ready(async function () {
     gsap.set(".color-lable-red, .bottom-lable-red", {
       y: -40,
     });
+    gsap.set(".play-btn, .play-lable", { y: -40 });
     gsap.set(".animation-btn, .language-btn, color-btn", { scale: 1.15 });
     gsap.set(".bottom-btn", { rotate: 180, scale: 0.9 });
 

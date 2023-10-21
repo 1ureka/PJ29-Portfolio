@@ -325,8 +325,36 @@
 }
 
 /* 動畫設定 */
-.options-animation .option div {
+.pause-play-lable-container,
+.reverse-lable {
   margin-right: 10px;
+}
+
+.pause-play-lable-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  height: 40px;
+  clip-path: inset(0 0 0 0);
+}
+
+.play-lable {
+  position: absolute;
+}
+
+.pause-play-btn-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 40px;
+  height: 40px;
+  clip-path: inset(0 0 0 0);
+}
+
+.play-btn {
+  position: absolute;
 }
 
 /* 語言設定 */

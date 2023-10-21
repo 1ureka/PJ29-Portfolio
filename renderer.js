@@ -779,7 +779,7 @@ $(document).ready(async function () {
         break;
       case "lable":
         container = ".options-lable";
-        elements = ".options-lable div";
+        elements = ".options-lable > div";
         width = 160;
         break;
     }
@@ -791,7 +791,7 @@ $(document).ready(async function () {
     toSettingOption = gsap
       .timeline({ default: { duration: 0.1, ease: "set1" } })
       .to(
-        ".options-lable div, .options-animation .option, .options-language div, .options-color .option",
+        ".options-lable > div, .options-animation .option, .options-language div, .options-color .option",
         {
           autoAlpha: 0,
           onComplete: () =>
@@ -924,6 +924,55 @@ $(document).ready(async function () {
   }
   //製作時間軸變數
   function registerTimeline(name) {
+    // 統整類似的懸停時間軸變數
+    function hoverTimeline(option) {
+      const timeline = gsap.timeline({
+        paused: true,
+        defaults: { duration: 0.2, ease: "set1", overwrite: false },
+      });
+
+      timeline.to(`.${option}-btn`, {
+        scale: (option) => {
+          if (["stop", "restart"].includes(option)) {
+            return 1.25;
+          } else if (option === "bottom") {
+            return 1.15;
+          } else {
+            return 1.35;
+          }
+        },
+      });
+
+      if (option === "restart") {
+        timeline.to(
+          `.${option}-btn`,
+          {
+            rotate: 180,
+          },
+          "<"
+        );
+      }
+
+      timeline.to(
+        `.${option}-lable-white`,
+        {
+          y: 40,
+        },
+        "<"
+      );
+
+      timeline.to(
+        `.${option}-lable-red`,
+        {
+          y: 0,
+        },
+        "<"
+      );
+
+      return timeline;
+    }
+
+    // 根據所需轉場回傳相應時間軸
     switch (name) {
       case "toCloseBar":
         return gsap
@@ -947,143 +996,17 @@ $(document).ready(async function () {
             autoAlpha: 1,
           });
       case "HoverStopBtn":
-        return gsap
-          .timeline({
-            paused: true,
-            defaults: { duration: 0.2, ease: "set1", overwrite: false },
-          })
-          .to(".stop-btn", {
-            scale: 1.25,
-          })
-          .to(
-            ".stop-lable-white",
-            {
-              y: 40,
-            },
-            "<"
-          )
-          .to(
-            ".stop-lable-red",
-            {
-              y: 0,
-            },
-            "<"
-          );
+        return hoverTimeline("stop");
       case "HoverRestartBtn":
-        return gsap
-          .timeline({
-            paused: true,
-            defaults: { duration: 0.2, ease: "set1", overwrite: false },
-          })
-          .to(".restart-btn", {
-            scale: 1.25,
-          })
-          .to(
-            ".restart-lable-white",
-            {
-              y: 40,
-            },
-            "<"
-          )
-          .to(
-            ".restart-lable-red",
-            {
-              y: 0,
-            },
-            "<"
-          );
+        return hoverTimeline("restart");
       case "HoverAnimationBtn":
-        return gsap
-          .timeline({
-            paused: true,
-            defaults: { duration: 0.2, ease: "set1", overwrite: false },
-          })
-          .to(".animation-btn", {
-            scale: 1.35,
-          })
-          .to(
-            ".animation-lable-white",
-            {
-              y: 40,
-            },
-            "<"
-          )
-          .to(
-            ".animation-lable-red",
-            {
-              y: 0,
-            },
-            "<"
-          );
+        return hoverTimeline("animation");
       case "HoverLanguageBtn":
-        return gsap
-          .timeline({
-            paused: true,
-            defaults: { duration: 0.2, ease: "set1", overwrite: false },
-          })
-          .to(".language-btn", {
-            scale: 1.35,
-          })
-          .to(
-            ".language-lable-white",
-            {
-              y: 40,
-            },
-            "<"
-          )
-          .to(
-            ".language-lable-red",
-            {
-              y: 0,
-            },
-            "<"
-          );
+        return hoverTimeline("language");
       case "HoverColorBtn":
-        return gsap
-          .timeline({
-            paused: true,
-            defaults: { duration: 0.2, ease: "set1", overwrite: false },
-          })
-          .to(".color-btn", {
-            scale: 1.35,
-          })
-          .to(
-            ".color-lable-white",
-            {
-              y: 40,
-            },
-            "<"
-          )
-          .to(
-            ".color-lable-red",
-            {
-              y: 0,
-            },
-            "<"
-          );
+        return hoverTimeline("color");
       case "HoverBottomBtn":
-        return gsap
-          .timeline({
-            paused: true,
-            defaults: { duration: 0.2, ease: "set1", overwrite: false },
-          })
-          .to(".bottom-btn", {
-            scale: 1.15,
-          })
-          .to(
-            ".bottom-lable-white",
-            {
-              y: 40,
-            },
-            "<"
-          )
-          .to(
-            ".bottom-lable-red",
-            {
-              y: 0,
-            },
-            "<"
-          );
+        return hoverTimeline("bottom");
     }
   }
   //初始化

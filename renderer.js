@@ -1248,6 +1248,22 @@ $(document).ready(async function () {
     }
   });
 
+  //輸入色彩選擇事件(背景顏色)
+  $(".color-picker-background input").on("input", function (event) {
+    $(".color-picker-background div").css(
+      "background-color",
+      event.target.value
+    );
+  });
+
+  //輸入色彩選擇事件(介面顏色)
+  $(".color-picker-interface input").on("input", function (event) {
+    $(".color-picker-interface div").css(
+      "background-color",
+      event.target.value
+    );
+  });
+
   //按鈕分頁事件
   $(".page-btn-title").on("click", function () {
     if (isIndex) {

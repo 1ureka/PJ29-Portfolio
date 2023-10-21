@@ -17,8 +17,6 @@ $(document).ready(async function () {
   let isGallery = false;
   let isPreview = false;
   let isFullscreen = false;
-  let isSetting = false;
-  let settingView = "lable";
   //紀錄全螢幕模式所需變數
   let scale = 1;
   let scaleFac = 0.1;
@@ -38,19 +36,6 @@ $(document).ready(async function () {
   CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
 
   //函數邏輯：
-  //要求圖片
-  async function requestImage() {
-    const imagePaths = await window.electronAPI.getImages();
-    imagePaths["Nature"].forEach((imagePath) => {
-      natureUrl.push(`file://${imagePath}`);
-    });
-    imagePaths["Props"].forEach((imagePath) => {
-      propsUrl.push(`file://${imagePath}`);
-    });
-    imagePaths["Scene"].forEach((imagePath) => {
-      sceneUrl.push(`file://${imagePath}`);
-    });
-  }
   //切換畫面
   function switchView(view) {
     if (view === "gallery") {
@@ -80,62 +65,6 @@ $(document).ready(async function () {
       isFullscreen = false;
     }
   }
-  //建立背景動畫
-  function backgroundAnimation() {
-    // 隨機排序jpgUrl陣列
-    gsap.utils.shuffle(jpgUrl);
-    // 將陣列分成四份，以特定順序放進四格移動牆，因此絕對不會重複
-    // 圖片會從最左邊一路往右逐次出現，直到再次回來，由於1/4的總圖片高度大於畫面高度
-    // 因此會有再次出現間隔時間=(1/4)*總圖片高度-畫面可以呈現的總圖片高度
-    // 由於移動牆從左到右分別是往上、往下、往上、往下，因此第2與第4個要.reverse()
-    const chunkedArray = [];
-    const chunkSize = Math.floor(jpgUrl.length / 4);
-    for (let i = 0; i + chunkSize < jpgUrl.length; i += chunkSize) {
-      chunkedArray.push(jpgUrl.slice(i, i + chunkSize));
-    }
-    const movingImages1 = [
-      ...chunkedArray[0],
-      ...chunkedArray[1],
-      ...chunkedArray[2],
-      ...chunkedArray[3],
-    ];
-    const movingImages2 = [
-      ...chunkedArray[3],
-      ...chunkedArray[0],
-      ...chunkedArray[1],
-      ...chunkedArray[2],
-    ].reverse();
-    const movingImages3 = [
-      ...chunkedArray[2],
-      ...chunkedArray[3],
-      ...chunkedArray[0],
-      ...chunkedArray[1],
-    ];
-    const movingImages4 = [
-      ...chunkedArray[1],
-      ...chunkedArray[2],
-      ...chunkedArray[3],
-      ...chunkedArray[0],
-    ].reverse();
-    // 插入圖片至
-    for (let i = 0; i < 2; i++) {
-      insertImages($(".moving-images.a"), movingImages1);
-      insertImages($(".moving-images.b"), movingImages2);
-      insertImages($(".moving-images.c"), movingImages3);
-      insertImages($(".moving-images.d"), movingImages4);
-    }
-    gsap.set(".moving-images-container", { rotate: 15 });
-    gsap
-      .timeline({
-        defaults: {
-          duration: jpgUrl.length * 5,
-          ease: "linear",
-          repeat: -1,
-        },
-      })
-      .to(".moving-images.a, .moving-images.c", { y: "-50%" })
-      .to(".moving-images.b, .moving-images.d", { y: "50%" }, "<");
-  }
   //按鈕點擊動畫
   function clickAnimation(element) {
     gsap.timeline().to(element, {
@@ -144,243 +73,6 @@ $(document).ready(async function () {
         { y: 0, duration: 0.2, ease: "expo.out" },
       ],
     });
-  }
-  //懸停動畫(雖然事件但由於具體因此放在同個函式)
-  function hoverAnimation() {
-    //hover事件偵測
-    $(".page-btn").hover(
-      function () {
-        gsap.to($(this), {
-          duration: 0.2,
-          ease: "set1",
-          margin: "0 30px 0 30px",
-          padding: "0 0 0 0",
-          scale: 1.25,
-        });
-      },
-      function () {
-        gsap.to($(this), {
-          duration: 0.2,
-          ease: "set1",
-          margin: "0 0 0 0",
-          padding: "0 0 10px 10px",
-          scale: 1,
-        });
-      }
-    );
-    $(".page-btn-title").hover(
-      function () {
-        gsap.to($(this), {
-          duration: 0.2,
-          ease: "set1",
-          boxShadow: "0px 0px 24px rgba(0, 0, 0, 1)",
-        });
-      },
-      function () {
-        gsap.to($(this), {
-          duration: 0.2,
-          ease: "set1",
-          boxShadow: "0px 0px 12px rgba(0, 0, 0, 1)",
-        });
-      }
-    );
-    $(".setting-btn, .search-btn").hover(
-      function () {
-        gsap.to($(this), {
-          duration: 0.2,
-          ease: "set1",
-          scale: 1.25,
-        });
-      },
-      function () {
-        gsap.to($(this), {
-          duration: 0.2,
-          ease: "set1",
-          scale: 1,
-        });
-      }
-    );
-    $(".close-bar").hover(
-      () => {
-        toCloseBar.play();
-      },
-      () => {
-        toCloseBar.reverse();
-      }
-    );
-    $(".stop-btn").hover(
-      () => {
-        hoverStopBtn.play();
-      },
-      () => {
-        hoverStopBtn.reverse();
-      }
-    );
-    $(".restart-btn").hover(
-      () => {
-        hoverRestartBtn.play();
-      },
-      () => {
-        hoverRestartBtn.reverse();
-      }
-    );
-    $(".animation-btn").hover(
-      () => {
-        hoverAnimationBtn.play();
-      },
-      () => {
-        hoverAnimationBtn.reverse();
-      }
-    );
-    $(".language-btn").hover(
-      () => {
-        hoverLanguageBtn.play();
-      },
-      () => {
-        hoverLanguageBtn.reverse();
-      }
-    );
-    $(".color-btn").hover(
-      () => {
-        hoverColorBtn.play();
-      },
-      () => {
-        hoverColorBtn.reverse();
-      }
-    );
-    $(".bottom-btn").hover(
-      () => {
-        hoverBottomBtn.play();
-      },
-      () => {
-        hoverBottomBtn.reverse();
-      }
-    );
-    $(".pause-btn").hover(
-      () => {
-        hoverPauseBtn.play();
-      },
-      () => {
-        hoverPauseBtn.reverse();
-      }
-    );
-    $(".reverse-btn").hover(
-      () => {
-        hoverReverseBtn.play();
-      },
-      () => {
-        hoverReverseBtn.reverse();
-      }
-    );
-    $(document).on("mouseenter", ".image-grid img", function () {
-      gsap.set($(this), {
-        zIndex: 2,
-      });
-      gsap.to($(this), {
-        duration: 0.2,
-        ease: "set1",
-        scale: 1.1,
-      });
-    });
-    $(document).on("mouseleave", ".image-grid img", function () {
-      gsap.to($(this), {
-        duration: 0.2,
-        ease: "set1",
-        scale: 1,
-      });
-      gsap.set($(this), {
-        zIndex: 1,
-        delay: 0.2,
-      });
-    });
-    $(".back-to-home").hover(
-      function () {
-        gsap.to($(this), {
-          duration: 0.2,
-          ease: "set1",
-          scale: 1.25,
-          boxShadow: "0px 0px 24px rgba(0, 0, 0, 1)",
-        });
-      },
-      function () {
-        gsap.to($(this), {
-          duration: 0.2,
-          ease: "set1",
-          scale: 1,
-          boxShadow: "0px 0px 12px rgba(0, 0, 0, 1)",
-        });
-      }
-    );
-    $(".top-btn").hover(
-      function () {
-        gsap.to($(this), {
-          duration: 0.2,
-          ease: "set1",
-          scale: 1.25,
-          boxShadow: "0px 0px 24px rgba(0, 0, 0, 1)",
-        });
-      },
-      function () {
-        gsap.to($(this), {
-          duration: 0.2,
-          ease: "set1",
-          scale: 1,
-          boxShadow: "0px 0px 12px rgba(0, 0, 0, 1)",
-        });
-      }
-    );
-    $(".close-btn").hover(
-      function () {
-        gsap.to($(this), {
-          duration: 0.2,
-          ease: "set1",
-          scale: 1.5,
-          rotate: 180,
-        });
-      },
-      function () {
-        gsap.to($(this), {
-          duration: 0.2,
-          ease: "set1",
-          scale: 1,
-          rotate: 0,
-        });
-      }
-    );
-    $(".nextImage-btn, .prevImage-btn").hover(
-      function () {
-        gsap.to($(this), {
-          duration: 0.2,
-          ease: "set1",
-          scale: 1.5,
-        });
-      },
-      function () {
-        gsap.to($(this), {
-          duration: 0.2,
-          ease: "set1",
-          scale: 1,
-        });
-      }
-    );
-    $(".text-container div").hover(
-      function () {
-        gsap.to($(this), {
-          duration: 0.2,
-          ease: "set1",
-          scale: 1.2,
-          color: "#EA81AF",
-        });
-      },
-      function () {
-        gsap.to($(this), {
-          duration: 0.2,
-          ease: "set1",
-          scale: 1,
-          color: "#ffffff",
-        });
-      }
-    );
   }
   // 插入圖片至指定容器
   function insertImages(container, list) {
@@ -701,50 +393,6 @@ $(document).ready(async function () {
         "<"
       );
   }
-  //開始動畫
-  function Opening() {
-    // 動畫過程
-    gsap
-      .timeline({
-        defaults: { duration: 0.5, ease: "power2.out" },
-      })
-      .to(".loading-container", {
-        delay: 7,
-        autoAlpha: 0,
-        duration: 0.5,
-      })
-      .to(
-        ".title img, .title h1",
-        {
-          scale: 1,
-          y: 0,
-          stagger: 0.2,
-          autoAlpha: 1,
-          ease: "bounce.out",
-        },
-        ">-0.2"
-      )
-      .to(".title", {
-        margin: "30px",
-        width: "auto",
-        height: "auto",
-        borderRadius: "25px",
-        ease: "bounce.out",
-        duration: 1,
-        delay: 1,
-        onComplete: () => {
-          gsap.set(".page-btn-container", { display: "flex" });
-          switchView("index");
-        },
-      })
-      .to(".search-bar, .setting-bar, .close-bar, .page-btn", {
-        scale: 1,
-        y: 0,
-        stagger: 0.2,
-        autoAlpha: 1,
-        ease: "bounce.out",
-      });
-  }
   //更新畫面
   function updateTransform(time, ease) {
     gsap.to(image, {
@@ -770,266 +418,22 @@ $(document).ready(async function () {
       updateTransform(300, "set1");
     }
   }
-  //進設定選單分類
-  function ToSettingOptions(option) {
-    let width;
-    let container;
-    let elements;
-    settingView = option;
 
-    switch (option) {
-      case "animation":
-        container = ".options-animation";
-        elements = ".options-animation .option";
-        width = 180;
-        break;
-      case "language":
-        container = ".options-language";
-        elements = ".options-language div";
-        width = 180;
-        break;
-      case "color":
-        container = ".options-color";
-        elements = ".options-color .option";
-        width = 180;
-        break;
-      case "lable":
-        container = ".options-lable";
-        elements = ".options-lable > div";
-        width = 160;
-        break;
-    }
-
-    gsap.set(container, { width: width });
-
-    if (toSettingOption) toSettingOption.kill();
-
-    toSettingOption = gsap
-      .timeline({ default: { duration: 0.1, ease: "set1" } })
-      .to(
-        ".options-lable > div, .options-animation .option, .options-language div, .options-color .option",
-        {
-          autoAlpha: 0,
-          onComplete: () =>
-            gsap.set(
-              ".options-lable, .options-animation, .options-language, .options-color",
-              { autoAlpha: 0 }
-            ),
-        }
-      )
-      .to(".setting-bar", {
-        width: width + 60,
-        height: "240px",
-      })
-      .to(
-        elements,
-        {
-          onStart: () => gsap.set(container, { autoAlpha: 1 }),
-          stagger: 0.05,
-          autoAlpha: 1,
-        },
-        "<"
-      );
-  }
-  //進設定選單
-  function ToSettingMenu() {
-    isSetting = true;
-    settingView = "lable";
-
-    if (exSettingMenu) exSettingMenu.kill();
-
-    toSettingMenu = gsap
-      .timeline({ default: { duration: 0.2, ease: "set1" } })
-      .to(".setting-btn", {
-        autoAlpha: 0,
-      })
-      .to(".setting-bar", {
-        width: "220px",
-        height: "240px",
-      })
-      .to(
-        ".setting-bar .line",
-        {
-          autoAlpha: 1,
-        },
-        "<"
-      )
-      .to(".options-icon, .options-lable", {
-        autoAlpha: 1,
-      })
-      .to(
-        ".options-icon img",
-        {
-          stagger: 0.1,
-          autoAlpha: 1,
-        },
-        "<"
-      )
-      .to(
-        ".options-lable > div",
-        {
-          stagger: 0.1,
-          autoAlpha: 1,
-        },
-        "<"
-      );
-  }
-  //出設定選單
-  function ExSettingMenu() {
-    isSetting = false;
-
-    if (toSettingMenu) toSettingMenu.kill();
-
-    exSettingMenu = gsap
-      .timeline({ default: { duration: 0.2, ease: "set1" } })
-      .to(".options-icon img", {
-        stagger: 0.1,
-        autoAlpha: 0,
-        onComplete: () => gsap.set(".options-icon", { autoAlpha: 0 }),
-      })
-      .to(
-        ".options-lable > div",
-        {
-          stagger: 0.1,
-          autoAlpha: 0,
-          onComplete: () => gsap.set(".options-lable", { autoAlpha: 0 }),
-        },
-        "<"
-      )
-      .to(
-        ".options-animation .option",
-        {
-          stagger: 0.1,
-          autoAlpha: 0,
-          onComplete: () => gsap.set(".options-animation", { autoAlpha: 0 }),
-        },
-        "<"
-      )
-      .to(
-        ".options-language div",
-        {
-          stagger: 0.1,
-          autoAlpha: 0,
-          onComplete: () => gsap.set(".options-language", { autoAlpha: 0 }),
-        },
-        "<"
-      )
-      .to(
-        ".options-color .option",
-        {
-          stagger: 0.1,
-          autoAlpha: 0,
-          onComplete: () => gsap.set(".options-color", { autoAlpha: 0 }),
-        },
-        "<"
-      )
-      .to(".setting-bar", {
-        width: "60px",
-        height: "60px",
-      })
-      .to(
-        ".setting-bar .line",
-        {
-          autoAlpha: 0,
-        },
-        "<"
-      )
-      .to(".setting-btn", {
-        autoAlpha: 1,
-      });
-  }
-  //製作時間軸變數
-  function registerTimeline(name) {
-    // 統整類似的懸停時間軸變數
-    function hoverTimeline(option) {
-      const timeline = gsap.timeline({
-        paused: true,
-        defaults: { duration: 0.2, ease: "set1", overwrite: false },
-      });
-
-      timeline.to(`.${option}-btn`, {
-        scale: (option) => {
-          if (["stop", "restart", "pause", "reverse"].includes(option)) {
-            return 1.25;
-          } else if (option === "bottom") {
-            return 1.15;
-          } else {
-            return 1.35;
-          }
-        },
-      });
-
-      if (option === "restart") {
-        timeline.to(
-          `.${option}-btn`,
-          {
-            rotate: 180,
-          },
-          "<"
-        );
-      }
-
-      timeline.to(
-        `.${option}-lable-white`,
-        {
-          y: 40,
-        },
-        "<"
-      );
-
-      timeline.to(
-        `.${option}-lable-red`,
-        {
-          y: 0,
-        },
-        "<"
-      );
-
-      return timeline;
-    }
-
-    // 根據所需轉場回傳相應時間軸
-    switch (name) {
-      case "toCloseBar":
-        return gsap
-          .timeline({
-            paused: true,
-            defaults: { duration: 0.2, ease: "set1", overwrite: false },
-          })
-          .to(".close-bar", {
-            width: "160px",
-            height: "120px",
-          })
-          .to(
-            ".close-bar .line",
-            {
-              autoAlpha: 1,
-            },
-            "<"
-          )
-          .to(".restart-btn, .stop-lable-container, .restart-lable-container", {
-            stagger: 0.1,
-            autoAlpha: 1,
-          });
-      case "HoverStopBtn":
-        return hoverTimeline("stop");
-      case "HoverRestartBtn":
-        return hoverTimeline("restart");
-      case "HoverAnimationBtn":
-        return hoverTimeline("animation");
-      case "HoverLanguageBtn":
-        return hoverTimeline("language");
-      case "HoverColorBtn":
-        return hoverTimeline("color");
-      case "HoverBottomBtn":
-        return hoverTimeline("bottom");
-      case "HoverPauseBtn":
-        return hoverTimeline("pause");
-      case "HoverReverseBtn":
-        return hoverTimeline("reverse");
-    }
-  }
+  //
+  //開始執行
   //初始化
+  async function requestImage() {
+    const imagePaths = await window.electronAPI.getImages();
+    imagePaths["Nature"].forEach((imagePath) => {
+      natureUrl.push(`file://${imagePath}`);
+    });
+    imagePaths["Props"].forEach((imagePath) => {
+      propsUrl.push(`file://${imagePath}`);
+    });
+    imagePaths["Scene"].forEach((imagePath) => {
+      sceneUrl.push(`file://${imagePath}`);
+    });
+  }
   async function initialize() {
     // 初始化 #1
     // 隱藏元素
@@ -1098,144 +502,649 @@ $(document).ready(async function () {
     await requestImage();
     jpgUrl = [...natureUrl, ...propsUrl, ...sceneUrl];
   }
-
-  // 開始執行
   await initialize();
 
-  // 定義時間軸變數(不可反轉)
-  let toSettingOption;
-  let toSettingMenu;
-  let exSettingMenu;
+  //
+  //製作懸停時間軸物件
+  function createHoverTimeline() {
+    const timelines = {};
 
-  // 註冊時間軸變數(可反轉)
-  const toCloseBar = registerTimeline("toCloseBar");
-  const hoverStopBtn = registerTimeline("HoverStopBtn");
-  const hoverRestartBtn = registerTimeline("HoverRestartBtn");
-  const hoverAnimationBtn = registerTimeline("HoverAnimationBtn");
-  const hoverLanguageBtn = registerTimeline("HoverLanguageBtn");
-  const hoverColorBtn = registerTimeline("HoverColorBtn");
-  const hoverBottomBtn = registerTimeline("HoverBottomBtn");
-  const hoverPauseBtn = registerTimeline("HoverPauseBtn");
-  const hoverReverseBtn = registerTimeline("HoverReverseBtn");
+    const hoverT1s = [
+      "stop-btn",
+      "restart-btn",
+      "animation-btn",
+      "language-btn",
+      "color-btn",
+      "bottom-btn",
+      "pause-btn",
+      "reverse-btn",
+    ];
 
-  // 註冊動畫
-  backgroundAnimation();
-  hoverAnimation();
+    function hoverT1(e) {
+      const timeline = gsap.timeline({
+        paused: true,
+        defaults: { duration: 0.2, ease: "set1", overwrite: false },
+      });
 
-  // 開場
-  Opening();
+      timeline.to(`.${e}-btn`, {
+        scale: (e) => {
+          if (["stop", "restart", "pause", "reverse"].includes(e)) {
+            return 1.25;
+          } else if (e === "bottom") {
+            return 1.15;
+          } else {
+            return 1.35;
+          }
+        },
+      });
 
-  //按鈕關閉app事件
-  $(".stop-btn").on("click", function () {
-    if (isIndex) {
-      window.electronAPI.closeApp();
-    }
-  });
-
-  //按鈕重啟app事件
-  $(".restart-btn").on("click", function () {
-    if (isIndex) {
-      window.electronAPI.restartApp();
-    }
-  });
-
-  //按鈕設定事件
-  $(".setting-btn").on("click", function () {
-    if (isIndex) {
-      if (!isSetting) {
-        clickAnimation($(this));
-        ToSettingMenu();
+      if (e === "restart") {
+        timeline.to(
+          `.${e}-btn`,
+          {
+            rotate: 180,
+          },
+          "<"
+        );
       }
-    }
-  });
 
-  //按鈕離開設定事件
-  $(".bottom-btn").on("click", function () {
-    if (isIndex) {
-      if (isSetting) {
-        clickAnimation($(this));
-        ExSettingMenu();
-      }
-    }
-  });
+      timeline.to(
+        `.${e}-lable-white`,
+        {
+          y: 40,
+        },
+        "<"
+      );
 
-  //按鈕設定動畫分類事件
-  $(".animation-btn").on("click", function () {
-    if (isIndex) {
-      clickAnimation($(this));
-      if (settingView != "animation") {
-        ToSettingOptions("animation");
-      } else {
-        ToSettingOptions("lable");
-      }
-    }
-  });
+      timeline.to(
+        `.${e}-lable-red`,
+        {
+          y: 0,
+        },
+        "<"
+      );
 
-  //按鈕設定語言分類事件
-  $(".language-btn").on("click", function () {
-    if (isIndex) {
-      clickAnimation($(this));
-      if (settingView != "language") {
-        ToSettingOptions("language");
-      } else {
-        ToSettingOptions("lable");
-      }
+      return timeline;
     }
-  });
 
-  //按鈕設定色彩分類事件
-  $(".color-btn").on("click", function () {
-    if (isIndex) {
-      clickAnimation($(this));
-      if (settingView != "color") {
-        ToSettingOptions("color");
-      } else {
-        ToSettingOptions("lable");
-      }
-    }
-  });
-
-  //輸入色彩選擇事件(背景顏色)
-  $(".color-picker-background input").on("input", function (event) {
-    $(".color-picker-background div").css(
-      "background-color",
-      event.target.value
+    hoverT1.map(
+      (currentValue) =>
+        (timelines[currentValue] = hoverT1s(currentValue.slice(0, -4)))
     );
-  });
 
-  //輸入色彩選擇事件(介面顏色)
-  $(".color-picker-interface input").on("input", function (event) {
-    $(".color-picker-interface div").css(
-      "background-color",
-      event.target.value
+    const hoverT2s = ["close-bar"];
+
+    function hoverT2() {
+      return gsap
+        .timeline({
+          paused: true,
+          defaults: { duration: 0.2, ease: "set1", overwrite: false },
+        })
+        .to(".close-bar", {
+          width: "160px",
+          height: "120px",
+        })
+        .to(
+          ".close-bar .line",
+          {
+            autoAlpha: 1,
+          },
+          "<"
+        )
+        .to(".restart-btn, .stop-lable-container, .restart-lable-container", {
+          stagger: 0.1,
+          autoAlpha: 1,
+        });
+    }
+
+    hoverT2.map((currentValue) => (timelines[currentValue] = hoverT2s()));
+
+    const hoverT3s = [
+      "page-btn-title",
+      "setting-btn",
+      "search-btn",
+      "back-to-home",
+      "top-btn",
+      "close-btn",
+      "nextImage-btn",
+      "prevImage-btn",
+      "text-container div",
+    ];
+
+    function hoverT3(e) {
+      const timeline = gsap.timeline({
+        paused: true,
+        defaults: { duration: 0.2, ease: "set1" },
+      });
+
+      timeline.to(`.${e}-btn`, {
+        scale: (e) => {
+          if (["close", "nextImage", "prevImage"].includes(e)) {
+            return 1.5;
+          } else if (["text-container"].includes(e)) {
+            return 1.2;
+          } else if (["page-btn-t"].includes(e)) {
+            return 1;
+          } else {
+            return 1.25;
+          }
+        },
+      });
+
+      if (e === "close") {
+        timeline.to(
+          `.${e}-btn`,
+          {
+            rotate: 180,
+          },
+          "<"
+        );
+      }
+
+      if (["back-to-", "top", "page-btn-t"].includes(e)) {
+        timeline.to(
+          `.${e}-btn`,
+          {
+            boxShadow: "0px 0px 24px rgba(0, 0, 0, 1)",
+          },
+          "<"
+        );
+      }
+
+      if (e === "text-container") {
+        timeline.to(
+          `.${e}-btn`,
+          {
+            color: "#EA81AF",
+          },
+          "<"
+        );
+      }
+
+      return timeline;
+    }
+
+    hoverT3s.map(
+      (currentValue) =>
+        (timelines[currentValue] = hoverT3(currentValue.slice(0, -4)))
     );
-  });
 
-  //按鈕分頁事件
-  $(".page-btn-title").on("click", function () {
-    if (isIndex) {
-      if ($(this).attr("data-image") === "Nature") {
-        insertImages($(".image-grid"), natureUrl);
-        $(".top-btn img").attr("src", "./images/icon/top (green).png");
-        $(".back-to-home img").attr("src", "./images/icon/home (green).png");
+    const hoverT4s = ["page-btn"];
+
+    function hoverT4() {
+      return gsap
+        .timeline({
+          paused: true,
+          defaults: { duration: 0.2, ease: "set1" },
+        })
+        .to(".page-btn", {
+          margin: "0 30px 0 30px",
+          padding: "0 0 0 0",
+          scale: 1.25,
+        });
+    }
+
+    hoverT4s.map((currentValue) => (timelines[currentValue] = hoverT4()));
+
+    return timelines;
+  }
+  //應用懸停時間軸
+  function applyHoverEffect(timelines) {
+    timelines.map((currentValue) =>
+      $(`.${currentValue}`).hover(
+        timelines[currentValue].play(),
+        timelines[currentValue].reverse()
+      )
+    );
+  }
+  applyHoverEffect(createHoverTimeline());
+
+  //
+  //建立背景動畫
+  function createBackgroundAnimation() {
+    // 隨機排序jpgUrl陣列
+    gsap.utils.shuffle(jpgUrl);
+    // 將陣列分成四份，以特定順序放進四格移動牆，因此絕對不會重複
+    // 圖片會從最左邊一路往右逐次出現，直到再次回來，由於1/4的總圖片高度大於畫面高度
+    // 因此會有再次出現間隔時間=(1/4)*總圖片高度-畫面可以呈現的總圖片高度
+    // 由於移動牆從左到右分別是往上、往下、往上、往下，因此第2與第4個要.reverse()
+    const chunkedArray = [];
+    const chunkSize = Math.floor(jpgUrl.length / 4);
+    for (let i = 0; i + chunkSize < jpgUrl.length; i += chunkSize) {
+      chunkedArray.push(jpgUrl.slice(i, i + chunkSize));
+    }
+    const movingImages1 = [
+      ...chunkedArray[0],
+      ...chunkedArray[1],
+      ...chunkedArray[2],
+      ...chunkedArray[3],
+    ];
+    const movingImages2 = [
+      ...chunkedArray[3],
+      ...chunkedArray[0],
+      ...chunkedArray[1],
+      ...chunkedArray[2],
+    ].reverse();
+    const movingImages3 = [
+      ...chunkedArray[2],
+      ...chunkedArray[3],
+      ...chunkedArray[0],
+      ...chunkedArray[1],
+    ];
+    const movingImages4 = [
+      ...chunkedArray[1],
+      ...chunkedArray[2],
+      ...chunkedArray[3],
+      ...chunkedArray[0],
+    ].reverse();
+    // 插入圖片至
+    for (let i = 0; i < 2; i++) {
+      insertImages($(".moving-images.a"), movingImages1);
+      insertImages($(".moving-images.b"), movingImages2);
+      insertImages($(".moving-images.c"), movingImages3);
+      insertImages($(".moving-images.d"), movingImages4);
+    }
+    gsap.set(".moving-images-container", { rotate: 15 });
+    gsap
+      .timeline({
+        defaults: {
+          duration: jpgUrl.length * 5,
+          ease: "linear",
+          repeat: -1,
+        },
+      })
+      .to(".moving-images.a, .moving-images.c", { y: "-50%" })
+      .to(".moving-images.b, .moving-images.d", { y: "50%" }, "<");
+  }
+  createBackgroundAnimation();
+
+  //
+  //開始動畫
+  function playOpening() {
+    // 動畫過程
+    gsap
+      .timeline({
+        defaults: { duration: 0.5, ease: "power2.out" },
+      })
+      .to(".loading-container", {
+        delay: 7,
+        autoAlpha: 0,
+        duration: 0.5,
+      })
+      .to(
+        ".title img, .title h1",
+        {
+          scale: 1,
+          y: 0,
+          stagger: 0.2,
+          autoAlpha: 1,
+          ease: "bounce.out",
+        },
+        ">-0.2"
+      )
+      .to(".title", {
+        margin: "30px",
+        width: "auto",
+        height: "auto",
+        borderRadius: "25px",
+        ease: "bounce.out",
+        duration: 1,
+        delay: 1,
+        onComplete: () => {
+          gsap.set(".page-btn-container", { display: "flex" });
+          switchView("index");
+        },
+      })
+      .to(".search-bar, .setting-bar, .close-bar, .page-btn", {
+        scale: 1,
+        y: 0,
+        stagger: 0.2,
+        autoAlpha: 1,
+        ease: "bounce.out",
+      });
+  }
+  playOpening();
+
+  //
+  //設定選單邏輯
+  function setupSettingMenu() {
+    //定義時間軸變數
+    let toSettingOption;
+    let toSettingMenu;
+    let exSettingMenu;
+    //紀錄畫面狀態
+    let isSetting = false;
+    let settingView = "lable";
+
+    //進設定選單分類
+    function ToSettingOptions(option) {
+      let width;
+      let container;
+      let elements;
+      settingView = option;
+
+      switch (option) {
+        case "animation":
+          container = ".options-animation";
+          elements = ".options-animation .option";
+          width = 180;
+          break;
+        case "language":
+          container = ".options-language";
+          elements = ".options-language div";
+          width = 180;
+          break;
+        case "color":
+          container = ".options-color";
+          elements = ".options-color .option";
+          width = 180;
+          break;
+        case "lable":
+          container = ".options-lable";
+          elements = ".options-lable > div";
+          width = 160;
+          break;
       }
-      if ($(this).attr("data-image") === "Props") {
-        insertImages($(".image-grid"), propsUrl);
-        $(".top-btn img").attr("src", "./images/icon/top (blue).png");
-        $(".back-to-home img").attr("src", "./images/icon/home (blue).png");
+
+      gsap.set(container, { width: width });
+
+      if (toSettingOption) toSettingOption.kill();
+
+      toSettingOption = gsap
+        .timeline({ default: { duration: 0.1, ease: "set1" } })
+        .to(
+          ".options-lable > div, .options-animation .option, .options-language div, .options-color .option",
+          {
+            autoAlpha: 0,
+            onComplete: () =>
+              gsap.set(
+                ".options-lable, .options-animation, .options-language, .options-color",
+                { autoAlpha: 0 }
+              ),
+          }
+        )
+        .to(".setting-bar", {
+          width: width + 60,
+          height: "240px",
+        })
+        .to(
+          elements,
+          {
+            onStart: () => gsap.set(container, { autoAlpha: 1 }),
+            stagger: 0.05,
+            autoAlpha: 1,
+          },
+          "<"
+        );
+    }
+    //進設定選單
+    function ToSettingMenu() {
+      isSetting = true;
+      settingView = "lable";
+
+      if (exSettingMenu) exSettingMenu.kill();
+
+      toSettingMenu = gsap
+        .timeline({ default: { duration: 0.2, ease: "set1" } })
+        .to(".setting-btn", {
+          autoAlpha: 0,
+        })
+        .to(".setting-bar", {
+          width: "220px",
+          height: "240px",
+        })
+        .to(
+          ".setting-bar .line",
+          {
+            autoAlpha: 1,
+          },
+          "<"
+        )
+        .to(".options-icon, .options-lable", {
+          autoAlpha: 1,
+        })
+        .to(
+          ".options-icon img",
+          {
+            stagger: 0.1,
+            autoAlpha: 1,
+          },
+          "<"
+        )
+        .to(
+          ".options-lable > div",
+          {
+            stagger: 0.1,
+            autoAlpha: 1,
+          },
+          "<"
+        );
+    }
+    //出設定選單
+    function ExSettingMenu() {
+      isSetting = false;
+
+      if (toSettingMenu) toSettingMenu.kill();
+
+      exSettingMenu = gsap
+        .timeline({ default: { duration: 0.2, ease: "set1" } })
+        .to(".options-icon img", {
+          stagger: 0.1,
+          autoAlpha: 0,
+          onComplete: () => gsap.set(".options-icon", { autoAlpha: 0 }),
+        })
+        .to(
+          ".options-lable > div",
+          {
+            stagger: 0.1,
+            autoAlpha: 0,
+            onComplete: () => gsap.set(".options-lable", { autoAlpha: 0 }),
+          },
+          "<"
+        )
+        .to(
+          ".options-animation .option",
+          {
+            stagger: 0.1,
+            autoAlpha: 0,
+            onComplete: () => gsap.set(".options-animation", { autoAlpha: 0 }),
+          },
+          "<"
+        )
+        .to(
+          ".options-language div",
+          {
+            stagger: 0.1,
+            autoAlpha: 0,
+            onComplete: () => gsap.set(".options-language", { autoAlpha: 0 }),
+          },
+          "<"
+        )
+        .to(
+          ".options-color .option",
+          {
+            stagger: 0.1,
+            autoAlpha: 0,
+            onComplete: () => gsap.set(".options-color", { autoAlpha: 0 }),
+          },
+          "<"
+        )
+        .to(".setting-bar", {
+          width: "60px",
+          height: "60px",
+        })
+        .to(
+          ".setting-bar .line",
+          {
+            autoAlpha: 0,
+          },
+          "<"
+        )
+        .to(".setting-btn", {
+          autoAlpha: 1,
+        });
+    }
+
+    $(".setting-btn").on("click", function () {
+      if (isIndex) {
+        if (!isSetting) {
+          clickAnimation($(this));
+          ToSettingMenu();
+        }
       }
-      if ($(this).attr("data-image") === "Scene") {
-        insertImages($(".image-grid"), sceneUrl);
-        $(".top-btn img").attr("src", "./images/icon/top (yellow).png");
-        $(".back-to-home img").attr("src", "./images/icon/home (yellow).png");
+    });
+
+    $(".bottom-btn").on("click", function () {
+      if (isIndex) {
+        if (isSetting) {
+          clickAnimation($(this));
+          ExSettingMenu();
+        }
       }
+    });
+
+    $(".animation-btn").on("click", function () {
+      if (isIndex) {
+        clickAnimation($(this));
+        if (settingView != "animation") {
+          ToSettingOptions("animation");
+        } else {
+          ToSettingOptions("lable");
+        }
+      }
+    });
+
+    $(".language-btn").on("click", function () {
+      if (isIndex) {
+        clickAnimation($(this));
+        if (settingView != "language") {
+          ToSettingOptions("language");
+        } else {
+          ToSettingOptions("lable");
+        }
+      }
+    });
+
+    $(".color-btn").on("click", function () {
+      if (isIndex) {
+        clickAnimation($(this));
+        if (settingView != "color") {
+          ToSettingOptions("color");
+        } else {
+          ToSettingOptions("lable");
+        }
+      }
+    });
+
+    //輸入色彩選擇事件
+    $(".color-picker-background input").on("input", function (event) {
+      $(".color-picker-background div").css(
+        "background-color",
+        event.target.value
+      );
+    });
+
+    $(".color-picker-interface input").on("input", function (event) {
+      $(".color-picker-interface div").css(
+        "background-color",
+        event.target.value
+      );
+    });
+
+    //離開主頁時關閉選單
+    $(".page-btn-title").on("click", () => {
+      if (isIndex) {
+        if (isSetting) ExSettingMenu();
+      }
+    });
+  }
+  setupSettingMenu();
+
+  //
+  //關閉選單邏輯
+  function setupCloseMenu() {
+    $(".stop-btn").on("click", window.electronAPI.closeApp());
+    $(".restart-btn").on("click", window.electronAPI.restartApp());
+  }
+  setupCloseMenu();
+
+  //
+  //頁面導航邏輯
+  function setupNavigation() {
+    //生成圖片牆頁面
+    function generateImageGrid(dataImage) {
+      //製作對應變數表
+      const dataMappings = {
+        Nature: { url: natureUrl, color: "green" },
+        Props: { url: propsUrl, color: "blue" },
+        Scene: { url: sceneUrl, color: "yellow" },
+      };
+      const mappingObj = dataMappings[dataImage];
+      //appendTo()方法插入圖片
+      insertImages($(".image-grid"), mappingObj.url);
+      //更換圖標
+      $(".top-btn img").attr(
+        "src",
+        `./images/icon/top (${mappingObj.color}).png`
+      );
+      $(".back-to-home img").attr(
+        "src",
+        `./images/icon/home (${mappingObj.color}).png`
+      );
+      //獲取DOM元素
       imagesGallery = $(".image-grid img");
-      clickAnimation($(this).parent());
-      IndexToGallery();
-      if (isSetting) {
-        ExSettingMenu();
-      }
     }
+
+    //按鈕分頁事件
+    $(".page-btn-title").on("click", function () {
+      if (isIndex) {
+        clickAnimation($(this).parent());
+        generateImageGrid($(this).attr("data-image"));
+        IndexToGallery();
+      }
+    });
+
+    // 按鈕返回事件
+    $(".back-to-home").on("click", function () {
+      if (isGallery) {
+        clickAnimation($(this));
+        GalleryToIndex();
+      }
+    });
+
+    // 按鈕關閉全螢幕事件
+    $(".close-btn").on("click", function () {
+      if (isPreview) {
+        clickAnimation($(this));
+        PreviewToGallery();
+      }
+    });
+  }
+  setupNavigation();
+
+  //懸停(入)圖片牆圖片事件
+  $(document).on("mouseenter", ".image-grid img", function () {
+    gsap.set($(this), {
+      zIndex: 2,
+    });
+    gsap.to($(this), {
+      duration: 0.2,
+      ease: "set1",
+      scale: 1.1,
+    });
+  });
+
+  //懸停(出)圖片牆圖片事件
+  $(document).on("mouseleave", ".image-grid img", function () {
+    gsap.to($(this), {
+      duration: 0.2,
+      ease: "set1",
+      scale: 1,
+    });
+    gsap.set($(this), {
+      zIndex: 1,
+      delay: 0.2,
+    });
   });
 
   // 按鈕圖片事件
@@ -1263,14 +1172,6 @@ $(document).ready(async function () {
     }
   });
 
-  // 按鈕關閉全螢幕事件
-  $(".close-btn").on("click", function () {
-    if (isPreview) {
-      clickAnimation($(this));
-      PreviewToGallery();
-    }
-  });
-
   // 按鈕切換副檔名事件
   $(".text-container div").on("click", function () {
     if (isPreview) {
@@ -1280,14 +1181,6 @@ $(document).ready(async function () {
       } else {
         assignImage(currentIndex, "jpg");
       }
-    }
-  });
-
-  // 按鈕返回事件
-  $(".back-to-home").on("click", function () {
-    if (isGallery) {
-      clickAnimation($(this));
-      GalleryToIndex();
     }
   });
 

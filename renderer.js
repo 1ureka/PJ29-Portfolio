@@ -256,6 +256,22 @@ $(document).ready(async function () {
         hoverBottomBtn.reverse();
       }
     );
+    $(".pause-btn").hover(
+      () => {
+        hoverPauseBtn.play();
+      },
+      () => {
+        hoverPauseBtn.reverse();
+      }
+    );
+    $(".reverse-btn").hover(
+      () => {
+        hoverReverseBtn.play();
+      },
+      () => {
+        hoverReverseBtn.reverse();
+      }
+    );
     $(document).on("mouseenter", ".image-grid img", function () {
       gsap.set($(this), {
         zIndex: 2,
@@ -933,7 +949,7 @@ $(document).ready(async function () {
 
       timeline.to(`.${option}-btn`, {
         scale: (option) => {
-          if (["stop", "restart"].includes(option)) {
+          if (["stop", "restart", "pause", "reverse"].includes(option)) {
             return 1.25;
           } else if (option === "bottom") {
             return 1.15;
@@ -1007,6 +1023,10 @@ $(document).ready(async function () {
         return hoverTimeline("color");
       case "HoverBottomBtn":
         return hoverTimeline("bottom");
+      case "HoverPauseBtn":
+        return hoverTimeline("pause");
+      case "HoverReverseBtn":
+        return hoverTimeline("reverse");
     }
   }
   //初始化
@@ -1049,7 +1069,9 @@ $(document).ready(async function () {
     gsap.set(".color-lable-red, .bottom-lable-red", {
       y: -40,
     });
-    gsap.set(".play-btn, .play-lable", { y: -40 });
+    gsap.set(".pause-lable-red, .reverse-lable-red", {
+      y: -40,
+    });
     gsap.set(".animation-btn, .language-btn, color-btn", { scale: 1.15 });
     gsap.set(".bottom-btn", { rotate: 180, scale: 0.9 });
 
@@ -1093,6 +1115,8 @@ $(document).ready(async function () {
   const hoverLanguageBtn = registerTimeline("HoverLanguageBtn");
   const hoverColorBtn = registerTimeline("HoverColorBtn");
   const hoverBottomBtn = registerTimeline("HoverBottomBtn");
+  const hoverPauseBtn = registerTimeline("HoverPauseBtn");
+  const hoverReverseBtn = registerTimeline("HoverReverseBtn");
 
   // 註冊動畫
   backgroundAnimation();

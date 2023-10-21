@@ -325,36 +325,21 @@
 }
 
 /* 動畫設定 */
-.pause-play-lable-container,
-.reverse-lable {
+.pause-lable-container,
+.reverse-lable-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  height: 40px;
+  clip-path: inset(0 0 0 0);
   margin-right: 10px;
 }
 
-.pause-play-lable-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  height: 40px;
-  clip-path: inset(0 0 0 0);
-}
-
-.play-lable {
+.pause-lable-red,
+.reverse-lable-red {
   position: absolute;
-}
-
-.pause-play-btn-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  width: 40px;
-  height: 40px;
-  clip-path: inset(0 0 0 0);
-}
-
-.play-btn {
-  position: absolute;
+  color: #ea81af;
 }
 
 /* 語言設定 */

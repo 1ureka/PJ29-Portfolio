@@ -129,270 +129,6 @@ $(document).ready(async function () {
     //指派給全域變數
     image = $(".fullscreen-image-container img");
   }
-  //主頁至圖片牆
-  function IndexToGallery() {
-    //開始設置
-    switchView("none");
-    gsap.set(".gallery", { autoAlpha: 0, y: "100%" });
-    gsap.set(".image-grid img, .back-to-home", { autoAlpha: 0, y: -150 });
-    gsap.set(".top-btn", {
-      y: 150,
-      onComplete: () => gsap.set(".top-btn", { autoAlpha: 1 }),
-    });
-    //動畫過程
-    gsap
-      .timeline({ defaults: { duration: 0.8, ease: "power2.out" } })
-      .to(".content", {
-        autoAlpha: 0,
-        duration: 0.1,
-        delay: 0.1,
-      })
-      .to(".gallery", {
-        autoAlpha: 1,
-        y: 0,
-        onComplete: () => {
-          switchView("gallery");
-        },
-      })
-      .to(
-        ".image-grid img",
-        {
-          stagger: 0.1,
-          ease: "bounce.out",
-          y: 0,
-        },
-        ">-0.2"
-      )
-      .to(
-        ".image-grid img",
-        {
-          stagger: 0.1,
-          autoAlpha: 1,
-        },
-        "<"
-      )
-      .to(
-        ".back-to-home",
-        {
-          ease: "bounce.out",
-          y: 0,
-        },
-        "<"
-      )
-      .to(
-        ".back-to-home",
-        {
-          autoAlpha: 1,
-        },
-        "<"
-      );
-  }
-  //圖片牆至主頁
-  function GalleryToIndex() {
-    //開始設置
-    switchView("none");
-    gsap.set(".content", { autoAlpha: 0 });
-    gsap.set(".title, .page-btn, .setting-bar, .search-bar, .close-bar", {
-      y: -150,
-      autoAlpha: 0,
-    });
-    //動畫過程
-    gsap
-      .timeline({ defaults: { duration: 0.8, ease: "power2.out" } })
-      .to(".gallery", {
-        autoAlpha: 0,
-        y: "-100%",
-        ease: "power2.in",
-        onComplete: () => {
-          gsap.set(".gallery", {
-            y: 0,
-            onComplete: () => {
-              window.scrollTo({
-                top: 0,
-                behavior: "instant",
-              });
-              $(".image-grid img").remove();
-            },
-          });
-        },
-      })
-      .to(
-        ".back-to-home, .top-btn",
-        {
-          autoAlpha: 0,
-          duration: 0.3,
-          onComplete: () => {
-            gsap.set("top-btn", { y: 150 });
-            top_isVisible = false;
-          },
-        },
-        "<"
-      )
-      .to(".content", {
-        autoAlpha: 1,
-        duration: 0.5,
-        onComplete: () => {
-          switchView("index");
-        },
-      })
-      .to(
-        ".title, .page-btn, .setting-bar, .search-bar, .close-bar",
-        {
-          stagger: 0.1,
-          ease: "bounce.out",
-          y: 0,
-        },
-        ">-0.2"
-      )
-      .to(
-        ".title, .page-btn, .setting-bar, .search-bar, .close-bar",
-        {
-          stagger: 0.1,
-          autoAlpha: 1,
-        },
-        "<"
-      );
-  }
-  // 圖片牆至預覽
-  function GalleryToPreview() {
-    //開始設置
-    gsap.set(".close-btn, .nextImage-btn, .prevImage-btn", {
-      autoAlpha: 0,
-      scale: 2,
-      y: -50,
-    });
-    gsap.set(image, {
-      autoAlpha: 0,
-      scale: 1.25,
-      y: -100,
-    });
-    switchView("preview");
-    $(".gallery").css({ "overflow-y": "hidden" });
-    //動畫過程
-    gsap
-      .timeline({
-        defaults: { autoAlpha: 1, ease: "set1" },
-      })
-      .to(".fullscreen-overlay", { duration: 0.5 })
-      .to(
-        image,
-        {
-          duration: 0.5,
-          scale: 1,
-          y: 0,
-        },
-        "<"
-      )
-      .to(".close-btn, .nextImage-btn, .prevImage-btn", {
-        stagger: { each: 0.2 },
-        ease: "bounce.out",
-        duration: 0.5,
-        scale: 1,
-        y: 0,
-        onComplete: () => {
-          if (isFullscreen) {
-            gsap.set(".close-btn, .nextImage-btn, .prevImage-btn", {
-              autoAlpha: 0,
-            });
-          }
-        },
-      });
-  }
-  //預覽至圖片牆
-  function PreviewToGallery() {
-    //開始設置
-    switchView("gallery");
-    $(".gallery").css({ "overflow-y": "scroll" });
-    //動畫過程
-    gsap
-      .timeline({
-        defaults: { autoAlpha: 0 },
-        ease: "set1",
-      })
-      .to(".close-btn, .nextImage-btn, .prevImage-btn", {
-        stagger: { each: 0.2, ease: "set1" },
-        duration: 0.2,
-      })
-      .to(image, {
-        duration: 0.5,
-        y: 100,
-        onComplete: () => image.remove(),
-      })
-      .to(".fullscreen-overlay", { duration: 0.5 }, "<");
-  }
-  //預覽至全螢幕
-  function PreviewToFullscreen() {
-    //開始設置
-    switchView("none");
-    gsap.set(".fullscreen-image-container", { zIndex: 5 });
-    //時間設置
-    const time = 500;
-    //動畫過程
-    gsap
-      .timeline({
-        defaults: { duration: time / 1000, ease: "set1" },
-      })
-      .to(".close-btn, .nextImage-btn, .prevImage-btn, .text-container", {
-        autoAlpha: 0,
-      })
-      .to(
-        image,
-        {
-          maxWidth: "100%",
-          maxHeight: "100%",
-          onComplete: () => {
-            switchView("fullscreen");
-          },
-        },
-        "<"
-      );
-  }
-  //全螢幕至預覽
-  function FullscreenToPreview() {
-    //開始設置
-    switchView("none");
-    //時間設置
-    const time = 500;
-    //動畫過程
-    gsap
-      .timeline({
-        defaults: { duration: time / 1000, ease: "set1" },
-      })
-      .to(image, {
-        maxWidth: "85%",
-        maxHeight: "85%",
-        x: 0,
-        y: 0,
-        scale: 1,
-        onComplete: () => {
-          // 所有變數回歸最初始狀態
-          lastX = 0;
-          lastY = 0;
-          translateX = 0;
-          translateY = 0;
-        },
-      })
-      .to(
-        image.parent(),
-        {
-          scale: 1,
-          onComplete: () => {
-            // 所有變數回歸最初始狀態
-            scale = 1;
-            gsap.set(".fullscreen-image-container", { zIndex: 3 });
-            switchView("preview");
-          },
-        },
-        "<"
-      )
-      .to(
-        ".close-btn , .nextImage-btn, .prevImage-btn, .text-container",
-        {
-          autoAlpha: 1,
-        },
-        "<"
-      );
-  }
   //更新畫面
   function updateTransform(time, ease) {
     gsap.to(image, {
@@ -806,6 +542,360 @@ $(document).ready(async function () {
   playOpening();
 
   //
+  //頁面導航邏輯
+  function setupNavigation() {
+    //主頁至圖片牆
+    function IndexToGallery() {
+      //開始設置
+      switchView("none");
+      gsap.set(".gallery", { autoAlpha: 0, y: "100%" });
+      gsap.set(".image-grid img, .back-to-home", { autoAlpha: 0, y: -150 });
+      gsap.set(".top-btn", {
+        y: 150,
+        onComplete: () => gsap.set(".top-btn", { autoAlpha: 1 }),
+      });
+      //動畫過程
+      gsap
+        .timeline({ defaults: { duration: 0.8, ease: "power2.out" } })
+        .to(".content", {
+          autoAlpha: 0,
+          duration: 0.1,
+          delay: 0.1,
+        })
+        .to(".gallery", {
+          autoAlpha: 1,
+          y: 0,
+          onComplete: () => {
+            switchView("gallery");
+          },
+        })
+        .to(
+          ".image-grid img",
+          {
+            stagger: 0.1,
+            ease: "bounce.out",
+            y: 0,
+          },
+          ">-0.2"
+        )
+        .to(
+          ".image-grid img",
+          {
+            stagger: 0.1,
+            autoAlpha: 1,
+          },
+          "<"
+        )
+        .to(
+          ".back-to-home",
+          {
+            ease: "bounce.out",
+            y: 0,
+          },
+          "<"
+        )
+        .to(
+          ".back-to-home",
+          {
+            autoAlpha: 1,
+          },
+          "<"
+        );
+    }
+    //圖片牆至主頁
+    function GalleryToIndex() {
+      //開始設置
+      switchView("none");
+      gsap.set(".content", { autoAlpha: 0 });
+      gsap.set(".title, .page-btn, .setting-bar, .search-bar, .close-bar", {
+        y: -150,
+        autoAlpha: 0,
+      });
+      //動畫過程
+      gsap
+        .timeline({ defaults: { duration: 0.8, ease: "power2.out" } })
+        .to(".gallery", {
+          autoAlpha: 0,
+          y: "-100%",
+          ease: "power2.in",
+          onComplete: () => {
+            gsap.set(".gallery", {
+              y: 0,
+              onComplete: () => {
+                window.scrollTo({
+                  top: 0,
+                  behavior: "instant",
+                });
+                $(".image-grid img").remove();
+              },
+            });
+          },
+        })
+        .to(
+          ".back-to-home, .top-btn",
+          {
+            autoAlpha: 0,
+            duration: 0.3,
+            onComplete: () => {
+              gsap.set("top-btn", { y: 150 });
+              top_isVisible = false;
+            },
+          },
+          "<"
+        )
+        .to(".content", {
+          autoAlpha: 1,
+          duration: 0.5,
+          onComplete: () => {
+            switchView("index");
+          },
+        })
+        .to(
+          ".title, .page-btn, .setting-bar, .search-bar, .close-bar",
+          {
+            stagger: 0.1,
+            ease: "bounce.out",
+            y: 0,
+          },
+          ">-0.2"
+        )
+        .to(
+          ".title, .page-btn, .setting-bar, .search-bar, .close-bar",
+          {
+            stagger: 0.1,
+            autoAlpha: 1,
+          },
+          "<"
+        );
+    }
+    // 圖片牆至預覽
+    function GalleryToPreview() {
+      //開始設置
+      gsap.set(".close-btn, .nextImage-btn, .prevImage-btn", {
+        autoAlpha: 0,
+        scale: 2,
+        y: -50,
+      });
+      gsap.set(image, {
+        autoAlpha: 0,
+        scale: 1.25,
+        y: -100,
+      });
+      switchView("preview");
+      $(".gallery").css({ "overflow-y": "hidden" });
+      //動畫過程
+      gsap
+        .timeline({
+          defaults: { autoAlpha: 1, ease: "set1" },
+        })
+        .to(".fullscreen-overlay", { duration: 0.5 })
+        .to(
+          image,
+          {
+            duration: 0.5,
+            scale: 1,
+            y: 0,
+          },
+          "<"
+        )
+        .to(".close-btn, .nextImage-btn, .prevImage-btn", {
+          stagger: { each: 0.2 },
+          ease: "bounce.out",
+          duration: 0.5,
+          scale: 1,
+          y: 0,
+          onComplete: () => {
+            if (isFullscreen) {
+              gsap.set(".close-btn, .nextImage-btn, .prevImage-btn", {
+                autoAlpha: 0,
+              });
+            }
+          },
+        });
+    }
+    //預覽至圖片牆
+    function PreviewToGallery() {
+      //開始設置
+      switchView("gallery");
+      $(".gallery").css({ "overflow-y": "scroll" });
+      //動畫過程
+      gsap
+        .timeline({
+          defaults: { autoAlpha: 0 },
+          ease: "set1",
+        })
+        .to(".close-btn, .nextImage-btn, .prevImage-btn", {
+          stagger: { each: 0.2, ease: "set1" },
+          duration: 0.2,
+        })
+        .to(image, {
+          duration: 0.5,
+          y: 100,
+          onComplete: () => image.remove(),
+        })
+        .to(".fullscreen-overlay", { duration: 0.5 }, "<");
+    }
+    //預覽至全螢幕
+    function PreviewToFullscreen() {
+      //開始設置
+      switchView("none");
+      gsap.set(".fullscreen-image-container", { zIndex: 5 });
+      //時間設置
+      const time = 500;
+      //動畫過程
+      gsap
+        .timeline({
+          defaults: { duration: time / 1000, ease: "set1" },
+        })
+        .to(".close-btn, .nextImage-btn, .prevImage-btn, .text-container", {
+          autoAlpha: 0,
+        })
+        .to(
+          image,
+          {
+            maxWidth: "100%",
+            maxHeight: "100%",
+            onComplete: () => {
+              switchView("fullscreen");
+            },
+          },
+          "<"
+        );
+    }
+    //全螢幕至預覽
+    function FullscreenToPreview() {
+      //開始設置
+      switchView("none");
+      //時間設置
+      const time = 500;
+      //動畫過程
+      gsap
+        .timeline({
+          defaults: { duration: time / 1000, ease: "set1" },
+        })
+        .to(image, {
+          maxWidth: "85%",
+          maxHeight: "85%",
+          x: 0,
+          y: 0,
+          scale: 1,
+          onComplete: () => {
+            // 所有變數回歸最初始狀態
+            lastX = 0;
+            lastY = 0;
+            translateX = 0;
+            translateY = 0;
+          },
+        })
+        .to(
+          image.parent(),
+          {
+            scale: 1,
+            onComplete: () => {
+              // 所有變數回歸最初始狀態
+              scale = 1;
+              gsap.set(".fullscreen-image-container", { zIndex: 3 });
+              switchView("preview");
+            },
+          },
+          "<"
+        )
+        .to(
+          ".close-btn , .nextImage-btn, .prevImage-btn, .text-container",
+          {
+            autoAlpha: 1,
+          },
+          "<"
+        );
+    }
+    //製作對應變數表
+    const dataMappings = {
+      Nature: { url: natureUrl, color: "green" },
+      Props: { url: propsUrl, color: "blue" },
+      Scene: { url: sceneUrl, color: "yellow" },
+    };
+    //生成圖片牆頁面
+    function generateImageGrid(dataImage) {
+      const mappingObj = dataMappings[dataImage];
+      //appendTo()方法插入圖片
+      insertImages($(".image-grid"), mappingObj.url);
+      //更換圖標
+      $(".top-btn img").attr(
+        "src",
+        `./images/icon/top (${mappingObj.color}).png`
+      );
+      $(".back-to-home img").attr(
+        "src",
+        `./images/icon/home (${mappingObj.color}).png`
+      );
+      //返回DOM元素
+      return $(".image-grid img");
+    }
+
+    //按鈕分頁事件
+    $(".page-btn-title").on("click", function () {
+      if (isIndex) {
+        clickAnimation($(this).parent());
+        imagesGallery = generateImageGrid($(this).attr("data-image"));
+        IndexToGallery();
+      }
+    });
+
+    // 按鈕返回事件
+    $(".back-to-home").on("click", function () {
+      if (isGallery) {
+        clickAnimation($(this));
+        GalleryToIndex();
+      }
+    });
+
+    // 按鈕圖片事件
+    $(document).on("click", ".image-grid img", function () {
+      if (isGallery) {
+        assignImage($(this).index(), "jpg");
+        clickAnimation($(this));
+        GalleryToPreview();
+      }
+    });
+
+    // 按鈕關閉全螢幕事件
+    $(".close-btn").on("click", function () {
+      if (isPreview) {
+        clickAnimation($(this));
+        PreviewToGallery();
+      }
+    });
+
+    // 滑鼠按下事件
+    const mousedownEvent = function (e) {
+      if (e.which === 3) {
+        if (isGallery) {
+          clickAnimation($(".back-to-home"));
+          GalleryToIndex();
+        }
+        if (isPreview) {
+          clickAnimation($(".close-btn"));
+          PreviewToGallery();
+        }
+        if (isFullscreen) {
+          FullscreenToPreview();
+        }
+      }
+    };
+
+    const mousewheelEvent = function (e) {
+      if (e.originalEvent.deltaY < 0) {
+        if (isPreview) PreviewToFullscreen();
+      } else {
+        if (isFullscreen && scale <= 1) FullscreenToPreview();
+      }
+    };
+
+    return { mousedownEvent, mousewheelEvent };
+  }
+  const navigationEvents = setupNavigation();
+
+  //
   //設定選單邏輯
   function setupSettingMenu() {
     //定義時間軸變數
@@ -1069,92 +1159,27 @@ $(document).ready(async function () {
   setupCloseMenu();
 
   //
-  //頁面導航邏輯
-  function setupNavigation() {
-    //生成圖片牆頁面
-    function generateImageGrid(dataImage) {
-      //製作對應變數表
-      const dataMappings = {
-        Nature: { url: natureUrl, color: "green" },
-        Props: { url: propsUrl, color: "blue" },
-        Scene: { url: sceneUrl, color: "yellow" },
-      };
-      const mappingObj = dataMappings[dataImage];
-      //appendTo()方法插入圖片
-      insertImages($(".image-grid"), mappingObj.url);
-      //更換圖標
-      $(".top-btn img").attr(
-        "src",
-        `./images/icon/top (${mappingObj.color}).png`
-      );
-      $(".back-to-home img").attr(
-        "src",
-        `./images/icon/home (${mappingObj.color}).png`
-      );
-      //獲取DOM元素
-      imagesGallery = $(".image-grid img");
-    }
-
-    //按鈕分頁事件
-    $(".page-btn-title").on("click", function () {
-      if (isIndex) {
-        clickAnimation($(this).parent());
-        generateImageGrid($(this).attr("data-image"));
-        IndexToGallery();
-      }
+  //圖片牆邏輯
+  function setupGallery() {
+    //懸停圖片牆圖片事件
+    $(document).on("mouseenter", ".image-grid img", function () {
+      gsap.to($(this), {
+        onStart: gsap.set($(this), { zIndex: 2 }),
+        duration: 0.2,
+        ease: "set1",
+        scale: 1.1,
+      });
     });
-
-    // 按鈕返回事件
-    $(".back-to-home").on("click", function () {
-      if (isGallery) {
-        clickAnimation($(this));
-        GalleryToIndex();
-      }
-    });
-
-    // 按鈕關閉全螢幕事件
-    $(".close-btn").on("click", function () {
-      if (isPreview) {
-        clickAnimation($(this));
-        PreviewToGallery();
-      }
+    $(document).on("mouseleave", ".image-grid img", function () {
+      gsap.to($(this), {
+        onComplete: gsap.set($(this), { zIndex: 1 }),
+        duration: 0.2,
+        ease: "set1",
+        scale: 1,
+      });
     });
   }
-  setupNavigation();
-
-  //懸停(入)圖片牆圖片事件
-  $(document).on("mouseenter", ".image-grid img", function () {
-    gsap.set($(this), {
-      zIndex: 2,
-    });
-    gsap.to($(this), {
-      duration: 0.2,
-      ease: "set1",
-      scale: 1.1,
-    });
-  });
-
-  //懸停(出)圖片牆圖片事件
-  $(document).on("mouseleave", ".image-grid img", function () {
-    gsap.to($(this), {
-      duration: 0.2,
-      ease: "set1",
-      scale: 1,
-    });
-    gsap.set($(this), {
-      zIndex: 1,
-      delay: 0.2,
-    });
-  });
-
-  // 按鈕圖片事件
-  $(document).on("click", ".image-grid img", function () {
-    if (isGallery) {
-      assignImage($(this).index(), "jpg");
-      clickAnimation($(this));
-      GalleryToPreview();
-    }
-  });
+  setupGallery();
 
   // 按鈕上一張事件
   $(".prevImage-btn").on("click", function () {
@@ -1206,20 +1231,6 @@ $(document).ready(async function () {
 
   // 所有鍵盤事件
   $(document).on("keydown", function (e) {
-    // Esc
-    if (e.keyCode === 27) {
-      if (isGallery) {
-        clickAnimation($(".back-to-home"));
-        GalleryToIndex();
-      }
-      if (isPreview) {
-        clickAnimation($(".close-btn"));
-        PreviewToGallery();
-      }
-      if (isFullscreen) {
-        FullscreenToPreview();
-      }
-    }
     // 左側箭頭
     if (e.which === 37) {
       if (isPreview) {
@@ -1252,19 +1263,7 @@ $(document).ready(async function () {
         }, 1);
       }
     }
-    if (e.which === 3) {
-      if (isGallery) {
-        clickAnimation($(".back-to-home"));
-        GalleryToIndex();
-      }
-      if (isPreview) {
-        clickAnimation($(".close-btn"));
-        PreviewToGallery();
-      }
-      if (isFullscreen) {
-        FullscreenToPreview();
-      }
-    }
+    navigationEvents.mousedownEvent();
   });
 
   // 所有放開滑鼠事件
@@ -1287,11 +1286,9 @@ $(document).ready(async function () {
 
   // 所有滑鼠滾輪事件
   $(document).on("mousewheel", function (e) {
+    navigationEvents.mousewheelEvent();
     //向上滑時
     if (e.originalEvent.deltaY < 0) {
-      if (isPreview) {
-        PreviewToFullscreen();
-      }
       if (isFullscreen) {
         translateX = translateX - (mouseX - window.innerWidth / 2) / 7 / scale;
         translateY = translateY - (mouseY - window.innerHeight / 2) / 7 / scale;
@@ -1310,10 +1307,6 @@ $(document).ready(async function () {
     // 向下滑時
     else {
       if (isFullscreen) {
-        //縮到最小時
-        if (scale <= 1) {
-          FullscreenToPreview();
-        }
         if (scale > 1) {
           scaleFac = e.shiftKey ? 0.2 : 0.1;
           scale -= scaleFac;

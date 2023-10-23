@@ -1,9 +1,4 @@
 $(document).ready(async function () {
-  // 紀錄圖片庫(字串url組成)
-  let jpgUrl = [];
-  const natureUrl = [];
-  const propsUrl = [];
-  const sceneUrl = [];
   // 紀錄圖片陣列(DOM物件)
   let imagesGallery = [];
   //紀錄預覽/全螢幕圖片(DOM物件)
@@ -157,9 +152,17 @@ $(document).ready(async function () {
 
   //
   //開始執行
-  //初始化
+  //取得圖片url
   async function requestImage() {
     const imagePaths = await window.electronAPI.getImages();
+
+    /** @type {string[]} */
+    const natureUrl = [];
+    /** @type {string[]} */
+    const propsUrl = [];
+    /** @type {string[]} */
+    const sceneUrl = [];
+
     imagePaths["Nature"].forEach((imagePath) => {
       natureUrl.push(`file://${imagePath}`);
     });
@@ -169,9 +172,16 @@ $(document).ready(async function () {
     imagePaths["Scene"].forEach((imagePath) => {
       sceneUrl.push(`file://${imagePath}`);
     });
+
+    const jpgUrl = [...natureUrl, ...propsUrl, ...sceneUrl];
+
+    return { jpgUrl, natureUrl, propsUrl, sceneUrl };
   }
-  async function initialize() {
-    // 初始化 #1
+  const urls = await requestImage();
+
+  //
+  //設定DOM元素初始CSS(主要是transform)
+  function initialize() {
     // 隱藏元素
     gsap.set(".gallery, .fullscreen-overlay, .back-to-home, .top-btn", {
       autoAlpha: 0,
@@ -215,7 +225,6 @@ $(document).ready(async function () {
     gsap.set(".animation-btn, .language-btn, color-btn", { scale: 1.15 });
     gsap.set(".bottom-btn", { rotate: 180, scale: 0.9 });
 
-    // 初始化 #2
     // 開頭動畫開始位置
     gsap.set(".page-btn-container", { display: "none" });
     gsap.set(".title", {
@@ -232,17 +241,13 @@ $(document).ready(async function () {
         autoAlpha: 0,
       }
     );
-
-    // 初始化 #3
-    // 載入Url
-    await requestImage();
-    jpgUrl = [...natureUrl, ...propsUrl, ...sceneUrl];
   }
-  await initialize();
+  initialize();
 
   //
   //製作懸停時間軸物件
   function createHoverTimeline() {
+    /** 一個用於 GSAP 的對象，包含不同的 Timeline 變數。*/
     const timelines = {};
 
     const hoverT1s = [
@@ -256,6 +261,10 @@ $(document).ready(async function () {
       "reverse-btn",
     ];
 
+    /**
+     * @param {string} e
+     * @return {TimelineMax}
+     */
     function hoverT1(e) {
       const timeline = gsap.timeline({
         paused: true,
@@ -303,13 +312,14 @@ $(document).ready(async function () {
       return timeline;
     }
 
-    hoverT1.map(
+    hoverT1s.map(
       (currentValue) =>
-        (timelines[currentValue] = hoverT1s(currentValue.slice(0, -4)))
+        (timelines[currentValue] = hoverT1(currentValue.slice(0, -4)))
     );
 
     const hoverT2s = ["close-bar"];
 
+    /** @return {TimelineMax} */
     function hoverT2() {
       return gsap
         .timeline({
@@ -333,7 +343,7 @@ $(document).ready(async function () {
         });
     }
 
-    hoverT2.map((currentValue) => (timelines[currentValue] = hoverT2s()));
+    hoverT2s.map((currentValue) => (timelines[currentValue] = hoverT2()));
 
     const hoverT3s = [
       "page-btn-title",
@@ -347,6 +357,10 @@ $(document).ready(async function () {
       "text-container div",
     ];
 
+    /**
+     * @param {string} e
+     * @return {TimelineMax}
+     */
     function hoverT3(e) {
       const timeline = gsap.timeline({
         paused: true,
@@ -407,6 +421,7 @@ $(document).ready(async function () {
 
     const hoverT4s = ["page-btn"];
 
+    /** @return {TimelineMax} */
     function hoverT4() {
       return gsap
         .timeline({
@@ -426,12 +441,12 @@ $(document).ready(async function () {
   }
   //應用懸停時間軸
   function applyHoverEffect(timelines) {
-    timelines.map((currentValue) =>
-      $(`.${currentValue}`).hover(
-        timelines[currentValue].play(),
-        timelines[currentValue].reverse()
-      )
-    );
+    for (const key in timelines) {
+      $(`.${key}`).hover(
+        () => timelines[key].play(),
+        () => timelines[key].reverse()
+      );
+    }
   }
   applyHoverEffect(createHoverTimeline());
 
@@ -439,15 +454,15 @@ $(document).ready(async function () {
   //建立背景動畫
   function createBackgroundAnimation() {
     // 隨機排序jpgUrl陣列
-    gsap.utils.shuffle(jpgUrl);
+    gsap.utils.shuffle(urls.jpgUrl);
     // 將陣列分成四份，以特定順序放進四格移動牆，因此絕對不會重複
     // 圖片會從最左邊一路往右逐次出現，直到再次回來，由於1/4的總圖片高度大於畫面高度
     // 因此會有再次出現間隔時間=(1/4)*總圖片高度-畫面可以呈現的總圖片高度
     // 由於移動牆從左到右分別是往上、往下、往上、往下，因此第2與第4個要.reverse()
     const chunkedArray = [];
-    const chunkSize = Math.floor(jpgUrl.length / 4);
-    for (let i = 0; i + chunkSize < jpgUrl.length; i += chunkSize) {
-      chunkedArray.push(jpgUrl.slice(i, i + chunkSize));
+    const chunkSize = Math.floor(urls.jpgUrl.length / 4);
+    for (let i = 0; i + chunkSize < urls.jpgUrl.length; i += chunkSize) {
+      chunkedArray.push(urls.jpgUrl.slice(i, i + chunkSize));
     }
     const movingImages1 = [
       ...chunkedArray[0],
@@ -484,7 +499,7 @@ $(document).ready(async function () {
     gsap
       .timeline({
         defaults: {
-          duration: jpgUrl.length * 5,
+          duration: urls.jpgUrl.length * 5,
           ease: "linear",
           repeat: -1,
         },
@@ -810,9 +825,9 @@ $(document).ready(async function () {
     }
     //製作對應變數表
     const dataMappings = {
-      Nature: { url: natureUrl, color: "green" },
-      Props: { url: propsUrl, color: "blue" },
-      Scene: { url: sceneUrl, color: "yellow" },
+      Nature: { url: urls.natureUrl, color: "green" },
+      Props: { url: urls.propsUrl, color: "blue" },
+      Scene: { url: urls.sceneUrl, color: "yellow" },
     };
     //生成圖片牆頁面
     function generateImageGrid(dataImage) {

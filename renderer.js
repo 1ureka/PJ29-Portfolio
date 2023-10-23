@@ -150,9 +150,9 @@ $(document).ready(async function () {
     }
   }
 
-  //
-  //開始執行
-  //取得圖片url
+  /**
+   * 取得圖片url
+   * */
   async function requestImage() {
     const imagePaths = await window.electronAPI.getImages();
 
@@ -179,8 +179,9 @@ $(document).ready(async function () {
   }
   const urls = await requestImage();
 
-  //
-  //設定DOM元素初始CSS(主要是transform)
+  /**
+   * 設定DOM元素初始CSS(主要是transform)
+   * */
   function initialize() {
     // 隱藏元素
     gsap.set(".gallery, .fullscreen-overlay, .back-to-home, .top-btn", {
@@ -244,28 +245,15 @@ $(document).ready(async function () {
   }
   initialize();
 
-  //
-  //製作懸停時間軸物件
+  /**
+   * 製作懸停時間軸物件 @returns {Object.<string, TimelineMax>}
+   * */
   function createHoverTimeline() {
     /** 一個用於 GSAP 的對象，包含不同的 Timeline 變數。*/
     const timelines = {};
 
-    const hoverT1s = [
-      "stop-btn",
-      "restart-btn",
-      "animation-btn",
-      "language-btn",
-      "color-btn",
-      "bottom-btn",
-      "pause-btn",
-      "reverse-btn",
-    ];
-
-    /**
-     * @param {string} e
-     * @return {TimelineMax}
-     */
-    function hoverT1(e) {
+    /** @param {string} e @return {TimelineMax} */
+    function timelineTemplate1(e) {
       const timeline = gsap.timeline({
         paused: true,
         defaults: { duration: 0.2, ease: "set1", overwrite: false },
@@ -311,16 +299,8 @@ $(document).ready(async function () {
 
       return timeline;
     }
-
-    hoverT1s.map(
-      (currentValue) =>
-        (timelines[currentValue] = hoverT1(currentValue.slice(0, -4)))
-    );
-
-    const hoverT2s = ["close-bar"];
-
     /** @return {TimelineMax} */
-    function hoverT2() {
+    function timelineTemplate2() {
       return gsap
         .timeline({
           paused: true,
@@ -342,26 +322,8 @@ $(document).ready(async function () {
           autoAlpha: 1,
         });
     }
-
-    hoverT2s.map((currentValue) => (timelines[currentValue] = hoverT2()));
-
-    const hoverT3s = [
-      "page-btn-title",
-      "setting-btn",
-      "search-btn",
-      "back-to-home",
-      "top-btn",
-      "close-btn",
-      "nextImage-btn",
-      "prevImage-btn",
-      "text-container div",
-    ];
-
-    /**
-     * @param {string} e
-     * @return {TimelineMax}
-     */
-    function hoverT3(e) {
+    /** @param {string} e @return {TimelineMax} */
+    function timelineTemplate3(e) {
       const timeline = gsap.timeline({
         paused: true,
         defaults: { duration: 0.2, ease: "set1" },
@@ -413,33 +375,119 @@ $(document).ready(async function () {
 
       return timeline;
     }
-
-    hoverT3s.map(
-      (currentValue) =>
-        (timelines[currentValue] = hoverT3(currentValue.slice(0, -4)))
-    );
-
-    const hoverT4s = ["page-btn"];
-
-    /** @return {TimelineMax} */
-    function hoverT4() {
+    /** @param {string} e @return {TimelineMax} */
+    function timelineTemplate4(e) {
       return gsap
         .timeline({
           paused: true,
           defaults: { duration: 0.2, ease: "set1" },
         })
-        .to(".page-btn", {
+        .to(`.${e}`, {
           margin: "0 30px 0 30px",
           padding: "0 0 0 0",
           scale: 1.25,
         });
     }
+    /** @param {string} e @return {TimelineMax} */
+    function timelineTemplate5(e) {
+      const timeline = gsap.timeline({
+        paused: true,
+        defaults: { duration: 0.2, ease: "set1" },
+      });
 
-    hoverT4s.map((currentValue) => (timelines[currentValue] = hoverT4()));
+      if (["back-to-home", "text-container div"].includes(e)) {
+        timeline.to(`.${e}`, {
+          scale: 1.25,
+        });
+      }
+
+      if (
+        [
+          "back-to-home",
+          "page-btn-title[data-image='Nature']",
+          "page-btn-title[data-image='Props']",
+          "page-btn-title[data-image='Scene']",
+        ].includes(e)
+      ) {
+        timeline.to(
+          `.${e}`,
+          {
+            boxShadow: "0px 0px 24px rgba(0, 0, 0, 1)",
+          },
+          "<"
+        );
+      }
+
+      if (["back-to-home", "text-container div"].includes(e)) {
+        timeline.to(
+          `.${e}`,
+          {
+            color: "#ea81af",
+          },
+          "<"
+        );
+      }
+
+      return timeline;
+    }
+
+    const elementsUsingT1 = [
+      "stop-btn",
+      "restart-btn",
+      "animation-btn",
+      "language-btn",
+      "color-btn",
+      "bottom-btn",
+      "pause-btn",
+      "reverse-btn",
+    ];
+    const elementsUsingT2 = ["close-bar"];
+    const elementsUsingT3 = [
+      "setting-btn",
+      "search-btn",
+      "top-btn",
+      "close-btn",
+      "nextImage-btn",
+      "prevImage-btn",
+    ];
+    const elementsUsingT4 = [
+      "page-btn.Nature",
+      "page-btn.Props",
+      "page-btn.Scene",
+    ];
+    const elementsUsingT5 = [
+      "page-btn-title[data-image='Nature']",
+      "page-btn-title[data-image='Props']",
+      "page-btn-title[data-image='Scene']",
+      "back-to-home",
+      "text-container div",
+    ];
+
+    elementsUsingT1.map(
+      (currentValue) =>
+        (timelines[currentValue] = timelineTemplate1(currentValue.slice(0, -4)))
+    );
+    elementsUsingT2.map(
+      (currentValue) => (timelines[currentValue] = timelineTemplate2())
+    );
+    elementsUsingT3.map(
+      (currentValue) =>
+        (timelines[currentValue] = timelineTemplate3(currentValue.slice(0, -4)))
+    );
+    elementsUsingT4.map(
+      (currentValue) =>
+        (timelines[currentValue] = timelineTemplate4(currentValue))
+    );
+    elementsUsingT5.map(
+      (currentValue) =>
+        (timelines[currentValue] = timelineTemplate5(currentValue))
+    );
 
     return timelines;
   }
-  //應用懸停時間軸
+  /**
+   * 應用懸停時間軸 @param {Object.<string, TimelineMax>} timelines
+   * */
   function applyHoverEffect(timelines) {
     for (const key in timelines) {
       $(`.${key}`).hover(
@@ -450,8 +498,9 @@ $(document).ready(async function () {
   }
   applyHoverEffect(createHoverTimeline());
 
-  //
-  //建立背景動畫
+  /**
+   * 建立背景動畫
+   * */
   function createBackgroundAnimation() {
     // 隨機排序jpgUrl陣列
     gsap.utils.shuffle(urls.jpgUrl);
@@ -509,8 +558,9 @@ $(document).ready(async function () {
   }
   createBackgroundAnimation();
 
-  //
-  //開始動畫
+  /**
+   * 開始動畫
+   * */
   function playOpening() {
     // 動畫過程
     gsap
@@ -556,8 +606,9 @@ $(document).ready(async function () {
   }
   playOpening();
 
-  //
-  //頁面導航邏輯
+  /**
+   * 頁面導航邏輯
+   * */
   function setupNavigation() {
     //主頁至圖片牆
     function IndexToGallery() {
@@ -910,8 +961,9 @@ $(document).ready(async function () {
   }
   const navigationEvents = setupNavigation();
 
-  //
-  //設定選單邏輯
+  /**
+   * 設定選單邏輯
+   * */
   function setupSettingMenu() {
     //定義時間軸變數
     let toSettingOption;
@@ -1165,36 +1217,55 @@ $(document).ready(async function () {
   }
   setupSettingMenu();
 
-  //
-  //關閉選單邏輯
+  /**
+   * 關閉選單邏輯
+   * */
   function setupCloseMenu() {
-    $(".stop-btn").on("click", window.electronAPI.closeApp());
-    $(".restart-btn").on("click", window.electronAPI.restartApp());
+    $(".stop-btn").on("click", () => window.electronAPI.closeApp());
+    $(".restart-btn").on("click", () => window.electronAPI.restartApp());
   }
   setupCloseMenu();
 
-  //
-  //圖片牆邏輯
+  /**
+   * 圖片牆邏輯
+   * */
   function setupGallery() {
-    //懸停圖片牆圖片事件
-    $(document).on("mouseenter", ".image-grid img", function () {
-      gsap.to($(this), {
-        onStart: gsap.set($(this), { zIndex: 2 }),
+    /** @param {JQuery} e*/
+    const mouseenterEvent = (e) => {
+      gsap.to(e, {
+        onStart: gsap.set(e, { zIndex: 2 }),
         duration: 0.2,
         ease: "set1",
         scale: 1.1,
       });
-    });
-    $(document).on("mouseleave", ".image-grid img", function () {
-      gsap.to($(this), {
-        onComplete: gsap.set($(this), { zIndex: 1 }),
+    };
+    /** @param {JQuery} e*/
+    const mouseleaveEvent = (e) => {
+      gsap.to(e, {
+        onComplete: gsap.set(e, { zIndex: 1 }),
         duration: 0.2,
         ease: "set1",
         scale: 1,
       });
+    };
+
+    return { mouseenterEvent, mouseleaveEvent };
+  }
+  const galleryEvents = setupGallery();
+
+  /**
+   * 綁定動態元素懸停事件
+   * */
+  function bindDynamicHoverEvents() {
+    $(document).on("mouseenter", ".image-grid img", function () {
+      galleryEvents.mouseenterEvent($(this));
+    });
+
+    $(document).on("mouseleave", ".image-grid img", function () {
+      galleryEvents.mouseleaveEvent($(this));
     });
   }
-  setupGallery();
+  bindDynamicHoverEvents();
 
   // 按鈕上一張事件
   $(".prevImage-btn").on("click", function () {
@@ -1278,7 +1349,7 @@ $(document).ready(async function () {
         }, 1);
       }
     }
-    navigationEvents.mousedownEvent();
+    navigationEvents.mousedownEvent(e);
   });
 
   // 所有放開滑鼠事件
@@ -1301,7 +1372,7 @@ $(document).ready(async function () {
 
   // 所有滑鼠滾輪事件
   $(document).on("mousewheel", function (e) {
-    navigationEvents.mousewheelEvent();
+    navigationEvents.mousewheelEvent(e);
     //向上滑時
     if (e.originalEvent.deltaY < 0) {
       if (isFullscreen) {

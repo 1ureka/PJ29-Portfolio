@@ -880,7 +880,7 @@ $(document).ready(async function () {
       Props: { url: urls.propsUrl, color: "blue" },
       Scene: { url: urls.sceneUrl, color: "yellow" },
     };
-    //生成圖片牆頁面
+    /** 生成圖片牆頁面 @param {string} dataImage @returns {JQuery} */
     function generateImageGrid(dataImage) {
       const mappingObj = dataMappings[dataImage];
       //appendTo()方法插入圖片
@@ -1233,7 +1233,7 @@ $(document).ready(async function () {
     /** @param {JQuery} e*/
     const mouseenterEvent = (e) => {
       gsap.to(e, {
-        onStart: gsap.set(e, { zIndex: 2 }),
+        onStart: () => gsap.set(e, { zIndex: 2 }),
         duration: 0.2,
         ease: "set1",
         scale: 1.1,
@@ -1242,7 +1242,7 @@ $(document).ready(async function () {
     /** @param {JQuery} e*/
     const mouseleaveEvent = (e) => {
       gsap.to(e, {
-        onComplete: gsap.set(e, { zIndex: 1 }),
+        onComplete: () => gsap.set(e, { zIndex: 1 }),
         duration: 0.2,
         ease: "set1",
         scale: 1,

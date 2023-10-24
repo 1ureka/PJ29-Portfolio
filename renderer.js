@@ -1112,9 +1112,7 @@ $(document).ready(async function () {
 
     //離開主頁時關閉選單
     $(".page-btn-title").on("click", () => {
-      if (isIndex) {
-        if (isSetting) ExSettingMenu();
-      }
+      if (isSetting) ExSettingMenu();
     });
   }
   setupSettingMenu();
@@ -1156,17 +1154,22 @@ $(document).ready(async function () {
     });
 
     // 返回頂部按鈕ScrollTrigger
+    const t1 = gsap.to(".top-btn", {
+      paused: true,
+      y: 0,
+      duration: 0.3,
+      ease: "set1",
+    });
+
     gsap.to(".top-btn", {
       scrollTrigger: {
         trigger: ".image-grid",
         scroller: ".gallery",
         start: "1080px center",
         end: "+=0 center",
-        toggleActions: "play none reverse none",
+        onEnter: () => t1.play(),
+        onEnterBack: () => t1.reverse(),
       },
-      duration: 0.3,
-      y: 0,
-      ease: "power3.out",
     });
   }
   setupGallery();

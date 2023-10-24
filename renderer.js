@@ -23,10 +23,9 @@ $(document).ready(async function () {
   let translateX = 0; //位移量
   let translateY = 0;
   let lastUpdate; // 滑鼠上次位置定時器
-  // 用於追蹤返回頂部按鈕可見性
-  let top_isVisible = false;
   //製作漸進模式
   gsap.defaults({ overwrite: "auto" });
+  gsap.registerPlugin(ScrollTrigger);
   gsap.registerPlugin(CustomEase);
   CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
 
@@ -183,48 +182,37 @@ $(document).ready(async function () {
    * 設定DOM元素初始CSS(主要是transform)
    * */
   function initialize() {
+    // 紀錄需隱藏之元素
+    const hiddenGalleryElements =
+      ".gallery, .fullscreen-overlay, .back-to-home";
+    const hiddenCloseBarElements =
+      ".restart-btn, .close-bar .line, .stop-lable-container, .restart-lable-container";
+    const hiddenSettingBarElements =
+      ".setting-menu, .setting-bar .line, .options-icon, .options-icon img, " +
+      ".options-lable, .options-lable > div, .options-animation, .options-animation .option, " +
+      ".options-language, .options-language div, .options-color, .options-color .option";
+
+    // 合併隱藏元素
+    const hiddenElements =
+      hiddenGalleryElements +
+      ", " +
+      hiddenCloseBarElements +
+      ", " +
+      hiddenSettingBarElements;
+
     // 隱藏元素
-    gsap.set(".gallery, .fullscreen-overlay, .back-to-home, .top-btn", {
-      autoAlpha: 0,
-    });
-    gsap.set(".restart-btn, .close-bar .line", {
-      autoAlpha: 0,
-    });
-    gsap.set(".stop-lable-container, .restart-lable-container", {
-      autoAlpha: 0,
-    });
-    gsap.set(".stop-lable-red, .restart-lable-red", {
-      y: -40,
-    });
-    gsap.set(".setting-menu, .setting-bar .line", {
-      autoAlpha: 0,
-    });
-    gsap.set(".options-icon, .options-icon img", {
-      autoAlpha: 0,
-    });
-    gsap.set(".options-lable, .options-lable > div", {
-      autoAlpha: 0,
-    });
-    gsap.set(".options-animation, .options-animation .option", {
-      autoAlpha: 0,
-    });
-    gsap.set(".options-language, .options-language div", {
-      autoAlpha: 0,
-    });
-    gsap.set(".options-color, .options-color .option", {
-      autoAlpha: 0,
-    });
-    gsap.set(".animation-lable-red, .language-lable-red", {
-      y: -40,
-    });
-    gsap.set(".color-lable-red, .bottom-lable-red", {
-      y: -40,
-    });
-    gsap.set(".pause-lable-red, .reverse-lable-red", {
-      y: -40,
-    });
+    gsap.set(hiddenElements, { autoAlpha: 0 });
+
+    // 紀錄所有紅色字元素
+    const redLables =
+      ".stop-lable-red, .restart-lable-red, .animation-lable-red, .language-lable-red, " +
+      ".color-lable-red, .bottom-lable-red, .pause-lable-red, .reverse-lable-red";
+
+    // 設定元素初始transform
+    gsap.set(redLables, { y: -40 });
     gsap.set(".animation-btn, .language-btn, color-btn", { scale: 1.15 });
     gsap.set(".bottom-btn", { rotate: 180, scale: 0.9 });
+    gsap.set(".top-btn", { y: 150 });
 
     // 開頭動畫開始位置
     gsap.set(".page-btn-container", { display: "none" });
@@ -616,10 +604,6 @@ $(document).ready(async function () {
       switchView("none");
       gsap.set(".gallery", { autoAlpha: 0, y: "100%" });
       gsap.set(".image-grid img, .back-to-home", { autoAlpha: 0, y: -150 });
-      gsap.set(".top-btn", {
-        y: 150,
-        onComplete: () => gsap.set(".top-btn", { autoAlpha: 1 }),
-      });
       //動畫過程
       gsap
         .timeline({ defaults: { duration: 0.8, ease: "power2.out" } })
@@ -687,25 +671,15 @@ $(document).ready(async function () {
           onComplete: () => {
             gsap.set(".gallery", {
               y: 0,
-              onComplete: () => {
-                window.scrollTo({
-                  top: 0,
-                  behavior: "instant",
-                });
-                $(".image-grid img").remove();
-              },
+              onComplete: () => $(".image-grid img").remove(),
             });
           },
         })
         .to(
-          ".back-to-home, .top-btn",
+          ".back-to-home",
           {
             autoAlpha: 0,
             duration: 0.3,
-            onComplete: () => {
-              gsap.set("top-btn", { y: 150 });
-              top_isVisible = false;
-            },
           },
           "<"
         )
@@ -971,9 +945,10 @@ $(document).ready(async function () {
     let exSettingMenu;
     //紀錄畫面狀態
     let isSetting = false;
+    /** @type {"label" | "animation" | "color" | "language"} */
     let settingView = "lable";
 
-    //進設定選單分類
+    /** 進設定選單分類 @param {"label" | "animation" | "color" | "language"} option */
     function ToSettingOptions(option) {
       let width;
       let container;
@@ -1194,18 +1169,12 @@ $(document).ready(async function () {
     });
 
     //輸入色彩選擇事件
-    $(".color-picker-background input").on("input", function (event) {
-      $(".color-picker-background div").css(
-        "background-color",
-        event.target.value
-      );
+    $(".color-picker-background input").on("input", function (e) {
+      $(".color-picker-background div").css("background-color", e.target.value);
     });
 
-    $(".color-picker-interface input").on("input", function (event) {
-      $(".color-picker-interface div").css(
-        "background-color",
-        event.target.value
-      );
+    $(".color-picker-interface input").on("input", function (e) {
+      $(".color-picker-interface div").css("background-color", e.target.value);
     });
 
     //離開主頁時關閉選單
@@ -1230,43 +1199,50 @@ $(document).ready(async function () {
    * 圖片牆邏輯
    * */
   function setupGallery() {
-    /** @param {JQuery} e*/
-    const mouseenterEvent = (e) => {
-      gsap.to(e, {
-        onStart: () => gsap.set(e, { zIndex: 2 }),
+    // 圖片牆圖片懸停事件
+    $(document).on("mouseenter", ".image-grid img", function () {
+      gsap.to($(this), {
+        onStart: () => gsap.set($(this), { zIndex: 2 }),
         duration: 0.2,
         ease: "set1",
         scale: 1.1,
       });
-    };
-    /** @param {JQuery} e*/
-    const mouseleaveEvent = (e) => {
-      gsap.to(e, {
-        onComplete: () => gsap.set(e, { zIndex: 1 }),
+    });
+    $(document).on("mouseleave", ".image-grid img", function () {
+      gsap.to($(this), {
+        onComplete: () => gsap.set($(this), { zIndex: 1 }),
         duration: 0.2,
         ease: "set1",
         scale: 1,
       });
-    };
-
-    return { mouseenterEvent, mouseleaveEvent };
-  }
-  const galleryEvents = setupGallery();
-
-  /**
-   * 綁定動態元素懸停事件
-   * */
-  function bindDynamicHoverEvents() {
-    $(document).on("mouseenter", ".image-grid img", function () {
-      galleryEvents.mouseenterEvent($(this));
     });
 
-    $(document).on("mouseleave", ".image-grid img", function () {
-      galleryEvents.mouseleaveEvent($(this));
+    // 返回頂部按鈕按下事件
+    $(".top-btn").on("click", function () {
+      if (isGallery) {
+        clickAnimation($(this));
+        $(".gallery").scrollTop(0);
+      }
+    });
+
+    // 返回頂部按鈕ScrollTrigger
+    gsap.to(".top-btn", {
+      scrollTrigger: {
+        trigger: ".image-grid",
+        scroller: ".gallery",
+        markers: true,
+        start: "650px center",
+        end: "top center",
+        toggleActions: "play none reverse none",
+      },
+      duration: 0.2,
+      y: 0,
+      ease: "power2.out",
     });
   }
-  bindDynamicHoverEvents();
+  setupGallery();
 
+  function applyClickEffect(params) {}
   // 按鈕上一張事件
   $(".prevImage-btn").on("click", function () {
     if (isPreview) {
@@ -1292,26 +1268,6 @@ $(document).ready(async function () {
       } else {
         assignImage(currentIndex, "jpg");
       }
-    }
-  });
-
-  // 按鈕返回頂部
-  $(".top-btn").on("click", function () {
-    if (isGallery) {
-      gsap
-        .timeline()
-        .to($(this), {
-          keyframes: [
-            { y: 25, duration: 0.2, ease: "expo.out" },
-            { y: 0, duration: 0.2, ease: "expo.out" },
-          ],
-          onStart: () => $(".gallery").scrollTop(0),
-        })
-        .to($(this), {
-          y: 150,
-          ease: "power2.in",
-          onComplete: () => (top_isVisible = false),
-        });
     }
   });
 
@@ -1383,12 +1339,6 @@ $(document).ready(async function () {
         updateTransform(100, "linear");
         limitTranslation();
       }
-      if (isGallery) {
-        if ($(".gallery").scrollTop() < 100 && top_isVisible) {
-          gsap.to(".top-btn", { y: 150, ease: "power2.in" });
-          top_isVisible = false;
-        }
-      }
     }
     // 向下滑時
     else {
@@ -1397,12 +1347,6 @@ $(document).ready(async function () {
           scaleFac = e.shiftKey ? 0.2 : 0.1;
           scale -= scaleFac;
           updateTransform(100, "linear");
-        }
-      }
-      if (isGallery) {
-        if ($(".gallery").scrollTop() >= 100 && !top_isVisible) {
-          gsap.to(".top-btn", { y: 0, ease: "power2.out" });
-          top_isVisible = true;
         }
       }
     }

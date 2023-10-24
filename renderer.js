@@ -212,7 +212,7 @@ $(document).ready(async function () {
     gsap.set(redLables, { y: -40 });
     gsap.set(".animation-btn, .language-btn, color-btn", { scale: 1.15 });
     gsap.set(".bottom-btn", { rotate: 180, scale: 0.9 });
-    gsap.set(".top-btn", { y: 150 });
+    gsap.set(".top-btn", { y: 100 });
 
     // 開頭動畫開始位置
     gsap.set(".page-btn-container", { display: "none" });
@@ -1219,10 +1219,7 @@ $(document).ready(async function () {
 
     // 返回頂部按鈕按下事件
     $(".top-btn").on("click", function () {
-      if (isGallery) {
-        clickAnimation($(this));
-        $(".gallery").scrollTop(0);
-      }
+      if (isGallery) $(".gallery").scrollTop(0);
     });
 
     // 返回頂部按鈕ScrollTrigger
@@ -1230,14 +1227,13 @@ $(document).ready(async function () {
       scrollTrigger: {
         trigger: ".image-grid",
         scroller: ".gallery",
-        markers: true,
-        start: "650px center",
-        end: "top center",
+        start: "1080px center",
+        end: "+=0 center",
         toggleActions: "play none reverse none",
       },
-      duration: 0.2,
+      duration: 0.3,
       y: 0,
-      ease: "power2.out",
+      ease: "power3.out",
     });
   }
   setupGallery();

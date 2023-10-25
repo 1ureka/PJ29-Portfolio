@@ -381,9 +381,3 @@
   box-shadow: inset 0px 0px 3px rgba(0, 0, 0, 1);
   pointer-events: none;
 }
-
-/*temp*/
-.setting-bar img {
-  width: 40px;
-  height: 40px;
-}

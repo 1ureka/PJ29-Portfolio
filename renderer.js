@@ -384,7 +384,7 @@ $(document).ready(async function () {
   }
   applyHoverEffect(createHoverTimeline());
   /**
-   * 製作點擊時間軸動畫 @param {JQuery | string} element
+   * 製作點擊時間軸動畫 @param {JQuery} element
    */
   function createClickTimeline(element) {
     gsap.timeline().to(element, {
@@ -938,6 +938,24 @@ $(document).ready(async function () {
           autoAlpha: 1,
         });
     }
+    /** 切換播放/暫停按鈕與文字 */
+    function switchPauseBtn() {
+      const btn = () => {
+        if ($(".pause-lable-white").text() != "play") {
+          $(".pause-btn").attr("src", "./images/icon/play.png");
+        } else {
+          $(".pause-btn").attr("src", "./images/icon/pause.png");
+        }
+      };
+      const text = () => {
+        if ($(".pause-lable-white").text() != "play") {
+          $(".pause-lable-container > div").text("play");
+        } else {
+          $(".pause-lable-container > div").text("pause");
+        }
+      };
+      return { btn, text };
+    }
 
     $(".setting-btn").on("click", function () {
       if (isIndex) {
@@ -988,6 +1006,20 @@ $(document).ready(async function () {
           ToSettingOptions("lable");
         }
       }
+    });
+
+    $(".pause-btn").on("click", function () {
+      createClickTimeline($(this));
+      gsap
+        .timeline({ defaults: { duration: 0.2, ease: "set1" } })
+        .to(".pause-lable-container", {
+          onStart: switchPauseBtn().btn,
+          autoAlpha: 0,
+          onComplete: switchPauseBtn().text,
+        })
+        .to(".pause-lable-container", {
+          autoAlpha: 1,
+        });
     });
 
     //輸入色彩選擇事件

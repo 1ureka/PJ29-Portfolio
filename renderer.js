@@ -1,15 +1,6 @@
 $(document).ready(async function () {
   //設定動畫預設屬性
   gsap.defaults({ overwrite: "auto" });
-
-  $(document).on("contextmenu", function (e) {
-    e.preventDefault();
-  });
-
-  //註冊插件
-  gsap.registerPlugin(ScrollTrigger);
-  gsap.registerPlugin(CustomEase);
-
   //製作漸進模式
   CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
 

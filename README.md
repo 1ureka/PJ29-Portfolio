@@ -46,6 +46,6 @@ PJ29-Portfolio 是一個單頁應用程式（SPA），而 HTML 結構主要分�
 - Electron：用於將 Web 應用程式打包成桌面應用程式的框架。
 - HTML：用於建立應用程式的用戶界面。
 - CSS：用於設計應用程式的佈局和樣式。
-- JavaScript：用於處理前端界面和互動。
+- JavaScript：主要用於處理前端界面和互動。
 - jQuery：JavaScript 函式庫，簡化 DOM 操作。
 - GSAP：JavaScript 庫，實現動畫效果。

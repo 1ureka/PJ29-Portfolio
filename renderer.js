@@ -1,97 +1,58 @@
 $(document).ready(async function () {
+  //設定動畫預設屬性
+  gsap.defaults({ overwrite: "auto" });
+
+  $(document).on("contextmenu", function (e) {
+    e.preventDefault();
+  });
+
+  //註冊插件
+  gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(CustomEase);
+
+  //製作漸進模式
+  CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
+
   //紀錄目前畫面狀態
   let isIndex = false;
   let isGallery = false;
   let isPreview = false;
   let isFullscreen = false;
-  //紀錄全螢幕模式所需變數
-  let scale = 1;
-  let scaleFac = 0.1;
-  let drag = false;
-  let mouseX = 0; // 當前滑鼠位置
-  let mouseY = 0;
-  let lastX = 0; //最後滑鼠位置
-  let lastY = 0;
-  let translateX = 0; //位移量
-  let translateY = 0;
-  let lastUpdate; // 滑鼠上次位置定時器
-  //製作漸進模式
-  gsap.defaults({ overwrite: "auto" });
-  gsap.registerPlugin(ScrollTrigger);
-  gsap.registerPlugin(CustomEase);
-  CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
-
-  //函數邏輯：
-  //切換畫面
+  /**
+   * 切換畫面 @param {string} view
+   * */
   function switchView(view) {
-    if (view === "gallery") {
-      isIndex = false;
-      isGallery = true;
-      isPreview = false;
-      isFullscreen = false;
-    } else if (view === "preview") {
-      isIndex = false;
-      isGallery = false;
-      isPreview = true;
-      isFullscreen = false;
-    } else if (view === "fullscreen") {
-      isIndex = false;
-      isGallery = false;
-      isPreview = false;
-      isFullscreen = true;
-    } else if (view === "index") {
-      isIndex = true;
-      isGallery = false;
-      isPreview = false;
-      isFullscreen = false;
-    } else if (view === "none") {
-      isIndex = false;
-      isGallery = false;
-      isPreview = false;
-      isFullscreen = false;
-    }
-  }
-  //按鈕點擊動畫
-  function clickAnimation(element) {
-    gsap.timeline().to(element, {
-      keyframes: [
-        { y: 25, duration: 0.2, ease: "expo.out" },
-        { y: 0, duration: 0.2, ease: "expo.out" },
-      ],
-    });
-  }
-  // 插入圖片至指定容器
-  function insertImages(container, list) {
-    $.each(list, (index) => {
-      const img = $("<img>").attr("src", list[index]);
-      img.appendTo(container);
-    });
-  }
-  /** 更新".fullscreen-image-container img"之Transform
-   * @param {number} time 毫秒数 @param {string} ease */
-  function updateTransform(time, ease) {
-    gsap.to(".fullscreen-image-container img", {
-      x: translateX,
-      y: translateY,
-      duration: time / 1000,
-      ease: ease,
-    });
-    gsap.to(".fullscreen-image-container", {
-      scale: scale,
-      duration: time / 1000,
-      ease: ease,
-    });
-  }
-  /** 限制".fullscreen-image-container img"位置 */
-  function limitTranslation() {
-    const img = $(".fullscreen-image-container img");
-    if (
-      Math.abs(translateX * 2) > img.width() ||
-      Math.abs(translateY * 2) > img.height()
-    ) {
-      translateX = 0;
-      translateY = 0;
-      updateTransform(300, "set1");
+    switch (view) {
+      case "gallery":
+        isIndex = false;
+        isGallery = true;
+        isPreview = false;
+        isFullscreen = false;
+        break;
+      case "preview":
+        isIndex = false;
+        isGallery = false;
+        isPreview = true;
+        isFullscreen = false;
+        break;
+      case "fullscreen":
+        isIndex = false;
+        isGallery = false;
+        isPreview = false;
+        isFullscreen = true;
+        break;
+      case "index":
+        isIndex = true;
+        isGallery = false;
+        isPreview = false;
+        isFullscreen = false;
+        break;
+      case "none":
+        isIndex = false;
+        isGallery = false;
+        isPreview = false;
+        isFullscreen = false;
+        break;
     }
   }
 
@@ -260,7 +221,7 @@ $(document).ready(async function () {
     function timelineTemplate3(e) {
       const timeline = gsap.timeline({
         paused: true,
-        defaults: { duration: 0.2, ease: "set1" },
+        defaults: { duration: 0.2, ease: "set1", overwrite: false },
       });
 
       timeline.to(`.${e}-btn`, {
@@ -314,7 +275,7 @@ $(document).ready(async function () {
       return gsap
         .timeline({
           paused: true,
-          defaults: { duration: 0.2, ease: "set1" },
+          defaults: { duration: 0.2, ease: "set1", overwrite: false },
         })
         .to(`.${e}`, {
           margin: "0 30px 0 30px",
@@ -431,7 +392,27 @@ $(document).ready(async function () {
     }
   }
   applyHoverEffect(createHoverTimeline());
+  /**
+   * 製作點擊時間軸動畫 @param {JQuery | string} element
+   */
+  function createClickTimeline(element) {
+    gsap.timeline().to(element, {
+      keyframes: [
+        { y: 25, duration: 0.2, ease: "expo.out" },
+        { y: 0, duration: 0.2, ease: "expo.out" },
+      ],
+    });
+  }
 
+  /**
+   * 插入圖片至指定容器 @param {JQuery} container  @param {string[]} list
+   */
+  function insertImages(container, list) {
+    $.each(list, (index) => {
+      const img = $("<img>").attr("src", list[index]);
+      img.appendTo(container);
+    });
+  }
   /**
    * 建立背景動畫
    * */
@@ -720,79 +701,6 @@ $(document).ready(async function () {
         })
         .to(".fullscreen-overlay", { duration: 0.5 }, "<");
     }
-    //預覽至全螢幕
-    function PreviewToFullscreen() {
-      //開始設置
-      switchView("none");
-      gsap.set(".fullscreen-image-container", { zIndex: 5 });
-      //時間設置
-      const time = 500;
-      //動畫過程
-      gsap
-        .timeline({
-          defaults: { duration: time / 1000, ease: "set1" },
-        })
-        .to(".close-btn, .nextImage-btn, .prevImage-btn, .text-container", {
-          autoAlpha: 0,
-        })
-        .to(
-          ".fullscreen-image-container img",
-          {
-            maxWidth: "100%",
-            maxHeight: "100%",
-            onComplete: () => {
-              switchView("fullscreen");
-            },
-          },
-          "<"
-        );
-    }
-    //全螢幕至預覽
-    function FullscreenToPreview() {
-      //開始設置
-      switchView("none");
-      //時間設置
-      const time = 500;
-      //動畫過程
-      gsap
-        .timeline({
-          defaults: { duration: time / 1000, ease: "set1" },
-        })
-        .to(".fullscreen-image-container img", {
-          maxWidth: "85%",
-          maxHeight: "85%",
-          x: 0,
-          y: 0,
-          scale: 1,
-          onComplete: () => {
-            // 所有變數回歸最初始狀態
-            lastX = 0;
-            lastY = 0;
-            translateX = 0;
-            translateY = 0;
-          },
-        })
-        .to(
-          ".fullscreen-image-container",
-          {
-            scale: 1,
-            onComplete: () => {
-              // 所有變數回歸最初始狀態
-              scale = 1;
-              gsap.set(".fullscreen-image-container", { zIndex: 3 });
-              switchView("preview");
-            },
-          },
-          "<"
-        )
-        .to(
-          ".close-btn , .nextImage-btn, .prevImage-btn, .text-container",
-          {
-            autoAlpha: 1,
-          },
-          "<"
-        );
-    }
     //製作對應變數表
     const dataMappings = {
       Nature: { url: urls.natureUrl, color: "green" },
@@ -818,7 +726,7 @@ $(document).ready(async function () {
     //按鈕分頁事件
     $(".page-btn-title").on("click", function () {
       if (isIndex) {
-        clickAnimation($(this).parent());
+        createClickTimeline($(this).parent());
         generateImageGrid($(this).attr("data-image"));
         IndexToGallery();
       }
@@ -827,7 +735,7 @@ $(document).ready(async function () {
     // 按鈕返回事件
     $(".back-to-home").on("click", function () {
       if (isGallery) {
-        clickAnimation($(this));
+        createClickTimeline($(this));
         GalleryToIndex();
       }
     });
@@ -835,7 +743,7 @@ $(document).ready(async function () {
     // 按鈕圖片事件
     $(document).on("click", ".image-grid img", function () {
       if (isGallery) {
-        clickAnimation($(this));
+        createClickTimeline($(this));
         GalleryToPreview();
       }
     });
@@ -843,7 +751,7 @@ $(document).ready(async function () {
     // 按鈕關閉全螢幕事件
     $(".close-btn").on("click", function () {
       if (isPreview) {
-        clickAnimation($(this));
+        createClickTimeline($(this));
         PreviewToGallery();
       }
     });
@@ -853,16 +761,6 @@ $(document).ready(async function () {
       if (e.which === 3) {
         if (isGallery) GalleryToIndex();
         if (isPreview) PreviewToGallery();
-        if (isFullscreen) FullscreenToPreview();
-      }
-    });
-
-    // 滑鼠滾輪進出全螢幕
-    $(document).on("mousewheel", function (e) {
-      if (e.originalEvent.deltaY < 0) {
-        if (isPreview) PreviewToFullscreen();
-      } else {
-        if (isFullscreen && scale <= 1) FullscreenToPreview();
       }
     });
   }
@@ -1053,7 +951,7 @@ $(document).ready(async function () {
     $(".setting-btn").on("click", function () {
       if (isIndex) {
         if (!isSetting) {
-          clickAnimation($(this));
+          createClickTimeline($(this));
           ToSettingMenu();
         }
       }
@@ -1062,7 +960,7 @@ $(document).ready(async function () {
     $(".bottom-btn").on("click", function () {
       if (isIndex) {
         if (isSetting) {
-          clickAnimation($(this));
+          createClickTimeline($(this));
           ExSettingMenu();
         }
       }
@@ -1070,7 +968,7 @@ $(document).ready(async function () {
 
     $(".animation-btn").on("click", function () {
       if (isIndex) {
-        clickAnimation($(this));
+        createClickTimeline($(this));
         if (settingView != "animation") {
           ToSettingOptions("animation");
         } else {
@@ -1081,7 +979,7 @@ $(document).ready(async function () {
 
     $(".language-btn").on("click", function () {
       if (isIndex) {
-        clickAnimation($(this));
+        createClickTimeline($(this));
         if (settingView != "language") {
           ToSettingOptions("language");
         } else {
@@ -1092,7 +990,7 @@ $(document).ready(async function () {
 
     $(".color-btn").on("click", function () {
       if (isIndex) {
-        clickAnimation($(this));
+        createClickTimeline($(this));
         if (settingView != "color") {
           ToSettingOptions("color");
         } else {
@@ -1227,21 +1125,21 @@ $(document).ready(async function () {
 
     $(".prevImage-btn").on("click", function () {
       if (isPreview) {
-        clickAnimation($(this));
+        createClickTimeline($(this));
         assignImage(prevIndex, "jpg");
       }
     });
 
     $(".nextImage-btn").on("click", function () {
       if (isPreview) {
-        clickAnimation($(this));
+        createClickTimeline($(this));
         assignImage(nextIndex, "jpg");
       }
     });
 
     $(".text-container div").on("click", function () {
       if (isPreview) {
-        clickAnimation($(this));
+        createClickTimeline($(this));
         if ($(this).text() === ".jpg") {
           assignImage(currentIndex, "png");
         } else {
@@ -1252,92 +1150,205 @@ $(document).ready(async function () {
   }
   setupPreview();
 
-  function applyClickEffect() {}
+  /**
+   * 全螢幕邏輯
+   */
+  function setupFullscreen() {
+    /** 預覽至全螢幕 */
+    function toFullscreen() {
+      //開始設置
+      switchView("none");
+      gsap.set(".fullscreen-image-container", { zIndex: 5 });
+      //動畫過程
+      gsap
+        .timeline({
+          defaults: { duration: 0.5, ease: "set1" },
+        })
+        .to(".close-btn, .nextImage-btn, .prevImage-btn, .text-container", {
+          autoAlpha: 0,
+        })
+        .to(
+          ".fullscreen-image-container img",
+          {
+            maxWidth: "100%",
+            maxHeight: "100%",
+            onComplete: () => {
+              switchView("fullscreen");
+            },
+          },
+          "<"
+        );
+    }
+    /** 全螢幕至預覽 */
+    function exFullscreen() {
+      //開始設置
+      switchView("none");
+      //動畫過程
+      gsap
+        .timeline({
+          defaults: { duration: 0.5, ease: "set1" },
+        })
+        .to(".fullscreen-image-container img", {
+          maxWidth: "85%",
+          maxHeight: "85%",
+          x: 0,
+          y: 0,
+          scale: 1,
+          onComplete: () => {
+            // 所有變數回歸最初始狀態
+            lastX = 0;
+            lastY = 0;
+            translateX = 0;
+            translateY = 0;
+          },
+        })
+        .to(
+          ".fullscreen-image-container",
+          {
+            scale: 1,
+            onComplete: () => {
+              // 所有變數回歸最初始狀態
+              scale = 1;
+              gsap.set(".fullscreen-image-container", { zIndex: 3 });
+              switchView("preview");
+            },
+          },
+          "<"
+        )
+        .to(
+          ".close-btn , .nextImage-btn, .prevImage-btn, .text-container",
+          {
+            autoAlpha: 1,
+          },
+          "<"
+        );
+    }
 
-  // 所有滑鼠按下事件
-  $(document).on("mousedown", function (e) {
-    if (e.which === 1) {
-      if (isFullscreen) {
-        $("body").css("cursor", "grab");
-        drag = true;
-        //初始化當次拖動的最後滑鼠位置
+    // 以下是移動圖片邏輯
+    let isDrag = false;
+    let scale = 1;
+    let mouseX = 0; // 當前滑鼠位置
+    let mouseY = 0;
+    let lastX = 0; //最後滑鼠位置
+    let lastY = 0;
+    let translateX = 0; //位移量
+    let translateY = 0;
+    let lastUpdate; // 滑鼠上次位置定時器
+    /** 更新".fullscreen-image-container img"之Transform
+     * @param {number} time 毫秒数 @param {string} ease */
+    function updateTransform(time, ease) {
+      gsap.to(".fullscreen-image-container img", {
+        x: translateX,
+        y: translateY,
+        duration: time / 1000,
+        ease: ease,
+      });
+      gsap.to(".fullscreen-image-container", {
+        scale: scale,
+        duration: time / 1000,
+        ease: ease,
+      });
+    }
+    /** 限制".fullscreen-image-container img"位置 */
+    function limitTranslation() {
+      const img = $(".fullscreen-image-container img");
+      if (
+        Math.abs(translateX * 2) > img.width() ||
+        Math.abs(translateY * 2) > img.height()
+      ) {
+        translateX = 0;
+        translateY = 0;
+        updateTransform(300, "set1");
+      }
+    }
+    /** 開始拖動邏輯 */
+    function startDragging() {
+      $("body").css("cursor", "grab");
+      isDrag = true;
+      //獲取速度 lim t->0 ((當前位置-最後位置)/t) = speed
+      lastUpdate = setInterval(() => {
         lastX = mouseX;
         lastY = mouseY;
-        //獲取速度 lim t->0 ((當前位置-最後位置)/t) = speed
-        lastUpdate = setInterval(() => {
-          lastX = mouseX;
-          lastY = mouseY;
-        }, 1);
+      }, 1);
+    }
+    /** 停止拖動邏輯 */
+    function stopDragging() {
+      $("body").css("cursor", "auto");
+      isDrag = false;
+      // 停止更新滑鼠最後位置
+      clearInterval(lastUpdate);
+      limitTranslation();
+    }
+    /** 拖動邏輯 */
+    function dragging() {
+      $("body").css("cursor", "grabbing");
+      const deltaX = (mouseX - lastX) / scale;
+      const deltaY = (mouseY - lastY) / scale;
+      //速度計算完成後若不為0則更新畫面
+      if (deltaX != 0 || deltaY != 0) {
+        translateX = translateX + deltaX;
+        translateY = translateY + deltaY;
+        updateTransform(0, "none");
       }
     }
-  });
-
-  // 所有放開滑鼠事件
-  $(document).on("mouseup", function (e) {
-    if (e.which === 1) {
-      if (isFullscreen) {
-        drag = false;
-        // 停止更新滑鼠最後位置
-        clearInterval(lastUpdate);
-        limitTranslation();
-      }
-      if (
-        $("body").css("cursor") === "grabbing" ||
-        $("body").css("cursor") === "grab"
-      ) {
-        $("body").css("cursor", "auto");
-      }
-    }
-  });
-
-  // 所有滑鼠滾輪事件
-  $(document).on("mousewheel", function (e) {
-    //向上滑時
-    if (e.originalEvent.deltaY < 0) {
-      if (isFullscreen) {
+    /** 縮放邏輯 @param {number} deltaY @param {number} scaleFac */
+    function scaling(deltaY, scaleFac) {
+      if (deltaY < 0) {
         translateX = translateX - (mouseX - window.innerWidth / 2) / 7 / scale;
         translateY = translateY - (mouseY - window.innerHeight / 2) / 7 / scale;
-        scaleFac = e.shiftKey ? 0.2 : 0.1; //shift可以增加縮放速度
         scale += scaleFac;
         updateTransform(100, "linear");
         limitTranslation();
-      }
-    }
-    // 向下滑時
-    else {
-      if (isFullscreen) {
+      } else {
         if (scale > 1) {
-          scaleFac = e.shiftKey ? 0.2 : 0.1;
           scale -= scaleFac;
           updateTransform(100, "linear");
         }
       }
     }
-  });
 
-  // 所有滑鼠移動事件
-  $(document).on("mousemove", function (e) {
-    e.preventDefault();
-    if (isFullscreen) {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-      //按住時的邏輯
-      if (drag) {
-        $("body").css("cursor", "grabbing");
-        const deltaX = (mouseX - lastX) / scale;
-        const deltaY = (mouseY - lastY) / scale;
-        //速度計算完成後若不為0則更新畫面
-        if (deltaX != 0 || deltaY != 0) {
-          translateX = translateX + deltaX;
-          translateY = translateY + deltaY;
-          updateTransform(0, "none");
+    // 以下是綁定事件
+    /** 綁定拖動邏輯至所需事件 */
+    function bindDraggingEvents() {
+      $(document).on("mousedown", function (e) {
+        if (e.which === 1 && isFullscreen) startDragging();
+      });
+
+      $(document).on("mouseup", function (e) {
+        if (e.which === 1 && isDrag) stopDragging();
+      });
+
+      $(document).on("mousemove", function (e) {
+        e.preventDefault();
+        if (isFullscreen) {
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+          if (isDrag) dragging();
         }
-      }
+      });
     }
-  });
+    bindDraggingEvents();
 
-  // 所有菜單事件
-  $(document).on("contextmenu", function (e) {
-    e.preventDefault();
-  });
+    /** 綁定滑鼠滾輪事件 */
+    function bindScalingEvents() {
+      $(document).on("mousewheel", function (e) {
+        if (isFullscreen) {
+          scaling(e.originalEvent.deltaY, e.shiftKey ? 0.2 : 0.1);
+        }
+        if (isPreview && e.originalEvent.deltaY < 0) {
+          toFullscreen();
+        }
+        if (isFullscreen && scale <= 1) {
+          exFullscreen();
+        }
+      });
+    }
+    bindScalingEvents();
+
+    // 右鍵離開全螢幕
+    $(document).on("mousedown", function (e) {
+      if (e.which === 3 && isFullscreen) exFullscreen();
+    });
+  }
+  setupFullscreen();
 });

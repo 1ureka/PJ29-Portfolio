@@ -54,8 +54,6 @@
   position: relative;
   display: block;
   padding: 0 0 10px 10px;
-  color: #ffffff;
-  font-size: 24px;
 }
 
 .page-btn-title {
@@ -168,9 +166,6 @@
   padding: 5px;
   margin-left: 10px;
   border-width: 0;
-  color: #ffffff;
-  font-size: 24px;
-  font-family: "Montserrat";
   box-shadow: inset 0px 0px 12px rgba(0, 0, 0, 0.5);
 }
 
@@ -183,9 +178,6 @@
   width: 60px;
   height: 60px;
   padding: 0;
-  color: #ffffff;
-  font-size: 24px;
-  font-family: "Montserrat";
 }
 
 .stop-btn,
@@ -244,9 +236,6 @@
   align-items: center;
   width: 60px;
   height: 60px;
-  color: #ffffff;
-  font-size: 24px;
-  font-family: "Montserrat";
 }
 
 /*設定選單(左側)*/
@@ -349,7 +338,6 @@
   border-radius: 10px;
   background: hsla(200, 0%, 10%, 0.65);
   box-shadow: 0px 0px 3px rgba(0, 0, 0, 1);
-  color: #ffffff;
   padding: 5px;
 }
 /* 色彩設定 */

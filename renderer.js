@@ -405,9 +405,11 @@ $(document).ready(async function () {
     });
   }
   /**
-   * 建立背景動畫
+   * 建立背景動畫 @returns {TimelineMax}
    * */
   function createBackgroundAnimation() {
+    // 背景旋轉15度
+    gsap.set(".moving-images-container", { rotate: 15 });
     // 隨機排序jpgUrl陣列
     gsap.utils.shuffle(urls.jpgUrl);
     // 將陣列分成四份，以特定順序放進四格移動牆，因此絕對不會重複
@@ -450,9 +452,9 @@ $(document).ready(async function () {
       insertImages($(".moving-images.c"), movingImages3);
       insertImages($(".moving-images.d"), movingImages4);
     }
-    gsap.set(".moving-images-container", { rotate: 15 });
-    gsap
+    return gsap
       .timeline({
+        paused: true,
         defaults: {
           duration: urls.jpgUrl.length * 5,
           ease: "linear",
@@ -462,7 +464,8 @@ $(document).ready(async function () {
       .to(".moving-images.a, .moving-images.c", { y: "-50%" })
       .to(".moving-images.b, .moving-images.d", { y: "50%" }, "<");
   }
-  createBackgroundAnimation();
+  const bgAnimation = createBackgroundAnimation();
+  bgAnimation.play(1000); //假定已經撥放1000次，使reverse可以正常運作
 
   /**
    * 開始動畫
@@ -940,21 +943,29 @@ $(document).ready(async function () {
     }
     /** 切換播放/暫停按鈕與文字 */
     function switchPauseBtn() {
-      const btn = () => {
-        if ($(".pause-lable-white").text() != "play") {
-          $(".pause-btn").attr("src", "./images/icon/play.png");
-        } else {
+      if (bgAnimation.paused()) {
+        const start = () => {
           $(".pause-btn").attr("src", "./images/icon/pause.png");
-        }
-      };
-      const text = () => {
-        if ($(".pause-lable-white").text() != "play") {
-          $(".pause-lable-container > div").text("play");
-        } else {
+          bgAnimation.resume();
+        };
+
+        const complete = () => {
           $(".pause-lable-container > div").text("pause");
-        }
-      };
-      return { btn, text };
+        };
+
+        return { start, complete };
+      } else {
+        const start = () => {
+          $(".pause-btn").attr("src", "./images/icon/play.png");
+          bgAnimation.pause();
+        };
+
+        const complete = () => {
+          $(".pause-lable-container > div").text("play");
+        };
+
+        return { start, complete };
+      }
     }
 
     $(".setting-btn").on("click", function () {
@@ -1013,13 +1024,18 @@ $(document).ready(async function () {
       gsap
         .timeline({ defaults: { duration: 0.2, ease: "set1" } })
         .to(".pause-lable-container", {
-          onStart: switchPauseBtn().btn,
+          onStart: switchPauseBtn().start,
           autoAlpha: 0,
-          onComplete: switchPauseBtn().text,
+          onComplete: switchPauseBtn().complete,
         })
         .to(".pause-lable-container", {
           autoAlpha: 1,
         });
+    });
+
+    $(".reverse-btn").on("click", function () {
+      createClickTimeline($(this));
+      bgAnimation.reversed(!bgAnimation.reversed());
     });
 
     //輸入色彩選擇事件

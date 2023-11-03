@@ -32,24 +32,27 @@
 .close-btn,
 .nextImage-btn,
 .prevImage-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   position: absolute;
   cursor: pointer;
   z-index: 4;
 }
 
 .close-btn {
-  top: 30px;
-  right: 60px;
+  top: 3.25%;
+  right: 3.25%;
 }
 
 .nextImage-btn {
   top: center;
-  right: 30px;
+  right: 3.25%;
 }
 
 .prevImage-btn {
   top: center;
-  left: 30px;
+  left: 3.25%;
 }
 
 .close-btn img {
@@ -59,7 +62,7 @@
 
 .nextImage-btn img,
 .prevImage-btn img {
-  width: 85px;
+  width: 35px;
   height: auto;
 }
 

@@ -110,6 +110,8 @@ $(document).ready(async function () {
     // 設定元素初始transform
     gsap.set(".animation-btn, .language-btn, color-btn", { scale: 1.15 });
     gsap.set(".bottom-btn", { rotate: 180, scale: 0.9 });
+    gsap.set(".prevImage-btn", { rotate: -90 });
+    gsap.set(".nextImage-btn", { rotate: 90 });
     gsap.set(".top-btn", { y: 100 });
 
     //
@@ -720,6 +722,14 @@ $(document).ready(async function () {
       insertImages($(".image-grid"), mappingObj.url);
       //更換圖標
       $(".top-btn img").attr(
+        "src",
+        `./images/icon/top (${mappingObj.color}).png`
+      );
+      $(".prevImage-btn img").attr(
+        "src",
+        `./images/icon/top (${mappingObj.color}).png`
+      );
+      $(".nextImage-btn img").attr(
         "src",
         `./images/icon/top (${mappingObj.color}).png`
       );

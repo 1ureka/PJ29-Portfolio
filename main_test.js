@@ -15,7 +15,7 @@ function createWindow() {
   mainWindow.loadFile("index.html");
   mainWindow.webContents.openDevTools();
   mainWindow.once("ready-to-show", () => {
-    mainWindow.show(); // 在準備好時顯示主窗口
+    setTimeout(() => mainWindow.show(), 2500);
   });
 }
 

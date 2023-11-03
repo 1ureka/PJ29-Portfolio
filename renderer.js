@@ -10,7 +10,7 @@ $(document).ready(async function () {
   let isPreview = false;
   let isFullscreen = false;
   /**
-   * 切換畫面 @param {string} view
+   * 切換畫面 @param {"gallery"|"preview"|"fullscreen"|"index"|"none"} view
    * */
   function switchView(view) {
     switch (view) {
@@ -1058,8 +1058,31 @@ $(document).ready(async function () {
    * 關閉選單邏輯
    * */
   function setupCloseMenu() {
-    $(".stop-btn").on("click", () => window.electronAPI.closeApp());
-    $(".restart-btn").on("click", () => window.electronAPI.restartApp());
+    /** @param {Function} callback */
+    function createCloseTimeline(callback) {
+      gsap
+        .timeline({
+          defaults: { ease: "set1" },
+          onStart: () => switchView("none"),
+        })
+        .timeScale(1.5)
+        .to(".title", { duration: 2, y: -500 })
+        .to(".page-btn-container", { duration: 2, y: -500 }, ">-1.5")
+        .to(".tool-bar-container", { duration: 2, y: 500 }, ">-1.5")
+        .to(".content", { duration: 1.5, backgroundColor: "black" }, ">-1")
+        .to(".content", { duration: 1 })
+        .then(callback);
+    }
+
+    $(".stop-btn").on("click", function () {
+      createClickTimeline($(this));
+      createCloseTimeline(window.electronAPI.closeApp);
+    });
+
+    $(".restart-btn").on("click", function () {
+      createClickTimeline($(this));
+      createCloseTimeline(window.electronAPI.restartApp);
+    });
   }
   setupCloseMenu();
 

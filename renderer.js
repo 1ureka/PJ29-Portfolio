@@ -487,6 +487,7 @@ $(document).ready(async function () {
       .timeline({
         defaults: { duration: 0.5, ease: "power2.out" },
       })
+      .timeScale(0.8)
       .to(".loading-container", {
         delay: 7,
         autoAlpha: 0,
@@ -978,85 +979,108 @@ $(document).ready(async function () {
         return { start, complete };
       }
     }
+    /** 更新介面顏色 @param {"background"|"interface"} option @param {string} color */
+    function changeUIColor(option, color) {
+      switch (option) {
+        case "background":
+          gsap.set("body", { backgroundColor: color });
+          break;
+        case "interface":
+          // gsap.set("", { backgroundColor: color });
+          break;
+      }
+    }
+    /** 綁定導航按鈕事件 */
+    function bindNavBtnEvents() {
+      $(".setting-btn").on("click", function () {
+        if (isIndex) {
+          if (!isSetting) {
+            createClickTimeline($(this));
+            ToSettingMenu();
+          }
+        }
+      });
 
-    $(".setting-btn").on("click", function () {
-      if (isIndex) {
-        if (!isSetting) {
+      $(".bottom-btn").on("click", function () {
+        if (isIndex) {
+          if (isSetting) {
+            createClickTimeline($(this));
+            ExSettingMenu();
+          }
+        }
+      });
+
+      $(".animation-btn").on("click", function () {
+        if (isIndex) {
           createClickTimeline($(this));
-          ToSettingMenu();
+          if (settingView != "animation") {
+            ToSettingOptions("animation");
+          } else {
+            ToSettingOptions("lable");
+          }
         }
-      }
-    });
+      });
 
-    $(".bottom-btn").on("click", function () {
-      if (isIndex) {
-        if (isSetting) {
+      $(".language-btn").on("click", function () {
+        if (isIndex) {
           createClickTimeline($(this));
-          ExSettingMenu();
+          if (settingView != "language") {
+            ToSettingOptions("language");
+          } else {
+            ToSettingOptions("lable");
+          }
         }
-      }
-    });
+      });
 
-    $(".animation-btn").on("click", function () {
-      if (isIndex) {
+      $(".color-btn").on("click", function () {
+        if (isIndex) {
+          createClickTimeline($(this));
+          if (settingView != "color") {
+            ToSettingOptions("color");
+          } else {
+            ToSettingOptions("lable");
+          }
+        }
+      });
+    }
+    bindNavBtnEvents();
+    /** 綁定功能按鈕事件 */
+    function bindSetBtnEvents() {
+      $(".pause-btn").on("click", function () {
         createClickTimeline($(this));
-        if (settingView != "animation") {
-          ToSettingOptions("animation");
-        } else {
-          ToSettingOptions("lable");
-        }
-      }
-    });
+        gsap
+          .timeline({ defaults: { duration: 0.2, ease: "set1" } })
+          .to(".pause-lable-container", {
+            onStart: switchPauseBtn().start,
+            autoAlpha: 0,
+            onComplete: switchPauseBtn().complete,
+          })
+          .to(".pause-lable-container", {
+            autoAlpha: 1,
+          });
+      });
 
-    $(".language-btn").on("click", function () {
-      if (isIndex) {
+      $(".reverse-btn").on("click", function () {
         createClickTimeline($(this));
-        if (settingView != "language") {
-          ToSettingOptions("language");
-        } else {
-          ToSettingOptions("lable");
-        }
-      }
-    });
+        bgAnimation.reversed(!bgAnimation.reversed());
+      });
 
-    $(".color-btn").on("click", function () {
-      if (isIndex) {
-        createClickTimeline($(this));
-        if (settingView != "color") {
-          ToSettingOptions("color");
-        } else {
-          ToSettingOptions("lable");
-        }
-      }
-    });
-
-    $(".pause-btn").on("click", function () {
-      createClickTimeline($(this));
-      gsap
-        .timeline({ defaults: { duration: 0.2, ease: "set1" } })
-        .to(".pause-lable-container", {
-          onStart: switchPauseBtn().start,
-          autoAlpha: 0,
-          onComplete: switchPauseBtn().complete,
-        })
-        .to(".pause-lable-container", {
-          autoAlpha: 1,
+      //輸入色彩選擇事件
+      $(".color-picker-background input").on("input", function () {
+        gsap.set(".color-picker-background div", {
+          backgroundColor: $(this).val(),
         });
-    });
+        changeUIColor("background", $(this).val());
+      });
 
-    $(".reverse-btn").on("click", function () {
-      createClickTimeline($(this));
-      bgAnimation.reversed(!bgAnimation.reversed());
-    });
-
-    //輸入色彩選擇事件
-    $(".color-picker-background input").on("input", function () {
-      $(".color-picker-background div").css("background-color", $(this).val());
-    });
-
-    $(".color-picker-interface input").on("input", function () {
-      $(".color-picker-interface div").css("background-color", $(this).val());
-    });
+      $(".color-picker-interface input").on("input", function () {
+        gsap.set(".color-picker-interface div", {
+          backgroundColor: $(this).val(),
+        });
+        changeUIColor("interface", $(this).val());
+      });
+    }
+    bindSetBtnEvents();
 
     //離開主頁時關閉選單
     $(".page-btn-title").on("click", () => {

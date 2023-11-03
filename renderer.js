@@ -91,45 +91,54 @@ $(document).ready(async function () {
       ".setting-menu, .setting-bar .line, .options-icon, .options-icon img, " +
       ".options-lable, .options-lable > div, .options-animation, .options-animation .option, " +
       ".options-language, .options-language div, .options-color, .options-color .option";
-
-    // 合併隱藏元素
     const hiddenElements =
       hiddenGalleryElements +
       ", " +
       hiddenCloseBarElements +
       ", " +
       hiddenSettingBarElements;
-
-    // 隱藏元素
     gsap.set(hiddenElements, { autoAlpha: 0 });
 
-    // 紀錄所有紅色字元素
+    //
+    // 紀錄所有紅色字元素(需要先向上移動隱藏)
     const redLables =
       ".stop-lable-red, .restart-lable-red, .animation-lable-red, .language-lable-red, " +
       ".color-lable-red, .bottom-lable-red, .pause-lable-red, .reverse-lable-red";
-
-    // 設定元素初始transform
     gsap.set(redLables, { y: -40 });
+
+    //
+    // 設定元素初始transform
     gsap.set(".animation-btn, .language-btn, color-btn", { scale: 1.15 });
     gsap.set(".bottom-btn", { rotate: 180, scale: 0.9 });
     gsap.set(".top-btn", { y: 100 });
 
+    //
+    // 色彩選項預設值給定
+    gsap.set(".color-picker-background > .color-picker-top", {
+      backgroundColor: $(".color-picker-background > input").attr("value"),
+    });
+    gsap.set(".color-picker-interface > .color-picker-top", {
+      backgroundColor: $(".color-picker-interface > input").attr("value"),
+    });
+
+    //
     // 開頭動畫開始位置
-    gsap.set(".page-btn-container", { display: "none" });
-    gsap.set(".title", {
+    const contentElements =
+      ".title img, .title h1, .search-bar, .setting-bar, .close-bar, .page-btn";
+    const titleSetting = {
       margin: 0,
       width: "100%",
       height: "100%",
       borderRadius: "0px",
-    });
-    gsap.set(
-      ".title img, .title h1, .search-bar, .setting-bar, .close-bar, .page-btn",
-      {
-        scale: 2,
-        y: -100,
-        autoAlpha: 0,
-      }
-    );
+    };
+    const contentElementsSetting = {
+      scale: 2,
+      y: -100,
+      autoAlpha: 0,
+    };
+    gsap.set(".page-btn-container", { display: "none" });
+    gsap.set(".title", titleSetting);
+    gsap.set(contentElements, contentElementsSetting);
   }
   initialize();
 
@@ -1041,12 +1050,12 @@ $(document).ready(async function () {
     });
 
     //輸入色彩選擇事件
-    $(".color-picker-background input").on("input", function (e) {
-      $(".color-picker-background div").css("background-color", e.target.value);
+    $(".color-picker-background input").on("input", function () {
+      $(".color-picker-background div").css("background-color", $(this).val());
     });
 
-    $(".color-picker-interface input").on("input", function (e) {
-      $(".color-picker-interface div").css("background-color", e.target.value);
+    $(".color-picker-interface input").on("input", function () {
+      $(".color-picker-interface div").css("background-color", $(this).val());
     });
 
     //離開主頁時關閉選單

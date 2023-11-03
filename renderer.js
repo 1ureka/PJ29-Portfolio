@@ -398,7 +398,7 @@ $(document).ready(async function () {
    * 製作點擊時間軸動畫 @param {JQuery} element
    */
   function createClickTimeline(element) {
-    gsap.timeline().to(element, {
+    return gsap.timeline().to(element, {
       keyframes: [
         { y: 25, duration: 0.2, ease: "expo.out" },
         { y: 0, duration: 0.2, ease: "expo.out" },
@@ -986,7 +986,13 @@ $(document).ready(async function () {
           gsap.set("body", { backgroundColor: color });
           break;
         case "interface":
-          // gsap.set("", { backgroundColor: color });
+          gsap.set(".title", { backgroundColor: color });
+          gsap.set(".page-btn-title", { backgroundColor: color + "E6" }); // #E6 = 230 / 255 ~= 0.9
+          gsap.set(".search-input", { backgroundColor: color + "80" }); // #80 = 128 / 255 ~= 0.5
+          gsap.set(
+            ".close-bar, .setting-bar, .search-bar, .options-language div, .back-to-home, .top-btn, .text-container div",
+            { backgroundColor: color + "A6" }
+          ); // #A6 = 166 / 255 ~= 0.65
           break;
       }
     }

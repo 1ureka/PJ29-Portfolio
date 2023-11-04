@@ -21,12 +21,12 @@
     },
     ".animation-lable-red": {
       "en": "animation",
-      "ja": "アニメーション",
+      "ja": "アニメ",
       "zh-Hant": "動畫"
     },
     ".animation-lable-white": {
       "en": "animation",
-      "ja": "アニメーション",
+      "ja": "アニメ",
       "zh-Hant": "動畫"
     },
     ".language-lable-red": {
@@ -41,12 +41,12 @@
     },
     ".color-lable-red": {
       "en": "color",
-      "ja": "デザイン",
+      "ja": "いろ",
       "zh-Hant": "色彩"
     },
     ".color-lable-white": {
       "en": "color",
-      "ja": "デザイン",
+      "ja": "いろ",
       "zh-Hant": "色彩"
     },
     ".bottom-lable-red": {

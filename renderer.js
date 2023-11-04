@@ -294,7 +294,15 @@ $(document).ready(async function () {
         defaults: { duration: 0.2, ease: "set1" },
       });
 
-      if (["back-to-home", "text-container div"].includes(e)) {
+      if (
+        [
+          "back-to-home",
+          "text-container div",
+          "english",
+          "japanese",
+          "chinese",
+        ].includes(e)
+      ) {
         timeline.to(`.${e}`, {
           scale: 1.25,
         });
@@ -317,7 +325,9 @@ $(document).ready(async function () {
         );
       }
 
-      if (["back-to-home", "text-container div"].includes(e)) {
+      if (
+        ["text-container div", , "english", "japanese", "chinese"].includes(e)
+      ) {
         timeline.to(
           `.${e}`,
           {
@@ -360,6 +370,9 @@ $(document).ready(async function () {
       "page-btn-title[data-image='Scene']",
       "back-to-home",
       "text-container div",
+      "english",
+      "japanese",
+      "chinese",
     ];
 
     elementsUsingT1.map(

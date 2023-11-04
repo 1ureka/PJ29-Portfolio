@@ -1,0 +1,113 @@
+{
+    ".title h1": {
+      "en": "1ureka's CG",
+      "ja": "1urekaのCG",
+      "zh-Hant": "1ureka's CG"
+    },
+    ".page-btn.Nature > .page-btn-title": {
+      "en": "Nature",
+      "ja": "自然",
+      "zh-Hant": "自然"
+    },
+    ".page-btn.Props > .page-btn-title": {
+      "en": "Props",
+      "ja": "プロップ",
+      "zh-Hant": "道具"
+    },
+    ".page-btn.Scene > .page-btn-title": {
+      "en": "Scene",
+      "ja": "シーン",
+      "zh-Hant": "場景"
+    },
+    ".animation-lable-red": {
+      "en": "animation",
+      "ja": "アニメーション",
+      "zh-Hant": "動畫"
+    },
+    ".animation-lable-white": {
+      "en": "animation",
+      "ja": "アニメーション",
+      "zh-Hant": "動畫"
+    },
+    ".language-lable-red": {
+      "en": "language",
+      "ja": "言語",
+      "zh-Hant": "語言"
+    },
+    ".language-lable-white": {
+      "en": "language",
+      "ja": "言語",
+      "zh-Hant": "語言"
+    },
+    ".color-lable-red": {
+      "en": "color",
+      "ja": "デザイン",
+      "zh-Hant": "色彩"
+    },
+    ".color-lable-white": {
+      "en": "color",
+      "ja": "デザイン",
+      "zh-Hant": "色彩"
+    },
+    ".bottom-lable-red": {
+      "en": "back",
+      "ja": "戻る",
+      "zh-Hant": "返回"
+    },
+    ".bottom-lable-white": {
+      "en": "back",
+      "ja": "戻る",
+      "zh-Hant": "返回"
+    },
+    ".pause-lable-red": {
+      "en": "pause",
+      "ja": "一時停止",
+      "zh-Hant": "暫停"
+    },
+    ".pause-lable-white": {
+      "en": "pause",
+      "ja": "一時停止",
+      "zh-Hant": "暫停"
+    },
+    ".play-lable-red": {
+        "en": "play",
+        "ja": "再生",
+        "zh-Hant": "繼續"
+      },
+    ".play-lable-white": {
+        "en": "play",
+        "ja": "再生",
+        "zh-Hant": "繼續"
+    },
+    ".reverse-lable-red": {
+      "en": "reverse",
+      "ja": "逆再生",
+      "zh-Hant": "反轉"
+    },
+    ".reverse-lable-white": {
+      "en": "reverse",
+      "ja": "逆再生",
+      "zh-Hant": "反轉"
+    },
+    ".stop-lable-red": {
+      "en": "close",
+      "ja": "閉じる",
+      "zh-Hant": "關閉"
+    },
+    ".stop-lable-white": {
+      "en": "close",
+      "ja": "閉じる",
+      "zh-Hant": "關閉"
+    },
+    ".restart-lable-red": {
+      "en": "restart",
+      "ja": "再開",
+      "zh-Hant": "重新啟動"
+    },
+    ".restart-lable-white": {
+      "en": "restart",
+      "ja": "再開",
+      "zh-Hant": "重新啟動"
+    }
+  }
+  

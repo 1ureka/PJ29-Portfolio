@@ -964,30 +964,61 @@ $(document).ready(async function () {
         });
     }
     /** 切換播放/暫停按鈕與文字 */
-    function switchPauseBtn() {
-      if (bgAnimation.paused()) {
-        const start = () => {
-          $(".pause-btn").attr("src", "./images/icon/pause.png");
-          bgAnimation.resume();
-        };
+    function changeAnimationState() {
+      const tl = gsap.timeline({ defaults: { duration: 0.2, ease: "set1" } });
+      const textData = {
+        en: { play: "play", pause: "pause" },
+        ja: { play: "再生", pause: "一時停止" },
+        "zh-Hant": { play: "繼續", pause: "暫停" },
+      };
+      const lang = $(".pause-lable-red").attr("lang") || "en";
 
-        const complete = () => {
-          $(".pause-lable-container > div").text("pause");
-        };
-
-        return { start, complete };
+      if (!bgAnimation.paused()) {
+        tl.to(".pause-lable-container", {
+          onStart: () => {
+            $(".pause-btn").attr("src", "./images/icon/play.png");
+            $(".pause-btn").attr("class", "play-btn");
+            bgAnimation.pause();
+          },
+          autoAlpha: 0,
+        }).to(".pause-lable-container", {
+          onStart: () => {
+            console.log(textData[lang]["play"]);
+            $(".pause-lable-container > div").text(textData[lang]["play"]);
+            $(".pause-lable-red").attr("class", "play-lable-red");
+            $(".pause-lable-white").attr("class", "play-lable-white");
+          },
+          autoAlpha: 1,
+        });
       } else {
-        const start = () => {
-          $(".pause-btn").attr("src", "./images/icon/play.png");
-          bgAnimation.pause();
-        };
-
-        const complete = () => {
-          $(".pause-lable-container > div").text("play");
-        };
-
-        return { start, complete };
+        tl.to(".pause-lable-container", {
+          onStart: () => {
+            $(".play-btn").attr("src", "./images/icon/pause.png");
+            $(".play-btn").attr("class", "pause-btn");
+            bgAnimation.resume();
+          },
+          autoAlpha: 0,
+        }).to(".pause-lable-container", {
+          onStart: () => {
+            console.log(textData[lang]["pause"]);
+            $(".pause-lable-container > div").text(textData[lang]["pause"]);
+            $(".play-lable-red").attr("class", "pause-lable-red");
+            $(".play-lable-white").attr("class", "pause-lable-white");
+          },
+          autoAlpha: 1,
+        });
       }
+    }
+    /** 更改語言 @param {"en"|"ja"|"zh-Hant"} lang */
+    function changeLanguage(lang) {
+      $.getJSON("language.json", function (data) {
+        // 使用forEach迭代每个選擇器和對應的文本内容
+        Object.entries(data).forEach(([selector, textData]) => {
+          const element = $(selector);
+          element.text(textData[lang]);
+          element.attr("lang", lang);
+        });
+      });
     }
     /** 更新介面顏色 @param {"background"|"interface"} option @param {string} color */
     function changeUIColor(option, color) {
@@ -1064,21 +1095,18 @@ $(document).ready(async function () {
     function bindSetBtnEvents() {
       $(".pause-btn").on("click", function () {
         createClickTimeline($(this));
-        gsap
-          .timeline({ defaults: { duration: 0.2, ease: "set1" } })
-          .to(".pause-lable-container", {
-            onStart: switchPauseBtn().start,
-            autoAlpha: 0,
-            onComplete: switchPauseBtn().complete,
-          })
-          .to(".pause-lable-container", {
-            autoAlpha: 1,
-          });
+        changeAnimationState();
       });
 
       $(".reverse-btn").on("click", function () {
         createClickTimeline($(this));
         bgAnimation.reversed(!bgAnimation.reversed());
+      });
+
+      //語言選項
+      $(".options-language > div").on("click", function () {
+        createClickTimeline($(this));
+        changeLanguage($(this).attr("lang"));
       });
 
       //輸入色彩選擇事件

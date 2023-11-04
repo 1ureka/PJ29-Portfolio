@@ -327,6 +327,7 @@
 }
 
 .pause-lable-red,
+.play-lable-red,
 .reverse-lable-red {
   position: absolute;
   color: #ea81af;

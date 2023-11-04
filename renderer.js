@@ -971,7 +971,8 @@ $(document).ready(async function () {
         ja: { play: "再生", pause: "一時停止" },
         "zh-Hant": { play: "繼續", pause: "暫停" },
       };
-      const lang = $(".pause-lable-red").attr("lang") || "en";
+      const lang =
+        $(".pause-lable-container > div").first().attr("lang") || "en";
 
       if (!bgAnimation.paused()) {
         tl.to(".pause-lable-container", {
@@ -983,7 +984,6 @@ $(document).ready(async function () {
           autoAlpha: 0,
         }).to(".pause-lable-container", {
           onStart: () => {
-            console.log(textData[lang]["play"]);
             $(".pause-lable-container > div").text(textData[lang]["play"]);
             $(".pause-lable-red").attr("class", "play-lable-red");
             $(".pause-lable-white").attr("class", "play-lable-white");
@@ -1000,7 +1000,6 @@ $(document).ready(async function () {
           autoAlpha: 0,
         }).to(".pause-lable-container", {
           onStart: () => {
-            console.log(textData[lang]["pause"]);
             $(".pause-lable-container > div").text(textData[lang]["pause"]);
             $(".play-lable-red").attr("class", "pause-lable-red");
             $(".play-lable-white").attr("class", "pause-lable-white");

@@ -9,23 +9,54 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "greet"
-  list-files:
+  update-images-urls:
     runs-on: ubuntu-latest
+
     steps:
-    - name: Checkout repository
+    - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: List files in my-folder
-      run: |
-        # 使用 ls 命令列出 my-folder 中的檔案
-        files=$(ls)
-        echo "$files" > files-list.txt
-        # 或者，將它們輸出為步驟的輸出變數
-        echo "::set-output name=files::$files"
-
-    - name: Upload files list
-      uses: actions/upload-artifact@v2
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
       with:
-        name: files-list
-        path: files-list.txt
+        node-version: 14 # 可以根據你的專案需求選擇Node.js版本
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Update imagesUrls.json
+      run: |
+        node <<EOF
+        const fs = require('fs');
+        const path = require('path');
+
+        const mainfolder = path.join(__dirname, 'images/jpg');
+        const subfolders = ['Nature', 'Props', 'Scene'];
+        const imagePaths = {};
+
+        for (const subfolder of subfolders) {
+          const subfolderPath = path.join(mainfolder, subfolder);
+          try {
+            const allFiles = fs.readdirSync(subfolderPath);
+            const jpgFiles = allFiles.filter((file) => file.endsWith('.jpg'));
+            const jpgPaths = jpgFiles.map((file) => path.join(subfolderPath, file));
+
+            imagePaths[subfolder] = jpgPaths;
+          } catch (error) {
+            console.error(`Error reading image files in ${subfolder}:`, error);
+          }
+        }
+
+        const jsonContent = JSON.stringify(imagePaths, null, 2);
+        fs.writeFileSync('imagesUrls.json', jsonContent);
+        EOF
+
+    - name: Commit and push changes
+      run: |
+        git config --global user.email "github-actions@github.com"
+        git config --global user.name "GitHub Actions"
+        git add imagesUrls.json
+        git commit -m "Update imagesUrls.json"
+        git push
+
+

@@ -21,46 +21,42 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: 14 # 可以根據你的專案需求選擇Node.js版本
-
-    - name: Install dependencies
-      run: npm install
-
     - name: Update imagesUrls.json
       run: |
-        node <<EOF
-        const fs = require('fs');
-        const path = require('path');
-
-        const mainfolder = path.join(__dirname, 'images/jpg');
-        const subfolders = ['Nature', 'Props', 'Scene'];
-        const imagePaths = {};
-
-        for (const subfolder of subfolders) {
-          const subfolderPath = path.join(mainfolder, subfolder);
-          console.log(subfolderPath);
-          try {
-            const allFiles = fs.readdirSync(subfolderPath);
-            console.log(allFiles);
-            const jpgFiles = allFiles.filter((file) => file.endsWith('.jpg'));
-            console.log(jpgFiles);
-            const jpgPaths = jpgFiles.map((file) => path.join(subfolderPath, file));
-            console.log(jpgPaths);
-
-            imagePaths[subfolder] = jpgPaths;
-            console.log(imagePaths);
-          } catch (error) {
-            console.log(`Error reading image files in ${subfolder}:`);
-          }
-        }
-
-        const jsonContent = JSON.stringify(imagePaths, null, 2);
-        console.log(jsonContent);
-        fs.writeFileSync('imagesUrls.json', jsonContent);
-        EOF
+        mainfolder="images/jpg"
+        subfolders=("Nature" "Props" "Scene")
+        declare -A imagePaths
+        
+        for subfolder in "${subfolders[@]}"; do
+          subfolderPath="$mainfolder/$subfolder"
+          echo "subfolderPath: $subfolderPath"
+          if [ -d "$subfolderPath" ]; then
+            allFiles=($(ls "$subfolderPath"))
+            echo "allFiles: ${allFiles[@]}"
+            
+            jpgFiles=()
+            for file in "${allFiles[@]}"; do
+              if [[ "$file" == *.jpg ]]; then
+                jpgFiles+=("$file")
+              fi
+            done
+            echo "jpgFiles: ${jpgFiles[@]}"
+            
+            jpgPaths=()
+            for file in "${jpgFiles[@]}"; do
+              jpgPaths+=("$subfolderPath/$file")
+            done
+            echo "jpgPaths: ${jpgPaths[@]}"
+            
+            imagePaths["$subfolder"]=("${jpgPaths[@]}")
+            echo "imagePaths: ${imagePaths[@]}"
+          else
+            echo "Error reading image files in $subfolder"
+          fi
+        done
+        
+        jsonContent=$(declare -p imagePaths)
+        echo "$jsonContent" > "imagesUrls.json"
 
     - name: Commit and push changes
       run: |
@@ -69,5 +65,3 @@ jobs:
         git add imagesUrls.json
         git commit -m "Update imagesUrls.json"
         git push
-
-

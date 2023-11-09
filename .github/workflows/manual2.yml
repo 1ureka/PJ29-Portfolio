@@ -1,6 +1,6 @@
 # This is a basic workflow that is manually triggered
 
-name: Manual workflow
+name: Manual workflow 2
 
 # Controls when the action will run. Workflow runs when manually triggered using the UI
 # or API.
@@ -18,4 +18,4 @@ jobs:
     steps:
     # Runs a single command using the runners shell
     - name: Send greeting
-      run: ls /images/jpg/Nature
+      run: ls images/jpg/Nature

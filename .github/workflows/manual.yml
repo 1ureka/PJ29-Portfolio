@@ -41,19 +41,24 @@ jobs:
 
         for (const subfolder of subfolders) {
           const subfolderPath = path.join(mainfolder, subfolder);
+          console.log(`subfolderPath: ${subfolderPath}`);
           try {
             const allFiles = fs.readdirSync(subfolderPath);
+            console.log(`allFiles: ${allFiles}`);
             const jpgFiles = allFiles.filter((file) => file.endsWith('.jpg'));
+            console.log(`jpgFiles: ${jpgFiles}`);
             const jpgPaths = jpgFiles.map((file) => path.join(subfolderPath, file));
+            console.log(`jpgPaths: ${jpgPaths}`);
 
             imagePaths[subfolder] = jpgPaths;
+            console.log(`imagePaths: ${imagePaths}`);
           } catch (error) {
             console.log(`Error reading image files in ${subfolder}:`);
           }
         }
 
         const jsonContent = JSON.stringify(imagePaths, null, 2);
-        console.log(jsonContent)
+        console.log(`jsonContent: ${jsonContent}`);
         fs.writeFileSync('imagesUrls.json', jsonContent);
         EOF
 

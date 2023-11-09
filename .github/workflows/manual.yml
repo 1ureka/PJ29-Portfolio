@@ -33,6 +33,7 @@ jobs:
         const mainfolder = path.join(__dirname, 'images/jpg');
         const subfolders = ['Nature', 'Props', 'Scene'];
         const imagePaths = {};
+        console.log(subfolders)
 
         for (const subfolder of subfolders) {
           const subfolderPath = path.join(mainfolder, subfolder);
@@ -43,7 +44,7 @@ jobs:
 
             imagePaths[subfolder] = jpgPaths;
           } catch (error) {
-            console.error(`Error reading image files in ${subfolder}:`, error);
+            console.log(`Error reading image files in ${subfolder}:`);
           }
         }
 

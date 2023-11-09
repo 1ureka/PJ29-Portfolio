@@ -33,7 +33,6 @@ jobs:
         const mainfolder = path.join(__dirname, 'images/jpg');
         const subfolders = ['Nature', 'Props', 'Scene'];
         const imagePaths = {};
-        console.log(subfolders)
 
         for (const subfolder of subfolders) {
           const subfolderPath = path.join(mainfolder, subfolder);
@@ -49,13 +48,14 @@ jobs:
         }
 
         const jsonContent = JSON.stringify(imagePaths, null, 2);
+        console.log(jsonContent)
         fs.writeFileSync('imagesUrls.json', jsonContent);
         EOF
 
     - name: Commit and push changes
       run: |
-        git config --global user.email "github-actions@github.com"
-        git config --global user.name "GitHub Actions"
+        git config --global user.email "summerheadquarters001@gmail.com"
+        git config --global user.name "1ureka"
         git add imagesUrls.json
         git commit -m "Update imagesUrls.json"
         git push

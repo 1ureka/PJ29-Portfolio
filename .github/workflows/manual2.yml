@@ -18,4 +18,4 @@ jobs:
     steps:
     # Runs a single command using the runners shell
     - name: Send greeting
-      run: ls images/jpg/Nature
+      run: ls

@@ -31,7 +31,9 @@ jobs:
         const path = require('path');
 
         const mainfolder = path.join(__dirname, 'images/jpg');
+        console.log(mainfolder)
         const subfolders = ['Nature', 'Props', 'Scene'];
+        console.log(subfolders)
         const imagePaths = {};
 
         for (const subfolder of subfolders) {

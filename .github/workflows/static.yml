@@ -1,0 +1,77 @@
+name: Update urls and push to deploy
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  update-images-urls:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Update imagesUrls.json
+        run: |
+          node <<EOF
+          const fs = require('fs');
+          const path = require('path');
+
+          const mainfolder = path.join(__dirname, 'images/jpg');
+          console.log(mainfolder)
+          const subfolders = ['Nature', 'Props', 'Scene'];
+          console.log(subfolders)
+          const imagePaths = {};
+
+          for (const subfolder of subfolders) {
+            const subfolderPath = path.join(mainfolder, subfolder);
+            try {
+              const allFiles = fs.readdirSync(subfolderPath);
+              const jpgFiles = allFiles.filter((file) => file.endsWith('.jpg'));
+              const jpgPaths = jpgFiles.map((file) => path.join(subfolderPath, file));
+
+              imagePaths[subfolder] = jpgPaths;
+            } catch (error) {
+              console.log("Error reading image files");
+            }
+          }
+
+          const jsonContent = JSON.stringify(imagePaths, null, 2);
+          fs.writeFileSync('imagesUrls.json', jsonContent);
+          EOF
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add imagesUrls.json
+          git commit -m "Update imagesUrls.json"
+          git push
+
+  push-to-deploy:
+    needs: update-images-urls
+    concurrency: ci-${{ github.ref }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: .
+          branch: deploy

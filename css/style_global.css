@@ -34,6 +34,7 @@ input {
   justify-content: center;
   align-items: center;
   z-index: 99;
+  background-color: hsl(200, 0%, 10%);
 }
 
 .loading {

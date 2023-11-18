@@ -24,8 +24,11 @@
       });
       gsap.registerPlugin(ScrollTrigger);
       gsap.registerPlugin(CustomEase);
+      //製作漸進模式
+      CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
     </script>
-    <script src="js/renderer.js"></script>
+    <script src="js/preload.js"></script>
+    <script src="js/main.js"></script>
   </head>
   <body>
     <div class="loading-container">

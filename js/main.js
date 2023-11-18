@@ -1,8 +1,9 @@
 $(document).ready(async function () {
   //設定動畫預設屬性
   gsap.defaults({ overwrite: "auto" });
-  //製作漸進模式
-  CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
+
+  //取得urls
+  const urls = await loadImageUrls();
 
   //紀錄目前畫面狀態
   let isIndex = false;
@@ -46,58 +47,6 @@ $(document).ready(async function () {
         break;
     }
   }
-
-  /**
-   * 取得圖片url
-   * */
-  function loadJsonFile(filePath) {
-    return new Promise((resolve, reject) => {
-      function successFunction(result) {
-        resolve(result);
-      }
-
-      function errorFunction(xhr, status, error) {
-        const errorInstance = new Error(
-          `AJAX error! Status: ${status}, Error: ${error}`
-        );
-        reject(errorInstance);
-      }
-
-      const config = {
-        url: filePath,
-        dataType: "json",
-        success: successFunction,
-        error: errorFunction,
-      };
-
-      $.ajax(config);
-    });
-  }
-  function parseImageUrls(imagePaths) {
-    /** @type {string[]} */
-    const natureUrl = imagePaths["Nature"].map((url) => url);
-
-    /** @type {string[]} */
-    const propsUrl = imagePaths["Props"].map((url) => url);
-
-    /** @type {string[]} */
-    const sceneUrl = imagePaths["Scene"].map((url) => url);
-
-    const jpgUrl = [...natureUrl, ...propsUrl, ...sceneUrl];
-
-    return { jpgUrl, natureUrl, propsUrl, sceneUrl };
-  }
-  async function loadImageUrls() {
-    try {
-      const json = await loadJsonFile("imagesUrls.json");
-      console.log(json);
-      const urls = parseImageUrls(json);
-      return urls;
-    } catch (error) {
-      console.error(error.message);
-    }
-  }
-  const urls = await loadImageUrls();
 
   /**
    * 設定DOM元素初始CSS(主要是transform)

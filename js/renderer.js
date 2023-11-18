@@ -1,5 +1,3 @@
-/// <reference path="custom.d.ts" />
-
 $(document).ready(async function () {
   //設定動畫預設屬性
   gsap.defaults({ overwrite: "auto" });

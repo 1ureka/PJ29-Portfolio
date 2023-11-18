@@ -50,31 +50,54 @@ $(document).ready(async function () {
   /**
    * 取得圖片url
    * */
-  async function requestImage() {
-    const imagePaths = await window.electronAPI.getImages();
+  function loadJsonFile(filePath) {
+    return new Promise((resolve, reject) => {
+      function successFunction(result) {
+        resolve(result);
+      }
+
+      function errorFunction(xhr, status, error) {
+        const errorInstance = new Error(
+          `AJAX error! Status: ${status}, Error: ${error}`
+        );
+        reject(errorInstance);
+      }
+
+      const config = {
+        url: filePath,
+        dataType: "json",
+        success: successFunction,
+        error: errorFunction,
+      };
+
+      $.ajax(config);
+    });
+  }
+  function parseImageUrls(imagePaths) {
+    /** @type {string[]} */
+    const natureUrl = imagePaths["Nature"].map((url) => url);
 
     /** @type {string[]} */
-    const natureUrl = [];
-    /** @type {string[]} */
-    const propsUrl = [];
-    /** @type {string[]} */
-    const sceneUrl = [];
+    const propsUrl = imagePaths["Props"].map((url) => url);
 
-    imagePaths["Nature"].forEach((imagePath) => {
-      natureUrl.push(`file://${imagePath}`);
-    });
-    imagePaths["Props"].forEach((imagePath) => {
-      propsUrl.push(`file://${imagePath}`);
-    });
-    imagePaths["Scene"].forEach((imagePath) => {
-      sceneUrl.push(`file://${imagePath}`);
-    });
+    /** @type {string[]} */
+    const sceneUrl = imagePaths["Scene"].map((url) => url);
 
     const jpgUrl = [...natureUrl, ...propsUrl, ...sceneUrl];
 
     return { jpgUrl, natureUrl, propsUrl, sceneUrl };
   }
-  const urls = await requestImage();
+  async function loadImageUrls() {
+    try {
+      const json = await loadJsonFile("imagesUrls.json");
+      console.log(json);
+      const urls = parseImageUrls(json);
+      return urls;
+    } catch (error) {
+      console.error(error.message);
+    }
+  }
+  const urls = await loadImageUrls();
 
   /**
    * 設定DOM元素初始CSS(主要是transform)

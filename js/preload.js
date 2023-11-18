@@ -31,9 +31,9 @@ async function loadImageUrls() {
   try {
     const imagesUrls = await loadJson;
 
-    const natureUrl = imagesUrls["Nature"].map((url) => url);
-    const propsUrl = imagesUrls["Props"].map((url) => url);
-    const sceneUrl = imagesUrls["Scene"].map((url) => url);
+    const natureUrl = imagesUrls["Nature"];
+    const propsUrl = imagesUrls["Props"];
+    const sceneUrl = imagesUrls["Scene"];
     const jpgUrl = [...natureUrl, ...propsUrl, ...sceneUrl];
 
     return { jpgUrl, natureUrl, propsUrl, sceneUrl };

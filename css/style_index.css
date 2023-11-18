@@ -86,15 +86,15 @@
 }
 
 .page-btn-title[data-image="Nature"]::before {
-  background-image: url("./images/jpg/Nature/Nature Instance Assets Preview (Oak Tree B).jpg");
+  background-image: url("../images/jpg/Nature/Nature Instance Assets Preview (Oak Tree B).jpg");
 }
 
 .page-btn-title[data-image="Props"]::before {
-  background-image: url("./images/jpg/Props/Bike 1.jpg");
+  background-image: url("../images/jpg/Props/Bike 1.jpg");
 }
 
 .page-btn-title[data-image="Scene"]::before {
-  background-image: url("./images/jpg/Scene/P17.jpg");
+  background-image: url("../images/jpg/Scene/P17.jpg");
 }
 
 .btn-shadow {

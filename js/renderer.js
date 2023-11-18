@@ -90,6 +90,7 @@ $(document).ready(async function () {
   async function loadImageUrls() {
     try {
       const json = await loadJsonFile("imagesUrls.json");
+      console.log(json);
       const urls = parseImageUrls(json);
       return urls;
     } catch (error) {

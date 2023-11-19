@@ -5,6 +5,9 @@ $(document).ready(async function () {
   //取得urls
   const urls = await loadImageUrls();
 
+  //預載圖片
+  await loadImages(urls.jpgUrl);
+
   //紀錄目前畫面狀態
   let isIndex = false;
   let isGallery = false;
@@ -474,7 +477,7 @@ $(document).ready(async function () {
       })
       .timeScale(0.8)
       .to(".loading-container", {
-        delay: 7,
+        delay: 3,
         autoAlpha: 0,
         duration: 0.5,
       })

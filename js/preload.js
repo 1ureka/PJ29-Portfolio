@@ -44,9 +44,25 @@ async function loadImageUrls() {
   }
 }
 
-// 之後用PreloadJS寫
 /**
  * 異步函數，用來預載圖片。
  * @param {string[]} jpgUrl - 圖片的 URL 陣列
  */
-async function loadImages(jpgUrl) {}
+async function loadImages(jpgUrl) {
+  const queue = new createjs.LoadQueue();
+
+  const loadImagesPromise = new Promise((resolve, reject) => {
+    queue.addEventListener("progress", (e) => {
+      console.log(`載入圖片：${(e.progress * 100).toFixed(0)}%`);
+    });
+    queue.addEventListener("complete", () => {
+      resolve();
+      console.log("解析DOM...");
+    });
+    queue.addEventListener("error", reject);
+
+    queue.loadManifest(jpgUrl);
+  });
+
+  await loadImagesPromise;
+}

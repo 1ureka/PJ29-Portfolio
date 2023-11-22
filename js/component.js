@@ -1,6 +1,10 @@
 //
-// basic (icon, input ...)
+// 基礎 (icon, input ...)
 //
+/**
+ * 創建包含上/下圖示的容器。
+ * @returns {jQuery} 滾動圖示的容器。
+ */
 function createScrollIcon() {
   const container = $("<div>").addClass("scroll-icon-container");
 
@@ -16,6 +20,10 @@ function createScrollIcon() {
   return container;
 }
 
+/**
+ * 創建包含搜尋圖示的容器。
+ * @returns {jQuery} 搜尋圖示的容器。
+ */
 function createSearchIcon() {
   const container = $("<div>").addClass("search-icon-container");
 
@@ -35,6 +43,10 @@ function createSearchIcon() {
   return container;
 }
 
+/**
+ * 創建包含橡皮擦圖示的容器。
+ * @returns {jQuery} 橡皮擦圖示的容器。
+ */
 function createEraserIcon() {
   const container = $("<div>").addClass("eraser-icon-container").hide();
 
@@ -54,6 +66,11 @@ function createEraserIcon() {
   return container;
 }
 
+/**
+ * 創建文字輸入框。
+ * @param {Object} config - 用於設定文字輸入框的配置物件。
+ * @returns {jQuery} 文字輸入框的容器。
+ */
 function createTextInput(config) {
   // 預設配置
   const defaultConfig = {
@@ -79,6 +96,16 @@ function createTextInput(config) {
   return container;
 }
 
+/**
+ * 創建元素的輪廓效果。
+ * @param {jQuery} element - 要添加輪廓的元素。
+ * @param {Object} config - 用於設定輪廓效果的配置物件。
+ * @returns {{
+ *   container: jQuery,
+ *   outline1: jQuery,
+ *   outline2: jQuery
+ * }} 包含輪廓元素的物件。
+ */
 function createOutline(element, config) {
   // 預設配置
   const defaultConfig = {
@@ -124,8 +151,13 @@ function createOutline(element, config) {
 }
 
 //
-// complex
+// 複雜
 //
+/**
+ * 創建滾動按鈕，可以是向上或向下的按鈕。
+ * @param {Object} config - 用於設定滾動按鈕的配置物件。
+ * @returns {jQuery} 滾動按鈕的容器。
+ */
 function createScrollButton(config) {
   // 預設配置
   const defaultConfig = {
@@ -145,12 +177,15 @@ function createScrollButton(config) {
 
   button.on("mouseover", () => t1.play());
   button.on("mouseleave", () => t1.reverse());
-
   button.on("click", () => t2.restart());
 
   return button;
 }
 
+/**
+ * 創建搜尋列，包含搜尋圖示、文字輸入框和橡皮擦圖示。
+ * @returns {jQuery} 搜尋列的容器。
+ */
 function createSearchBar() {
   const container = $("<div>").addClass("search-bar");
 
@@ -179,19 +214,13 @@ function createSearchBar() {
     t2s.t2.reverse();
   }
 
-  container.on("mouseover", function () {
-    tlplay();
-  });
+  container.on("mouseover", tlplay);
   container.on("mouseleave", function () {
     if (!input.is(":focus")) tlreverse();
   });
 
-  input.on("focus", function () {
-    tlplay();
-  });
-  input.on("blur", function () {
-    tlreverse();
-  });
+  input.on("focus", tlplay);
+  input.on("blur", tlreverse);
   input.on("keyup", function () {
     if (input.val()) {
       eraserIcon.show(350);
@@ -203,9 +232,11 @@ function createSearchBar() {
   $.extend(container, {
     onInput: function (handler) {
       input.on("keyup", handler);
+      return this;
     },
-    onCleard: function (handler) {
+    onCleared: function (handler) {
       eraserIcon.on("click", handler);
+      return this;
     },
   });
 

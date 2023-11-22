@@ -11,5 +11,9 @@ $(document).ready(function () {
   $("#scroll-buttons-container").append(scrollButtonUp, scrollButtonDown);
 
   // 創建搜尋欄
-  const searchBar = createSearchBar().appendTo("#header");
+  const searchBar = createSearchBar()
+    .onCleared(() => {
+      searchBar.find("input").val("");
+    })
+    .appendTo("#header");
 });

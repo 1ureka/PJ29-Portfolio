@@ -66,6 +66,70 @@ function createSearchIconHoverTl(iconContainer) {
   return { t1, t2 };
 }
 
+function createFolderIconHoverTl(container) {
+  const front = container.find(".folder-icon-front");
+
+  const frontTimeline = gsap
+    .timeline({ defaults: { duration: 0.2, ease: "set1" }, paused: true })
+    .to(front, {
+      rotateY: -30,
+      rotateX: 30,
+      width: 38,
+    });
+
+  return frontTimeline;
+}
+
+function createFolderButtonHoverTl(button) {
+  const buttonTimeline = gsap
+    .timeline({ defaults: { duration: 0.2, ease: "set1" }, paused: true })
+    .to(button, {
+      scale: 1.05,
+      height: 50,
+      margin: "10px 0",
+      backgroundColor: "#ea81af",
+    })
+    .to(
+      button.find(".folder-button-layer1 > *"),
+      { y: 40, stagger: 0.2 / 3 },
+      "<"
+    )
+    .to(
+      button.find(".folder-button-layer2 > *"),
+      { y: 0, stagger: 0.2 / 3 },
+      "<"
+    );
+
+  return buttonTimeline;
+}
+
+function createFolderButtonClickTl(button) {
+  const buttonTimeline = gsap
+    .timeline({
+      defaults: { duration: 0.1, ease: "set1" },
+      paused: true,
+    })
+    .to(button, { scale: 0.9, yoyo: true, repeat: 1 });
+
+  return buttonTimeline;
+}
+
+function createFolderSelectOpenTl(select) {
+  const main = select.find(".folder-button").eq(0);
+  const pages = select.find(".folder-button").not(main);
+  const hr = select.find(".h-separator");
+  const timeline = gsap
+    .timeline({
+      defaults: { duration: 0.2, ease: "set1" },
+      paused: true,
+    })
+    .from(hr, { width: 0 })
+    .from(pages, { ease: "back.out(2)", scale: 0.1, stagger: 0.1 }, "<")
+    .from(pages, { autoAlpha: 0, stagger: 0.1 }, "<");
+
+  return timeline;
+}
+
 function createOutlineTl(element, config) {
   // 預設配置
   const defaultConfig = {

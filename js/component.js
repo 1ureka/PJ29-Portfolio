@@ -67,6 +67,100 @@ function createEraserIcon() {
 }
 
 /**
+ * 創建資料夾圖示，包含圖片和前景元素。
+ * @param {Object} config - 用於設定資料夾圖示的配置物件。
+ * @param {string} config.imgColor - 圖片顏色。
+ * @param {string} config.backgroundColor - 前景元素的背景顏色。
+ * @param {string} config.borderColor - 前景元素的邊框顏色。
+ * @returns {jQuery} 資料夾圖示的容器。
+ */
+function createFolderIcon(config) {
+  // 預設配置
+  const defaultConfig = {
+    imgColor: "white",
+    backgroundColor: "white",
+    borderColor: "hsl(240, 5%, 10%)",
+  };
+
+  // 合併預設配置和用戶提供的配置
+  config = { ...defaultConfig, ...config };
+
+  const container = $("<div>").addClass("folder-icon-container");
+
+  const img = $("<img>")
+    .addClass("folder-icon-img")
+    .attr("src", `icons/folder (${config.imgColor}).png`);
+  const front = $("<div>")
+    .addClass("folder-icon-front")
+    .css("backgroundColor", config.backgroundColor)
+    .css("borderColor", config.borderColor);
+
+  container.append(img, front);
+
+  return container;
+}
+
+/**
+ * 創建垂直分隔線。
+ * @param {Object} config - 用於設定分隔線的配置物件。
+ * @param {number} config.margin - 分隔線的邊距。
+ * @param {number} config.width - 分隔線的寬度。
+ * @param {string} config.backgroundColor - 分隔線的背景顏色。
+ * @returns {jQuery} 垂直分隔線。
+ */
+function createVerticalSeparator(config) {
+  // 預設配置
+  const defaultConfig = {
+    margin: 5, // 預設邊距
+    width: 2, // 預設粗細
+    backgroundColor: "white", // 預設背景顏色
+  };
+
+  // 合併預設配置和用戶提供的配置
+  config = { ...defaultConfig, ...config };
+
+  const separator = $("<div>")
+    .addClass("v-separator")
+    .css({
+      margin: `0 ${config.margin}px`,
+      width: `${config.width}px`,
+      backgroundColor: config.backgroundColor,
+    });
+
+  return separator;
+}
+
+/**
+ * 創建水平分隔線。
+ * @param {Object} config - 用於設定分隔線的配置物件。
+ * @param {number} config.margin - 分隔線的邊距。
+ * @param {number} config.height - 分隔線的高度。
+ * @param {string} config.backgroundColor - 分隔線的背景顏色。
+ * @returns {jQuery} 水平分隔線。
+ */
+function createHorizontalSeparator(config) {
+  // 預設配置
+  const defaultConfig = {
+    margin: 5, // 預設邊距
+    height: 2, // 預設粗細
+    backgroundColor: "white", // 預設背景顏色
+  };
+
+  // 合併預設配置和用戶提供的配置
+  config = { ...defaultConfig, ...config };
+
+  const separator = $("<div>")
+    .addClass("h-separator")
+    .css({
+      margin: `${config.margin}px 0`,
+      height: `${config.height}px`,
+      backgroundColor: config.backgroundColor,
+    });
+
+  return separator;
+}
+
+/**
  * 創建文字輸入框。
  * @param {Object} config - 用於設定文字輸入框的配置物件。
  * @returns {jQuery} 文字輸入框的容器。
@@ -156,7 +250,7 @@ function createOutline(element, config) {
 /**
  * 創建滾動按鈕，可以是向上或向下的按鈕。
  * @param {Object} config - 用於設定滾動按鈕的配置物件。
- * @returns {jQuery} 滾動按鈕的容器。
+ * @returns {jQuery} 滾動按鈕。
  */
 function createScrollButton(config) {
   // 預設配置
@@ -184,7 +278,7 @@ function createScrollButton(config) {
 
 /**
  * 創建搜尋列，包含搜尋圖示、文字輸入框和橡皮擦圖示。
- * @returns {jQuery} 搜尋列的容器。
+ * @returns {jQuery} 整個搜尋欄。
  */
 function createSearchBar() {
   const container = $("<div>").addClass("search-bar");
@@ -241,4 +335,91 @@ function createSearchBar() {
   });
 
   return container;
+}
+
+/**
+ * 創建資料夾按鈕，包含多個圖層。
+ * @param {string} name - 按鈕的名稱。
+ * @returns {jQuery} 資料夾按鈕。
+ */
+function createFolderButton(name = "資料夾") {
+  const button = $("<button>").addClass("folder-button");
+
+  const configs = [
+    {
+      separator: {
+        margin: 8,
+      },
+      iconContainer: {},
+    },
+    {
+      separator: {
+        margin: 8,
+        backgroundColor: "hsl(240, 5%, 10%)",
+      },
+      iconContainer: {
+        imgColor: "black",
+        backgroundColor: "hsl(240, 5%, 10%)",
+        borderColor: "#ea81af",
+      },
+    },
+  ];
+
+  configs.forEach((config, index) => {
+    const layer = $("<div>").addClass(`folder-button-layer${index + 1}`);
+    const separator = createVerticalSeparator(config.separator);
+    const iconContainer = createFolderIcon(config.iconContainer);
+    const label = $("<label>").addClass("folder-button-label").text(name);
+    layer.append(iconContainer, separator, label).appendTo(button);
+  });
+
+  const t1 = createFolderIconHoverTl(button.find(".folder-icon-container"));
+
+  gsap.set(button.find(".folder-button-layer2 > *"), { y: -40 });
+
+  const t2 = createFolderButtonHoverTl(button);
+  const t3 = createFolderButtonClickTl(button);
+
+  button.hover(
+    () => {
+      t1.play();
+      t2.play();
+    },
+    () => {
+      t1.reverse();
+      t2.reverse();
+    }
+  );
+  button.on("click", () => t3.restart());
+
+  return button;
+}
+
+/**
+ * 創建資料夾選擇器，包含主按鈕、水平分隔線和多個資料夾按鈕。
+ * @returns {jQuery} 資料夾選擇器的容器。
+ */
+function createFolderSelect() {
+  const select = $("<div>").addClass("folder-select");
+
+  const main = createFolderButton("作品集");
+  const hr = createHorizontalSeparator({ margin: 8 });
+  const pages = createFolderButton("自然")
+    .add(createFolderButton("物件"))
+    .add(createFolderButton("場景"));
+
+  select.append(main, hr, pages);
+
+  // 製作時間軸也包括初始化收起狀態
+  const t1 = createFolderSelectOpenTl(select);
+
+  main.on("click", () => {
+    if (t1.paused() || t1.reversed()) {
+      t1.play();
+    } else {
+      t1.reverse();
+    }
+  });
+
+  return select;
 }

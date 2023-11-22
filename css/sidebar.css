@@ -5,8 +5,8 @@
   bottom: 0;
   width: 240px;
   padding: 10px;
-  padding-top: 130px;
-  padding-bottom: 80px;
+  padding-top: 110px;
+  padding-bottom: 60px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -33,4 +33,95 @@
 
 #version-display > p {
   margin: 0;
+}
+
+/* createFolderIcon */
+.folder-icon-container {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.folder-icon-img {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+}
+.folder-icon-front {
+  position: absolute;
+  bottom: 6px;
+  box-sizing: border-box;
+  width: 34px;
+  height: 20px;
+  border-radius: 4px;
+  background-color: white;
+  align-self: flex-end;
+  border: solid 3px;
+  transform-origin: center bottom;
+}
+
+/* createVerticalSeparator */
+.v-separator {
+  width: 2px;
+  height: 100%;
+  background-color: white;
+  margin: 0 5px;
+  filter: blur(0.5px);
+}
+
+/* createHorizontalSeparator */
+.h-separator {
+  height: 2px;
+  width: 100%;
+  background-color: white;
+  margin: 5px 0;
+  filter: blur(0.5px);
+}
+
+/* createFolderButton */
+.folder-button {
+  width: 240px;
+  height: 45px;
+  margin: 5px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.folder-button-layer1,
+.folder-button-layer2 {
+  position: absolute;
+  width: 240px;
+  height: 40px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 5px;
+  clip-path: inset(0);
+}
+.folder-button-label {
+  position: relative;
+  width: 172px;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.folder-button-layer2 > .folder-button-label {
+  color: hsl(240, 5%, 10%);
+  font-weight: bolder;
+}
+
+/* createFolderSelect */
+.folder-select {
+  position: relative;
+  width: 240px;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
 }

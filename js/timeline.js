@@ -85,8 +85,7 @@ function createFolderButtonHoverTl(button) {
     .timeline({ defaults: { duration: 0.2, ease: "set1" }, paused: true })
     .to(button, {
       scale: 1.05,
-      height: 50,
-      margin: "10px 0",
+      x: 10,
       backgroundColor: "#ea81af",
     })
     .to(

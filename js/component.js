@@ -47,10 +47,8 @@ function createEraserIcon() {
   const t1 = createEraserIconHoverTl(container);
   const t2 = createEraserIconClickTl(container);
 
-  container.hover(
-    () => t1.play(),
-    () => t1.reverse()
-  );
+  container.on("mouseover", () => t1.play());
+  container.on("mouseleave", () => t1.reverse());
   container.on("click", () => t2.restart());
 
   return container;
@@ -145,10 +143,8 @@ function createScrollButton(config) {
   const t1 = createScrollButtonHoverTl(button);
   const t2 = createScrollButtonClickTl(button);
 
-  button.hover(
-    () => t1.play(),
-    () => t1.reverse()
-  );
+  button.on("mouseover", () => t1.play());
+  button.on("mouseleave", () => t1.reverse());
 
   button.on("click", () => t2.restart());
 
@@ -190,13 +186,13 @@ function createSearchBar() {
     if (!input.is(":focus")) tlreverse();
   });
 
-  input.focus(function () {
+  input.on("focus", function () {
     tlplay();
   });
-  input.blur(function () {
+  input.on("blur", function () {
     tlreverse();
   });
-  input.keyup(function () {
+  input.on("keyup", function () {
     if (input.val()) {
       eraserIcon.show(350);
       return;
@@ -205,17 +201,13 @@ function createSearchBar() {
   });
 
   $.extend(container, {
-    custom: function (handler) {
-      handler("this is from inner");
-      return this;
+    onInput: function (handler) {
+      input.on("keyup", handler);
+    },
+    onCleard: function (handler) {
+      eraserIcon.on("click", handler);
     },
   });
-
-  // 等同於：
-  // container.custom = function (handler) {
-  //   handler("this is from inner");
-  //   return container;
-  // };
 
   return container;
 }

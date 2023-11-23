@@ -380,16 +380,14 @@ function createFolderButton(name = "資料夾") {
   const t2 = createFolderButtonHoverTl(button);
   const t3 = createFolderButtonClickTl(button);
 
-  button.hover(
-    () => {
-      t1.play();
-      t2.play();
-    },
-    () => {
-      t1.reverse();
-      t2.reverse();
-    }
-  );
+  button.on("mouseover", () => {
+    t1.play();
+    t2.play();
+  });
+  button.on("mouseleave", () => {
+    t1.reverse();
+    t2.reverse();
+  });
   button.on("click", () => t3.restart());
 
   return button;

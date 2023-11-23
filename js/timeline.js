@@ -167,6 +167,70 @@ function createOutlineTl(element, config) {
     );
 }
 
+function createBulbLightTl(bulbContainer, config) {
+  // 預設配置
+  const defaultConfig = {
+    color: "#8ce197",
+    intensity: 1,
+    yoyo: false,
+  };
+
+  // 合併預設配置和用戶提供的配置
+  config = { ...defaultConfig, ...config };
+
+  const tl = gsap
+    .timeline({
+      defaults: { duration: config.yoyo ? 0.1 : 0.2, ease: "set1" },
+      paused: true,
+    })
+    .to(bulbContainer.find(".bulb"), {
+      backgroundColor: config.color,
+      boxShadow: `0 0 20px ${(config.intensity - 1) * 10}px ${config.color}`,
+      yoyo: config.yoyo,
+      repeat: config.yoyo ? 1 : 0,
+    })
+    .to(bulbContainer.find(".bulb-filter"), { filter: "blur(3px)" }, "<");
+
+  return tl;
+}
+
+function createFolderBoxHoverTl(box) {
+  const tl = gsap
+    .timeline({
+      defaults: { duration: 0.2, ease: "set1" },
+      paused: true,
+    })
+    .to(box, { width: "+=20" });
+
+  return tl;
+}
+
+function createFolderBoxClickTl(box) {
+  const tl = gsap
+    .timeline({
+      defaults: { duration: 0.1, ease: "set1" },
+      paused: true,
+    })
+    .to(box, { scale: 0.9, repeat: 1, yoyo: true });
+
+  return tl;
+}
+
+function createFolderBoxContainerHoverTl(container) {
+  const tl = gsap
+    .timeline({
+      defaults: { duration: 0.2, ease: "set1" },
+      paused: true,
+    })
+    .from(container.find(".folder-box-img"), {
+      y: 0,
+      autoAlpha: 0,
+      stagger: 0.1,
+    });
+
+  return tl;
+}
+
 //
 // 過場
 //

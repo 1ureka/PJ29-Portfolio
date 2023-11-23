@@ -460,6 +460,121 @@ function createFolderSelect() {
 }
 
 /**
+ * 這個類別用於創建和管理在header的燈泡元素
+ */
+class HeaderBulb {
+  /**
+   * 建構一個新的 `HeaderBulb` 實例。
+   * @constructor
+   * @param {Object} config - 用於配置燈泡的物件。
+   * @param {number} config.width - 燈泡的寬度。
+   * @param {number} config.height - 燈泡的高度。
+   * @param {number} config.intensity - 燈泡的強度。
+   */
+  constructor(config) {
+    // 預設配置
+    const defaultConfig = {
+      width: 40,
+      height: 40,
+      intensity: 1,
+    };
+
+    // 合併預設配置和用戶提供的配置
+    config = { ...defaultConfig, ...config };
+
+    /**
+     * 燈泡的寬度。
+     * @type {number}
+     */
+    this.width = config.width;
+    /**
+     * 燈泡的高度。
+     * @type {number}
+     */
+    this.height = config.height;
+    /**
+     * 燈泡的強度。
+     * @type {number}
+     */
+    this.intensity = config.intensity;
+    /**
+     * 表示燈泡是否已附加到 DOM 中。
+     * @type {boolean}
+     * @private
+     */
+    this._isAppendTo = false;
+
+    /**
+     * 包含燈泡的 jQuery 物件。
+     * @type {jQuery}
+     */
+    this.element = this._createBulb();
+
+    return this;
+  }
+
+  _createBulb() {
+    return createBulb({ width: this.width, height: this.height });
+  }
+
+  _killTimeline() {
+    const tlKeys = ["redTl", "greenTl", "yellowTl", "blueTl"];
+
+    tlKeys.forEach((key) => {
+      if (this[key]) {
+        console.log(this[key]);
+        this[key].kill();
+        this[key] = null;
+      }
+    });
+  }
+
+  turnRed() {
+    this._killTimeline();
+    this.redTl = createBulbLightT2(this.element, {
+      color: "#ea81af",
+      intensity: this.intensity,
+    }).play();
+  }
+
+  turnGreen() {
+    this._killTimeline();
+    this.greenTl = createBulbLightT2(this.element, {
+      color: "#8ce197",
+      intensity: this.intensity,
+    }).play();
+  }
+
+  turnYellow() {
+    this._killTimeline();
+    this.yellowTl = createBulbLightT2(this.element, {
+      color: "#ffff7a",
+      intensity: this.intensity,
+    }).play();
+  }
+
+  turnBlue() {
+    this._killTimeline();
+    this.blueTl = createBulbLightT2(this.element, {
+      color: "#92e9ff",
+      intensity: this.intensity,
+    }).play();
+  }
+
+  /**
+   * 附加燈泡到指定的 DOM 選擇器。
+   * @param {string} jQuery - DOM 選擇器。
+   * @returns {HeaderBulb} - 回傳 `HeaderBulb` 實例，以便進行方法鏈結。
+   */
+  appendTo(selector) {
+    if (this._isAppendTo) return;
+    this._isAppendTo = true;
+    this.element = this.element.appendTo(selector);
+    return this;
+  }
+}
+
+/**
  * 這個類別用於創建和管理具有特定特效的文件夾框元素。
  */
 class FolderBox {

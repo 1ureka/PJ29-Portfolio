@@ -3,10 +3,10 @@
   top: 100px;
   left: 260px;
   right: 0;
-  padding: 15px;
+  padding: 45px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: auto;
-  grid-column-gap: 10px;
-  grid-row-gap: 10px;
+  grid-column-gap: 30px;
+  grid-row-gap: 30px;
 }

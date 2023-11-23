@@ -88,3 +88,9 @@
   box-sizing: border-box;
   position: absolute;
 }
+
+/* headerBulb */
+#header > .bulb-container {
+  position: absolute;
+  right: 20px;
+}

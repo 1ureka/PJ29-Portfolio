@@ -17,6 +17,11 @@ $(document).ready(function () {
     })
     .appendTo("#header");
 
+  // 創建header右方燈泡
+  const headerBulb = new HeaderBulb({ width: 30, height: 30, intensity: 1 });
+  headerBulb.appendTo("#header");
+  headerBulb.turnRed();
+
   // 創建側邊攔 - 資料夾選單 (之後加上自訂事件偵測，比如 onMain 之類的)
   const select = createFolderSelect().appendTo("#sidebar");
 

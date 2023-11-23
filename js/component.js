@@ -503,7 +503,17 @@ class HeaderBulb {
      * @private
      */
     this._isAppendTo = false;
+    /**
+     * 用於存儲時間軸動畫的物件。
+     * @type {Object}
+     * @private
+     */
     this._timelines = {};
+    /**
+     * 顏色對應表，將顏色名稱映射到實際的顏色值。
+     * @type {Object}
+     * @private
+     */
     this._colorMap = {
       red: "#ea81af",
       green: "#8ce197",
@@ -520,10 +530,19 @@ class HeaderBulb {
     return this;
   }
 
+  /**
+   * 創建燈泡元素。
+   * @private
+   * @returns {jQuery} - 燈泡元素的 jQuery 物件。
+   */
   _createBulb() {
     return createBulb({ width: this.width, height: this.height });
   }
 
+  /**
+   * 終止所有時間軸動畫。
+   * @private
+   */
   _killTimeline() {
     const tlKeys = ["red", "green", "yellow", "blue"];
 
@@ -537,7 +556,7 @@ class HeaderBulb {
   }
 
   /**
-   *
+   * 切換燈泡的顏色。
    * @param {"red" | "green" | "yellow" | "blue"} color
    */
   switchLight(color) {

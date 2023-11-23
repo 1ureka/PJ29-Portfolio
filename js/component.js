@@ -503,6 +503,13 @@ class HeaderBulb {
      * @private
      */
     this._isAppendTo = false;
+    this._timelines = {};
+    this._colorMap = {
+      red: "#ea81af",
+      green: "#8ce197",
+      yellow: "#ffff7a",
+      blue: "#92e9ff",
+    };
 
     /**
      * 包含燈泡的 jQuery 物件。
@@ -518,45 +525,25 @@ class HeaderBulb {
   }
 
   _killTimeline() {
-    const tlKeys = ["redTl", "greenTl", "yellowTl", "blueTl"];
+    const tlKeys = ["red", "green", "yellow", "blue"];
 
     tlKeys.forEach((key) => {
-      if (this[key]) {
-        console.log(this[key]);
-        this[key].kill();
-        this[key] = null;
+      if (this._timelines[key]) {
+        console.log(this._timelines[key]);
+        this._timelines[key].kill();
+        this._timelines[key] = null;
       }
     });
   }
 
-  turnRed() {
+  /**
+   *
+   * @param {"red" | "green" | "yellow" | "blue"} color
+   */
+  switchLight(color) {
     this._killTimeline();
-    this.redTl = createBulbLightT2(this.element, {
-      color: "#ea81af",
-      intensity: this.intensity,
-    }).play();
-  }
-
-  turnGreen() {
-    this._killTimeline();
-    this.greenTl = createBulbLightT2(this.element, {
-      color: "#8ce197",
-      intensity: this.intensity,
-    }).play();
-  }
-
-  turnYellow() {
-    this._killTimeline();
-    this.yellowTl = createBulbLightT2(this.element, {
-      color: "#ffff7a",
-      intensity: this.intensity,
-    }).play();
-  }
-
-  turnBlue() {
-    this._killTimeline();
-    this.blueTl = createBulbLightT2(this.element, {
-      color: "#92e9ff",
+    this._timelines[color] = createBulbLightT2(this.element, {
+      color: this._colorMap[color],
       intensity: this.intensity,
     }).play();
   }

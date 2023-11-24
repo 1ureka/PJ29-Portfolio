@@ -395,10 +395,31 @@ class FolderSelect {
     // 合併預設配置和用戶提供的配置
     config = { ...defaultConfig, ...config };
 
+    /**
+     * 表示選單是否已關閉。
+     * @type {boolean}
+     */
     this.isClosed = true;
+    /**
+     * 選單主資料夾的名字。
+     * @type {string}
+     */
     this.mainFolder = config.mainFolder;
+    /**
+     * 選單子資料夾的名字陣列。
+     * @type {string[]}
+     */
     this.subFolders = config.subFolders;
+    /**
+     * 子資料夾的數量。
+     * @type {number}
+     */
     this.length = config.subFolders.length;
+    /**
+     * 時間軸物件，用於管理動畫。
+     * @type {Object}
+     * @private
+     */
     this._timelines = {};
     /**
      * 表示選單是否已附加到 DOM 中。
@@ -418,6 +439,7 @@ class FolderSelect {
 
   /**
    * 創建資料夾選單，包含主按鈕、水平分隔線和多個資料夾按鈕。
+   * @private
    * @returns {jQuery} 資料夾選擇器的容器。
    */
   _createFolderSelect() {
@@ -452,6 +474,8 @@ class FolderSelect {
 
   /**
    * 創建資料夾按鈕，包含多個圖層。
+   * @private
+   * @param {string} name - 資料夾名稱。
    * @returns {jQuery} 資料夾按鈕。
    */
   _createFolderButton(name) {
@@ -505,6 +529,11 @@ class FolderSelect {
     return button;
   }
 
+  /**
+   * 設定選單選擇事件的處理函數。
+   * @param {Function} handler - 選擇事件的處理函數。
+   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
+   */
   onSelect(handler) {
     if (this._onSelectHandler)
       this.element.off("click", ".folder-button", this._onSelectHandler);
@@ -518,6 +547,10 @@ class FolderSelect {
     return this;
   }
 
+  /**
+   * 開啟選單。
+   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
+   */
   open() {
     if (!this.isClosed) return this;
     this._timelines.open.play();
@@ -525,6 +558,10 @@ class FolderSelect {
     return this;
   }
 
+  /**
+   * 關閉選單。
+   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
+   */
   close() {
     if (this.isClosed) return this;
     this._timelines.open.reverse();
@@ -532,6 +569,10 @@ class FolderSelect {
     return this;
   }
 
+  /**
+   * 移除選單選擇事件的處理函數。
+   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
+   */
   off() {
     if (this._onSelectHandler) {
       this.element.off("click", ".folder-button", this._onSelectHandler);

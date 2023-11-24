@@ -395,9 +395,11 @@ class FolderSelect {
     // 合併預設配置和用戶提供的配置
     config = { ...defaultConfig, ...config };
 
+    this.isClosed = true;
     this.mainFolder = config.mainFolder;
     this.subFolders = config.subFolders;
     this.length = config.subFolders.length;
+    this._timelines = {};
     /**
      * 表示選單是否已附加到 DOM 中。
      * @type {boolean}
@@ -435,13 +437,13 @@ class FolderSelect {
     });
 
     // 製作時間軸也包括初始化收起狀態
-    const t1 = createFolderSelectOpenTl(select);
+    this._timelines.open = createFolderSelectOpenTl(select);
 
     main.on("click", () => {
-      if (t1.paused() || t1.reversed()) {
-        t1.play();
+      if (this.isClosed) {
+        this.open();
       } else {
-        t1.reverse();
+        this.close();
       }
     });
 
@@ -513,6 +515,20 @@ class FolderSelect {
     };
 
     this.element.on("click", ".folder-button", this._onSelectHandler);
+    return this;
+  }
+
+  open() {
+    if (!this.isClosed) return this;
+    this._timelines.open.play();
+    this.isClosed = false;
+    return this;
+  }
+
+  close() {
+    if (this.isClosed) return this;
+    this._timelines.open.reverse();
+    this.isClosed = true;
     return this;
   }
 

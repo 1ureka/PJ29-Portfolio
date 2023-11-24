@@ -31,6 +31,14 @@ $(document).ready(function () {
   folderSelect.onSelect((label) => {
     console.log(label);
   });
+  // 好玩測試用的
+  // setInterval(() => {
+  //   if (folderSelect.isClosed) {
+  //     folderSelect.open();
+  //   } else {
+  //     folderSelect.close();
+  //   }
+  // }, 1000);
 
   // 創建內容
   const folderbox1 = new FolderBox({ bulbColor: "#8ce197", label: "自然" });

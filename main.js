@@ -22,8 +22,15 @@ $(document).ready(function () {
   headerBulb.appendTo("#header");
   headerBulb.switchLight("red");
 
-  // 創建側邊攔 - 資料夾選單 (之後加上自訂事件偵測，比如 onMain 之類的)
-  const select = createFolderSelect().appendTo("#sidebar");
+  // 創建側邊攔 - 資料夾選單
+  const folderSelect = new FolderSelect({
+    mainFolder: "作品集",
+    subFolders: ["自然", "物件", "場景"],
+  });
+  folderSelect.appendTo("#sidebar");
+  folderSelect.onSelect((label) => {
+    console.log(label);
+  });
 
   // 創建內容
   const folderbox1 = new FolderBox({ bulbColor: "#8ce197", label: "自然" });

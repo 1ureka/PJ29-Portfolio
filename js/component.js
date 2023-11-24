@@ -375,88 +375,166 @@ function createSearchBar() {
 }
 
 /**
- * 創建資料夾按鈕，包含多個圖層。
- * @param {string} name - 按鈕的名稱。
- * @returns {jQuery} 資料夾按鈕。
+ * 這個類別用於創建和管理在sidebar的資料夾選單元素
  */
-function createFolderButton(name = "資料夾") {
-  const button = $("<button>").addClass("folder-button");
+class FolderSelect {
+  /**
+   * 建構一個新的 `FolderSelect` 實例。
+   * @constructor
+   * @param {Object} config - 用於配置選單的物件。
+   * @param {string} config.mainFolder - 選單主資料夾的名字。
+   * @param {string[]} config.subFolders - 選單子資料夾的名字陣列。
+   */
+  constructor(config) {
+    // 預設配置
+    const defaultConfig = {
+      mainFolder: "main",
+      subFolders: ["demo1", "demo2"],
+    };
 
-  const configs = [
-    {
-      separator: {
-        margin: 8,
-      },
-      iconContainer: {},
-    },
-    {
-      separator: {
-        margin: 8,
-        backgroundColor: "hsl(240, 5%, 10%)",
-      },
-      iconContainer: {
-        imgColor: "black",
-        backgroundColor: "hsl(240, 5%, 10%)",
-        borderColor: "#ea81af",
-      },
-    },
-  ];
+    // 合併預設配置和用戶提供的配置
+    config = { ...defaultConfig, ...config };
 
-  configs.forEach((config, index) => {
-    const layer = $("<div>").addClass(`folder-button-layer${index + 1}`);
-    const separator = createVerticalSeparator(config.separator);
-    const iconContainer = createFolderIcon(config.iconContainer);
-    const label = $("<label>").addClass("folder-button-label").text(name);
-    layer.append(iconContainer, separator, label).appendTo(button);
-  });
+    this.mainFolder = config.mainFolder;
+    this.subFolders = config.subFolders;
+    this.length = config.subFolders.length;
+    /**
+     * 表示選單是否已附加到 DOM 中。
+     * @type {boolean}
+     * @private
+     */
+    this._isAppendTo = false;
 
-  const t1 = createFolderIconHoverTl(button.find(".folder-icon-container"));
+    /**
+     * 包含選單的 jQuery 物件。
+     * @type {jQuery}
+     */
+    this.element = this._createFolderSelect();
 
-  gsap.set(button.find(".folder-button-layer2 > *"), { y: -40 });
+    return this;
+  }
 
-  const t2 = createFolderButtonHoverTl(button);
-  const t3 = createFolderButtonClickTl(button);
+  /**
+   * 創建資料夾選單，包含主按鈕、水平分隔線和多個資料夾按鈕。
+   * @returns {jQuery} 資料夾選擇器的容器。
+   */
+  _createFolderSelect() {
+    const select = $("<div>").addClass("folder-select");
 
-  button.on("mouseover", () => {
-    t1.play();
-    t2.play();
-  });
-  button.on("mouseleave", () => {
-    t1.reverse();
-    t2.reverse();
-  });
-  button.on("click", () => t3.restart());
-
-  return button;
-}
-
-/**
- * 創建資料夾選擇器，包含主按鈕、水平分隔線和多個資料夾按鈕。
- * @returns {jQuery} 資料夾選擇器的容器。
- */
-function createFolderSelect() {
-  const select = $("<div>").addClass("folder-select");
-
-  const main = createFolderButton("作品集");
-  const hr = createHorizontalSeparator({ margin: 8 });
-  const pages = createFolderButton("自然")
-    .add(createFolderButton("物件"))
-    .add(createFolderButton("場景"));
-
-  select.append(main, hr, pages);
-
-  // 製作時間軸也包括初始化收起狀態
-  const t1 = createFolderSelectOpenTl(select);
-
-  main.on("click", () => {
-    if (t1.paused() || t1.reversed()) {
-      t1.play();
-    } else {
-      t1.reverse();
+    if (this.subFolders.length <= 0) {
+      console.log("初始化FolderSelect錯誤：沒有子資料夾");
+      return;
     }
-  });
 
-  return select;
+    const main = this._createFolderButton(this.mainFolder);
+    const hr = createHorizontalSeparator({ margin: 8 });
+    select.append(main, hr);
+
+    this.subFolders.forEach((folderName) => {
+      this._createFolderButton(folderName).appendTo(select);
+    });
+
+    // 製作時間軸也包括初始化收起狀態
+    const t1 = createFolderSelectOpenTl(select);
+
+    main.on("click", () => {
+      if (t1.paused() || t1.reversed()) {
+        t1.play();
+      } else {
+        t1.reverse();
+      }
+    });
+
+    return select;
+  }
+
+  /**
+   * 創建資料夾按鈕，包含多個圖層。
+   * @returns {jQuery} 資料夾按鈕。
+   */
+  _createFolderButton(name) {
+    const button = $("<button>").addClass("folder-button");
+
+    const configs = [
+      {
+        separator: {
+          margin: 8,
+        },
+        iconContainer: {},
+      },
+      {
+        separator: {
+          margin: 8,
+          backgroundColor: "hsl(240, 5%, 10%)",
+        },
+        iconContainer: {
+          imgColor: "black",
+          backgroundColor: "hsl(240, 5%, 10%)",
+          borderColor: "#ea81af",
+        },
+      },
+    ];
+
+    configs.forEach((config, index) => {
+      const layer = $("<div>").addClass(`folder-button-layer${index + 1}`);
+      const separator = createVerticalSeparator(config.separator);
+      const iconContainer = createFolderIcon(config.iconContainer);
+      const label = $("<label>").addClass("folder-button-label").text(name);
+      layer.append(iconContainer, separator, label).appendTo(button);
+    });
+
+    const t1 = createFolderIconHoverTl(button.find(".folder-icon-container"));
+
+    gsap.set(button.find(".folder-button-layer2 > *"), { y: -40 });
+
+    const t2 = createFolderButtonHoverTl(button);
+    const t3 = createFolderButtonClickTl(button);
+
+    button.on("mouseover", () => {
+      t1.play();
+      t2.play();
+    });
+    button.on("mouseleave", () => {
+      t1.reverse();
+      t2.reverse();
+    });
+    button.on("click", () => t3.restart());
+
+    return button;
+  }
+
+  onSelect(handler) {
+    if (this._onSelectHandler)
+      this.element.off("click", ".folder-button", this._onSelectHandler);
+
+    this._onSelectHandler = function (e) {
+      const label = $(e.target).find(".folder-button-label").text();
+      handler(label);
+    };
+
+    this.element.on("click", ".folder-button", this._onSelectHandler);
+    return this;
+  }
+
+  off() {
+    if (this._onSelectHandler) {
+      this.element.off("click", ".folder-button", this._onSelectHandler);
+      this._onSelectHandler = null;
+    }
+    return this;
+  }
+
+  /**
+   * 附加選單到指定的 DOM 選擇器。
+   * @param {string} selector - DOM 選擇器。
+   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
+   */
+  appendTo(selector) {
+    if (this._isAppendTo) return;
+    this._isAppendTo = true;
+    this.element = this.element.appendTo(selector);
+    return this;
+  }
 }
 
 /**
@@ -569,7 +647,7 @@ class HeaderBulb {
 
   /**
    * 附加燈泡到指定的 DOM 選擇器。
-   * @param {string} jQuery - DOM 選擇器。
+   * @param {string} selector - DOM 選擇器。
    * @returns {HeaderBulb} - 回傳 `HeaderBulb` 實例，以便進行方法鏈結。
    */
   appendTo(selector) {
@@ -738,7 +816,7 @@ class FolderBox {
 
   /**
    * 附加文件夾框到指定的 DOM 選擇器。
-   * @param {string} jQuery - DOM 選擇器。
+   * @param {string} selector - DOM 選擇器。
    * @returns {FolderBox} - 回傳 `FolderBox` 實例，以便進行方法鏈結。
    */
   appendTo(selector) {

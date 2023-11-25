@@ -4,7 +4,18 @@ gsap.registerPlugin(CustomEase);
 
 CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
 
-$(document).ready(function () {
+$(document).ready(async function () {
+  // const imageManager = new ImageManager();
+  // await imageManager.load();
+  // console.log(
+  //   imageManager.getImage(
+  //     "nature",
+  //     "Nature Instance Assets Preview (Green Tree A)"
+  //   ),
+  //   imageManager.getImage("props", 5),
+  //   imageManager.getImageArray("scene")
+  // );
+
   // 創建上下按鈕
   const scrollButtons = new ScrollButtons();
   scrollButtons.appendTo("body");

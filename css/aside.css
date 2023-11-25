@@ -1,4 +1,5 @@
-#scroll-buttons-container {
+/* ScrollButtons */
+.scroll-buttons-container {
   position: fixed;
   right: 35px;
   bottom: 35px;

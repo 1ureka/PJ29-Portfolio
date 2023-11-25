@@ -6,10 +6,17 @@ CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
 
 $(document).ready(function () {
   // 創建上下按鈕
-  const scrollButtonUp = createScrollButton({ type: "up" });
-  const scrollButtonDown = createScrollButton({ type: "down" });
-  $("#scroll-buttons-container").append(scrollButtonUp, scrollButtonDown);
+  const scrollButtons = new ScrollButtons();
+  scrollButtons.appendTo("body");
+  scrollButtons
+    .onUp((e) => {
+      console.log($(e.currentTarget).attr("class"));
+    })
+    .onDown((e) => {
+      console.log($(e.currentTarget).attr("class"));
+    });
 
+  //
   // 創建搜尋欄
   const searchBar = new SearchBar();
   searchBar.appendTo("#header");
@@ -20,13 +27,7 @@ $(document).ready(function () {
     console.log("clear");
   });
 
-  // setTimeout(() => {
-  //   searchBar.hide();
-  //   setTimeout(() => {
-  //     searchBar.show();
-  //   }, 1000);
-  // }, 1000);
-
+  //
   // 創建header右方燈泡
   const headerBulb = new HeaderBulb({ width: 30, height: 30, intensity: 1 });
   headerBulb.appendTo("#header");
@@ -41,15 +42,8 @@ $(document).ready(function () {
   folderSelect.onSelect((label) => {
     console.log(label);
   });
-  // 好玩測試用的
-  // setInterval(() => {
-  //   if (folderSelect.isClosed) {
-  //     folderSelect.open();
-  //   } else {
-  //     folderSelect.close();
-  //   }
-  // }, 1000);
 
+  //
   // 創建內容
   const folderbox1 = new FolderBox({ bulbColor: "#8ce197", label: "自然" });
   const folderbox2 = new FolderBox({ bulbColor: "#ffff7a", label: "物件" });

@@ -284,33 +284,82 @@ function createBulb(config) {
 //
 // 複雜
 //
-/**
- * 創建滾動按鈕，可以是向上或向下的按鈕。
- * @param {Object} config - 用於設定滾動按鈕的配置物件。
- * @returns {jQuery} 滾動按鈕。
- */
-function createScrollButton(config) {
-  // 預設配置
-  const defaultConfig = {
-    type: "up",
-  };
-  // 合併預設配置和用戶提供的配置
-  config = { ...defaultConfig, ...config };
+class ScrollButtons {
+  constructor() {
+    this.handlers = {};
+    this._isAppendTo = false;
 
-  const button = $("<button>").addClass("scroll-button");
-  const icon = createScrollIcon();
-  if (config.type === "down") gsap.set(icon, { rotate: 180 });
+    const container = $("<div>")
+      .addClass("scroll-buttons-container")
+      .append(this._createScrollButton("up"), this._createScrollButton("down"));
 
-  button.append(icon);
+    this.element = container;
 
-  const t1 = createScrollButtonHoverTl(button);
-  const t2 = createScrollButtonClickTl(button);
+    return this;
+  }
 
-  button.on("mouseover", () => t1.play());
-  button.on("mouseleave", () => t1.reverse());
-  button.on("click", () => t2.restart());
+  _createScrollButton(type) {
+    const button = $("<button>").addClass("scroll-button").addClass(type);
+    const icon = createScrollIcon();
+    if (type === "down") gsap.set(icon, { rotate: 180 });
 
-  return button;
+    button.append(icon);
+
+    const t1 = createScrollButtonHoverTl(button);
+    const t2 = createScrollButtonClickTl(button);
+
+    button.on("mouseover", () => t1.play());
+    button.on("mouseleave", () => t1.reverse());
+    button.on("click", () => t2.restart());
+
+    return button;
+  }
+
+  onUp(handler) {
+    if (this.handlers.up) {
+      console.error("onUp: 已經註冊過");
+      return this;
+    }
+
+    this.handlers.up = handler;
+    this.element.on("click", ".up", this.handlers.up);
+
+    return this;
+  }
+
+  onDown(handler) {
+    if (this.handlers.down) {
+      console.error("onDown: 已經註冊過");
+      return this;
+    }
+
+    this.handlers.down = handler;
+    this.element.on("click", ".down", this.handlers.down);
+
+    return this;
+  }
+
+  off() {
+    this.element.off("click", ".up", this.handlers.up);
+    this.handlers.up = null;
+    this.element.off("click", ".down", this.handlers.down);
+    this.handlers.down = null;
+
+    return this;
+  }
+
+  /**
+   * 附加上下按鈕到指定的 DOM 選擇器。
+   * @param {string} selector - DOM 選擇器。
+   * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
+   */
+  appendTo(selector) {
+    if (this._isAppendTo) return;
+    this._isAppendTo = true;
+    this.parent = selector;
+    this.element = this.element.appendTo(selector);
+    return this;
+  }
 }
 
 /**

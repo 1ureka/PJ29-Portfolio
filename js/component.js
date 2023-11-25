@@ -284,11 +284,21 @@ function createBulb(config) {
 //
 // 複雜
 //
+/**
+ * 這個類別提供創建和控制上下滾動按鈕的功能。
+ */
 class ScrollButtons {
+  /**
+   * 建構一個新的 `ScrollButtons` 實例。@constructor
+   */
   constructor() {
     this.handlers = {};
     this._isAppendTo = false;
 
+    /**
+     * 包含上下滾動按鈕的 jQuery 物件。
+     * @type {jQuery}
+     */
     const container = $("<div>")
       .addClass("scroll-buttons-container")
       .append(this._createScrollButton("up"), this._createScrollButton("down"));
@@ -298,6 +308,12 @@ class ScrollButtons {
     return this;
   }
 
+  /**
+   * 創建上下滾動按鈕。
+   * @private
+   * @param {string} type - 按鈕類型，可以是 "up" 或 "down"。
+   * @returns {jQuery} - 上下滾動按鈕的 jQuery 物件。
+   */
   _createScrollButton(type) {
     const button = $("<button>").addClass("scroll-button").addClass(type);
     const icon = createScrollIcon();
@@ -315,6 +331,11 @@ class ScrollButtons {
     return button;
   }
 
+  /**
+   * 註冊上滾動按鈕的點擊事件處理程序。
+   * @param {Function} handler - 點擊事件的處理程序。
+   * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
+   */
   onUp(handler) {
     if (this.handlers.up) {
       console.error("onUp: 已經註冊過");
@@ -327,6 +348,11 @@ class ScrollButtons {
     return this;
   }
 
+  /**
+   * 註冊下滾動按鈕的點擊事件處理程序。
+   * @param {Function} handler - 點擊事件的處理程序。
+   * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
+   */
   onDown(handler) {
     if (this.handlers.down) {
       console.error("onDown: 已經註冊過");
@@ -339,6 +365,10 @@ class ScrollButtons {
     return this;
   }
 
+  /**
+   * 解除所有事件處理程序的註冊。
+   * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
+   */
   off() {
     this.element.off("click", ".up", this.handlers.up);
     this.handlers.up = null;

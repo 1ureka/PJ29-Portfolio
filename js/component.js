@@ -313,65 +313,193 @@ function createScrollButton(config) {
   return button;
 }
 
-/**
- * 創建搜尋列，包含搜尋圖示、文字輸入框和橡皮擦圖示。
- * @returns {jQuery} 整個搜尋欄。
- */
-function createSearchBar() {
-  const container = $("<div>").addClass("search-bar");
-
-  const searchIcon = createSearchIcon();
-  const eraserIcon = createEraserIcon();
-  const inputContainer = createTextInput({
-    placeholder: "搜尋",
-    class: "search",
-    width: 410,
-    height: 40,
-  });
-  container.append(searchIcon, inputContainer, eraserIcon);
-  const input = inputContainer.find("input");
-
-  const t1 = createOutlineTl(input);
-  const t2s = createSearchIconHoverTl(searchIcon);
-
-  function tlplay() {
-    t1.play();
-    t2s.t1.play();
-    t2s.t2.play();
-  }
-  function tlreverse() {
-    t1.reverse();
-    t2s.t1.reverse();
-    t2s.t2.reverse();
+class SearchBar {
+  constructor() {
+    this.timelines = {};
+    this.handlers = {};
+    this._isAppendTo = false;
+    this.parent = "";
+    this.element = this._createSearchBar();
+    return this._createTimelines()._bindTimeline();
   }
 
-  container.on("mouseover", tlplay);
-  container.on("mouseleave", function () {
-    if (!input.is(":focus")) tlreverse();
-  });
+  /**
+   * 創建搜尋列，包含搜尋圖示、文字輸入框和橡皮擦圖示。
+   * @returns {jQuery} 整個搜尋欄。
+   */
+  _createSearchBar() {
+    const container = $("<div>").addClass("search-bar");
 
-  input.on("focus", tlplay);
-  input.on("blur", tlreverse);
-  input.on("keyup", function () {
-    if (input.val()) {
-      eraserIcon.show(350);
-      return;
+    const searchIcon = createSearchIcon();
+    const eraserIcon = createEraserIcon();
+    const inputContainer = createTextInput({
+      placeholder: "搜尋",
+      class: "search",
+      width: 410,
+      height: 40,
+    });
+
+    container.append(searchIcon, inputContainer, eraserIcon);
+
+    return container;
+  }
+
+  _createTimelines() {
+    const input = this.element.find("input");
+    const searchIcon = this.element.find(".search-icon-container");
+
+    this.timelines.outline = createOutlineTl(input);
+    const { t1, t2 } = createSearchIconHoverTl(searchIcon);
+    this.timelines.hover1 = t1;
+    this.timelines.hover2 = t2;
+
+    this.timelines.play = () => {
+      this.timelines.outline.play();
+      this.timelines.hover1.play();
+      this.timelines.hover2.play();
+    };
+
+    this.timelines.reverse = () => {
+      this.timelines.outline.reverse();
+      this.timelines.hover1.reverse();
+      this.timelines.hover2.reverse();
+    };
+
+    return this;
+  }
+
+  _bindTimeline() {
+    const input = this.element.find("input");
+    const eraserIcon = this.element.find(".eraser-icon-container");
+
+    this.element.on("mouseover", () => {
+      this.timelines.play();
+    });
+    this.element.on("mouseleave", () => {
+      if (!input.is(":focus")) this.timelines.reverse();
+    });
+    this.element.on("focus", "input", () => {
+      this.timelines.play();
+    });
+    this.element.on("blur", "input", () => {
+      this.timelines.reverse();
+    });
+    this.element.on("keyup", "input", () => {
+      if (this.input) {
+        eraserIcon.show(350);
+        return;
+      }
+      eraserIcon.hide(350);
+    });
+    this.element.on("click", ".eraser-icon-container", () => {
+      this.input = "";
+    });
+
+    return this;
+  }
+
+  _killTimelines() {
+    Object.values(this.timelines).forEach((timeline) => {
+      if (timeline instanceof TimelineMax) {
+        timeline.kill();
+      }
+    });
+
+    this.timelines = {};
+    return this;
+  }
+
+  show() {
+    if (this.element) {
+      console.log("show:元素已存在");
+      return this;
     }
-    eraserIcon.hide(350);
-  });
 
-  $.extend(container, {
-    onInput: function (handler) {
-      input.on("keyup", handler);
-      return this;
-    },
-    onCleared: function (handler) {
-      eraserIcon.on("click", handler);
-      return this;
-    },
-  });
+    this.element = this._createSearchBar();
+    this._createTimelines()._bindTimeline();
 
-  return container;
+    if (this.handlers.input) {
+      this.element.on("keyup", "input", this.handlers.input);
+    }
+
+    if (this.parent) {
+      this.appendTo(this.parent);
+    }
+
+    return this;
+  }
+
+  hide() {
+    if (!this.element) {
+      console.log("hide:元素已隱藏");
+      return this;
+    }
+
+    this._killTimelines();
+    this.element.remove(); // remove會自動解除on事件監聽
+    this.element = null;
+    this._isAppendTo = false;
+
+    return this;
+  }
+
+  onInput(handler) {
+    if (this.handlers.input) console.error("已經註冊過onInput");
+
+    this.handlers.input = handler;
+
+    if (!this.element) return; //若元素隱藏則等到show時會再綁定
+
+    this.element.on("keyup", "input", () => {
+      if (this.input) handler();
+    });
+    return this;
+  }
+
+  onClear(handler) {
+    if (this.handlers.clear) console.error("已經註冊過onClear");
+
+    this.handlers.clear = handler;
+    return this;
+  }
+
+  get input() {
+    if (!this.element) {
+      console.log("get input: 元素隱藏中");
+      return "";
+    }
+    return this.element.find("input").val();
+  }
+
+  set input(value) {
+    if (!this.element) {
+      console.log("set input: 元素隱藏中，無法寫入");
+      return this;
+    }
+
+    this.element.find("input").val(value);
+
+    if (value !== "" && this.handlers.input) {
+      this.handlers.input();
+    } else if (this.handlers.clear) {
+      this.handlers.clear();
+    }
+
+    return this;
+  }
+
+  /**
+   * 附加搜尋欄到指定的 DOM 選擇器。
+   * @param {string} selector - DOM 選擇器。
+   * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
+   */
+  appendTo(selector) {
+    if (this._isAppendTo) return;
+    this._isAppendTo = true;
+    this.parent = selector;
+    this.element = this.element.appendTo(selector);
+    return this;
+  }
 }
 
 /**

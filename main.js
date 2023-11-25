@@ -11,11 +11,21 @@ $(document).ready(function () {
   $("#scroll-buttons-container").append(scrollButtonUp, scrollButtonDown);
 
   // 創建搜尋欄
-  const searchBar = createSearchBar()
-    .onCleared(() => {
-      searchBar.find("input").val("");
-    })
-    .appendTo("#header");
+  const searchBar = new SearchBar();
+  searchBar.appendTo("#header");
+  searchBar.onInput(() => {
+    console.log("input", searchBar.input);
+  });
+  searchBar.onClear(() => {
+    console.log("clear");
+  });
+
+  // setTimeout(() => {
+  //   searchBar.hide();
+  //   setTimeout(() => {
+  //     searchBar.show();
+  //   }, 1000);
+  // }, 1000);
 
   // 創建header右方燈泡
   const headerBulb = new HeaderBulb({ width: 30, height: 30, intensity: 1 });

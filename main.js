@@ -19,13 +19,14 @@ $(document).ready(function () {
   //
   // 創建搜尋欄
   const searchBar = new SearchBar();
-  searchBar.appendTo("#header");
-  searchBar.onInput(() => {
-    console.log("input", searchBar.input);
-  });
-  searchBar.onClear(() => {
-    console.log("clear");
-  });
+  searchBar
+    .appendTo("#header")
+    .onInput(() => {
+      console.log("input", searchBar.input);
+    })
+    .onClear(() => {
+      console.log("clear");
+    });
 
   //
   // 創建header右方燈泡
@@ -38,8 +39,7 @@ $(document).ready(function () {
     mainFolder: "作品集",
     subFolders: ["自然", "物件", "場景"],
   });
-  folderSelect.appendTo("#sidebar");
-  folderSelect.onSelect((label) => {
+  folderSelect.appendTo("#sidebar").onSelect((label) => {
     console.log(label);
   });
 

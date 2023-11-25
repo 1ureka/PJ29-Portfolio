@@ -131,3 +131,48 @@
   justify-content: flex-start;
   align-items: center;
 }
+
+/* createSortIcon */
+.sort-icon-container {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  clip-path: inset(-1px);
+}
+.sort-img-container {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.sort-img-container img {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+}
+
+/* _createSortButton */
+.sort-button {
+  width: 240px;
+  height: 45px;
+  margin: 5px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* _createSortSelect */
+.sort-select {
+  position: relative;
+  width: 240px;
+  height: auto;
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-start;
+  align-items: center;
+}

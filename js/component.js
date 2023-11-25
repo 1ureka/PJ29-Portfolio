@@ -912,6 +912,9 @@ class FolderSelect {
   }
 }
 
+/**
+ * 這個類別用於創建和管理在sidebar的排序選單元素
+ */
 class SortSelect {
   constructor() {
     this._timelines = {};

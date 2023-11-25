@@ -101,6 +101,12 @@ class ImageManager {
     return manifest;
   }
 
+  /**
+   * 根據類別和識別符號獲取圖片物件。
+   * @param {string} category - 圖片類別。
+   * @param {number|string} identifier - 圖片索引或名稱。
+   * @returns {{ name: string, size: number, jQuery: JQuery } | null} 圖片物件，如果不存在則返回null。
+   */
   getImage(category, identifier) {
     if (!this.images[category]) return null;
 
@@ -117,6 +123,11 @@ class ImageManager {
     return obj || null;
   }
 
+  /**
+   * 根據類別獲取整個圖片物件陣列。
+   * @param {string} category - 圖片類別。
+   * @returns {({ name: string, size: number, jQuery: JQuery })[] | null} 圖片物件陣列，如果不存在則返回null。
+   */
   getImageArray(category) {
     if (!this.images[category]) return null;
 
@@ -127,6 +138,11 @@ class ImageManager {
     return arr;
   }
 
+  /**
+   * 設置載入進度處理器函式。
+   * @param {(log: string) => void} handler - 進度處理器函式。
+   * @returns {this} ImageManager實例。
+   */
   onProgress(handler) {
     this.progressHandler = handler;
     return this;

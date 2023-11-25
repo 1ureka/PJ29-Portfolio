@@ -313,18 +313,39 @@ function createScrollButton(config) {
   return button;
 }
 
+/**
+ * 這個類別提供創建和控制搜尋列的功能，包含搜尋圖示、文字輸入框和橡皮擦圖示。
+ */
 class SearchBar {
+  /**
+   * 建構一個新的 `SearchBar` 實例。@constructor
+   */
   constructor() {
     this.timelines = {};
     this.handlers = {};
+    /**
+     * 表示搜尋列是否已附加到 DOM 中。
+     * @type {boolean}
+     * @private
+     */
     this._isAppendTo = false;
+    /**
+     * 用於存儲父級 DOM 選擇器。
+     * @type {string}
+     * @private
+     */
     this.parent = "";
+    /**
+     * 包含搜尋列的 jQuery 物件。
+     * @type {jQuery}
+     */
     this.element = this._createSearchBar();
     return this._createTimelines()._bindTimeline();
   }
 
   /**
    * 創建搜尋列，包含搜尋圖示、文字輸入框和橡皮擦圖示。
+   * @private
    * @returns {jQuery} 整個搜尋欄。
    */
   _createSearchBar() {
@@ -344,6 +365,11 @@ class SearchBar {
     return container;
   }
 
+  /**
+   * 創建搜尋列的時間軸動畫。
+   * @private
+   * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
+   */
   _createTimelines() {
     const input = this.element.find("input");
     const searchIcon = this.element.find(".search-icon-container");
@@ -368,6 +394,11 @@ class SearchBar {
     return this;
   }
 
+  /**
+   * 綁定搜尋列的時間軸動畫。
+   * @private
+   * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
+   */
   _bindTimeline() {
     const input = this.element.find("input");
     const eraserIcon = this.element.find(".eraser-icon-container");
@@ -398,6 +429,11 @@ class SearchBar {
     return this;
   }
 
+  /**
+   * 終止所有時間軸動畫。
+   * @private
+   * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
+   */
   _killTimelines() {
     Object.values(this.timelines).forEach((timeline) => {
       if (timeline instanceof TimelineMax) {
@@ -409,6 +445,10 @@ class SearchBar {
     return this;
   }
 
+  /**
+   * 顯示搜尋列。
+   * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
+   */
   show() {
     if (this.element) {
       console.log("show:元素已存在");
@@ -429,6 +469,10 @@ class SearchBar {
     return this;
   }
 
+  /**
+   * 隱藏搜尋列。
+   * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
+   */
   hide() {
     if (!this.element) {
       console.log("hide:元素已隱藏");
@@ -443,6 +487,11 @@ class SearchBar {
     return this;
   }
 
+  /**
+   * 註冊輸入事件處理程序。
+   * @param {Function} handler - 輸入事件的處理程序。
+   * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
+   */
   onInput(handler) {
     if (this.handlers.input) console.error("已經註冊過onInput");
 
@@ -456,6 +505,11 @@ class SearchBar {
     return this;
   }
 
+  /**
+   * 註冊清除事件處理程序。
+   * @param {Function} handler - 清除事件的處理程序。
+   * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
+   */
   onClear(handler) {
     if (this.handlers.clear) console.error("已經註冊過onClear");
 
@@ -463,6 +517,11 @@ class SearchBar {
     return this;
   }
 
+  /**
+   * 取得輸入框的內容。
+   * @type {string}
+   * @name SearchBar#input
+   */
   get input() {
     if (!this.element) {
       console.log("get input: 元素隱藏中");
@@ -471,6 +530,12 @@ class SearchBar {
     return this.element.find("input").val();
   }
 
+  /**
+   * 設定輸入框的內容。
+   * @param {string} value - 要設定的內容。
+   * @type {string}
+   * @name SearchBar#input
+   */
   set input(value) {
     if (!this.element) {
       console.log("set input: 元素隱藏中，無法寫入");

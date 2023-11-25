@@ -101,6 +101,52 @@ function createFolderIcon(config) {
 }
 
 /**
+ * 創建包含排序圖示圖片的容器。
+ * @param {boolean} darkTheme 是否是深色主題
+ * @returns {jQuery} 排序圖示圖片的容器。
+ */
+function createSortImg(darkTheme = false) {
+  const container = $("<div>").addClass("sort-img-container");
+
+  const lines = Array.from({ length: 4 }, (_, index) =>
+    $("<img>")
+      .attr(
+        "src",
+        `icons/sort (line${index + 1})${darkTheme ? " (dark)" : ""}.png`
+      )
+      .css("transformOrigin", `${30 - index * 3}px ${8 + index * 8}px`)
+  );
+
+  const arrows = Array.from({ length: 2 }, () =>
+    $("<img>").attr(
+      "src",
+      `icons/sort (arrow)${darkTheme ? " (dark)" : ""}.png`
+    )
+  );
+
+  container.append(...lines, ...arrows);
+  gsap.set(container.children().slice(5), { y: 40 });
+
+  return container;
+}
+
+/**
+ * 創建包含排序圖示的容器。
+ * @returns {jQuery} 排序圖示的容器。
+ */
+function createSortIcon() {
+  const container = $("<div>").addClass("sort-icon-container");
+
+  const whiteIcon = createSortImg(false);
+  const darkIcon = createSortImg(true);
+  gsap.set(darkIcon, { autoAlpha: 0 });
+
+  container.append(whiteIcon, darkIcon);
+
+  return container;
+}
+
+/**
  * 創建垂直分隔線。
  * @param {Object} config - 用於設定分隔線的配置物件。
  * @param {number} config.margin - 分隔線的邊距。
@@ -857,6 +903,109 @@ class FolderSelect {
    * 附加選單到指定的 DOM 選擇器。
    * @param {string} selector - DOM 選擇器。
    * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
+   */
+  appendTo(selector) {
+    if (this._isAppendTo) return;
+    this._isAppendTo = true;
+    this.element = this.element.appendTo(selector);
+    return this;
+  }
+}
+
+class SortSelect {
+  constructor() {
+    this._timelines = {};
+    this.isClosed = true;
+    this._isAppendTo = false;
+    this.element = this._createSortSelect();
+
+    return this;
+  }
+
+  _createSortSelect() {
+    const select = $("<div>").addClass("sort-select");
+
+    const main = this._createSortButton();
+    const hr = createHorizontalSeparator({ margin: 8 });
+    select.append(main, hr);
+
+    this._timelines.open = createFolderSelectOpenTl(select);
+
+    main.on("click", () => {
+      if (this.isClosed) {
+        this.open();
+      } else {
+        this.close();
+      }
+    });
+
+    return select;
+  }
+
+  _createSortButton() {
+    const button = $("<button>").addClass("sort-button");
+    const iconContainer = createSortIcon();
+    button.append(iconContainer);
+
+    this._bindSortButtonTimeline(button);
+
+    return button;
+  }
+
+  _bindSortButtonTimeline(button) {
+    const iconContainer = button.find(".sort-icon-container");
+    const wIcon = iconContainer.children().eq(0);
+    const dIcon = iconContainer.children().eq(1);
+
+    const hoverTls = [
+      ...createSortImgHoverTl(wIcon),
+      ...createSortImgHoverTl(dIcon),
+      createSortIconHoverTl(iconContainer),
+      createSortButtonHoverTl(button),
+    ];
+
+    button.on("mouseover", () => {
+      hoverTls.forEach((tl) => {
+        tl.play();
+      });
+    });
+    button.on("mouseleave", () => {
+      hoverTls.forEach((tl) => {
+        tl.reverse();
+      });
+    });
+
+    const clickTl = createFolderButtonClickTl(button);
+
+    button.on("click", () => clickTl.restart());
+  }
+
+  /**
+   * 開啟選單。
+   * @returns {SortSelect} - 回傳 `SortSelect` 實例，以便進行方法鏈結。
+   */
+  open() {
+    if (!this.isClosed) return this;
+    this._timelines.open.play();
+    this.isClosed = false;
+    return this;
+  }
+
+  /**
+   * 關閉選單。
+   * @returns {SortSelect} - 回傳 `SortSelect` 實例，以便進行方法鏈結。
+   */
+  close() {
+    if (this.isClosed) return this;
+    this._timelines.open.reverse();
+    this.isClosed = true;
+    return this;
+  }
+
+  /**
+   * 附加選單到指定的 DOM 選擇器。
+   * @param {string} selector - DOM 選擇器。
+   * @returns {SortSelect} - 回傳 `SortSelect` 實例，以便進行方法鏈結。
    */
   appendTo(selector) {
     if (this._isAppendTo) return;

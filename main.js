@@ -51,4 +51,8 @@ $(document).ready(function () {
   folderbox1.appendTo("#content");
   folderbox2.appendTo("#content");
   folderbox3.appendTo("#content");
+
+  // 之後移到正確地方
+  const sortSelect = new SortSelect();
+  sortSelect.appendTo("#sidebar");
 });

@@ -55,6 +55,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  pointer-events: none;
 }
 .folder-icon-img {
   position: absolute;
@@ -81,6 +82,7 @@
   background-color: white;
   margin: 0 5px;
   filter: blur(0.5px);
+  pointer-events: none;
 }
 
 /* createHorizontalSeparator */
@@ -90,6 +92,7 @@
   background-color: white;
   margin: 5px 0;
   filter: blur(0.5px);
+  pointer-events: none;
 }
 
 /* createFolderButton */

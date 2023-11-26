@@ -27,7 +27,7 @@ class ImageManager {
       await this._loadImages(category, urls);
     }
 
-    this.progressHandler("解析DOM . . .");
+    this.progressHandler({ name: "解析DOM . . .", state: "" });
   }
 
   /**
@@ -40,13 +40,13 @@ class ImageManager {
       const queue = new createjs.LoadQueue();
 
       queue.on("fileload", (e) => {
-        this.progressHandler("載入urls: 完成");
+        this.progressHandler({ name: "載入urls", state: "完成" });
         resolve(e.result);
       });
 
-      queue.on("progress", (e) => {
+      queue.on("fileprogress", (e) => {
         const progress = Math.round(e.progress * 100);
-        this.progressHandler(`載入urls: ${progress}%`);
+        this.progressHandler({ name: "載入urls", state: ` ${progress}%` });
       });
 
       queue.loadFile({ src: "imagesUrls.json", type: createjs.Types.JSON });
@@ -67,13 +67,19 @@ class ImageManager {
 
     await new Promise((resolve) => {
       this.quenes[lcCategory].on("complete", () => {
-        this.progressHandler(`載入 ${category} 資料夾的 jpg: 完成`);
+        this.progressHandler({
+          name: `載入 ${category} 資料夾`,
+          state: "完成",
+        });
         resolve();
       });
 
       this.quenes[lcCategory].on("progress", (e) => {
         const progress = Math.round(e.progress * 100);
-        this.progressHandler(`載入 ${category} 資料夾的 jpg: ${progress}%`);
+        this.progressHandler({
+          name: `載入 ${category} 資料夾`,
+          state: ` ${progress}%`,
+        });
       });
 
       this.quenes[lcCategory].loadManifest(manifest);
@@ -140,7 +146,7 @@ class ImageManager {
 
   /**
    * 設置載入進度處理器函式。
-   * @param {(log: string) => void} handler - 進度處理器函式。
+   * @param {(log: { name: string, state: string }) => void} handler - 進度處理器函式。
    * @returns {this} ImageManager實例。
    */
   onProgress(handler) {

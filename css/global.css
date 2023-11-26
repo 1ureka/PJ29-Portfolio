@@ -2,7 +2,7 @@ body {
   margin: 0;
   font-family: "Noto Sans TC", sans-serif;
   color: white;
-  overflow-y: scroll;
+  overflow-y: hidden;
   overflow-x: hidden;
   width: 100vw;
   height: 100vh;

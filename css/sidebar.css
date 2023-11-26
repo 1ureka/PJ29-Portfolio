@@ -16,6 +16,9 @@
     rgba(0, 0, 0, 0.45) 0px -5px 0px inset,
     rgba(255, 255, 255, 0.1) 2px 5px 10px -3px inset;
   z-index: 5;
+
+  /* opening */
+  translate: -300px 0px;
 }
 
 #version-display {
@@ -35,6 +38,9 @@
     rgba(0, 0, 0, 0.45) 0px -5px 0px inset,
     rgba(255, 255, 255, 0.1) 2px 5px 10px -3px inset;
   z-index: 6;
+
+  /* opening */
+  translate: 0px 60px;
 }
 
 #version-display > p {

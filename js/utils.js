@@ -20,10 +20,11 @@ class ImageManager {
   async load() {
     /** 獲取載入的urls物件。 @type {Object.<string, string[]>} */
     const result = await this._loadUrls();
+    const categories = Object.keys(result);
+    this.categoriesAmount = categories.length;
 
-    for (const key of Object.keys(result)) {
-      const category = key;
-      const urls = result[key];
+    for (const category of categories) {
+      const urls = result[category];
       await this._loadImages(category, urls);
     }
 
@@ -40,13 +41,14 @@ class ImageManager {
       const queue = new createjs.LoadQueue();
 
       queue.on("fileload", (e) => {
-        this.progressHandler({ name: "載入urls", state: 100 });
+        this.currentProgress = 10;
+        this.progressHandler({ name: "載入urls", state: this.currentProgress });
         resolve(e.result);
       });
 
       queue.on("fileprogress", (e) => {
-        const progress = Math.round(e.progress * 100);
-        this.progressHandler({ name: "載入urls", state: progress });
+        this.currentProgress = e.progress * 10;
+        this.progressHandler({ name: "載入urls", state: this.currentProgress });
       });
 
       queue.loadFile({ src: "imagesUrls.json", type: createjs.Types.JSON });
@@ -66,19 +68,22 @@ class ImageManager {
     this.quenes[lcCategory] = new createjs.LoadQueue();
 
     await new Promise((resolve) => {
+      const baseProgress = this.currentProgress;
+
       this.quenes[lcCategory].on("complete", () => {
         this.progressHandler({
           name: `載入 ${category} 資料夾`,
-          state: 100,
+          state: this.currentProgress,
         });
         resolve();
       });
 
       this.quenes[lcCategory].on("progress", (e) => {
-        const progress = Math.round(e.progress * 100);
+        this.currentProgress =
+          baseProgress + e.progress * (90 / this.categoriesAmount);
         this.progressHandler({
           name: `載入 ${category} 資料夾`,
-          state: progress,
+          state: this.currentProgress,
         });
       });
 

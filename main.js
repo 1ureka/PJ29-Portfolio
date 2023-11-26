@@ -5,21 +5,12 @@ gsap.registerPlugin(CustomEase);
 CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
 
 $(document).ready(async function () {
-  // const imageManager = new ImageManager();
-  // imageManager.onProgress((log) => {
-  //   $().text(log.name);
-  //   $().value(log.state);
-  // });
-  // await imageManager.load();
-
-  // console.log(
-  //   imageManager.getImage(
-  //     "nature",
-  //     "Nature Instance Assets Preview (Green Tree A)"
-  //   ),
-  //   imageManager.getImage("props", 5),
-  //   imageManager.getImageArray("scene")
-  // );
+  const imageManager = new ImageManager();
+  imageManager.onProgress((log) => {
+    $("#loading-message").text(log.name);
+    $("#progress-bar").css("width", `${log.state}%`);
+  });
+  await imageManager.load();
 
   //
   // 創建上下按鈕
@@ -112,7 +103,7 @@ $(document).ready(async function () {
     .timeline({ defaults: { ease: "power2.out", duration: 0.4 } })
     .to("#loading-container", { scale: 0.5, ease: "back.in(6)" })
     .to("#loading-container", { autoAlpha: 0, duration: 0.6 }, "<")
-    .to("progress", { autoAlpha: 0, y: 5, duration: 0.6 }, "<");
+    .to("#progress-bar", { autoAlpha: 0, y: 5, duration: 0.6 }, "<");
 
   const t2 = gsap
     .timeline({ defaults: { ease: "power2.out", duration: 0.6 } })

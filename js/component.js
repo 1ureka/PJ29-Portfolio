@@ -1142,84 +1142,52 @@ class HeaderBulb {
 /**
  * 這個類別用於創建和管理具有特定特效的文件夾框元素。
  */
-class FolderBox {
+class FolderBoxes {
   /**
    * 建構一個新的 `FolderBox` 實例。
    * @constructor
-   * @param {Object} config - 用於配置文件夾框的物件。
-   * @param {string} config.bulbColor - 燈泡的顏色。
-   * @param {number} config.bulbIntensity - 燈泡的強度。
-   * @param {string} config.label - 文件夾標籤的文字。
+   * @param {Object[]} configs - 用於配置文件夾框的物件。
+   * @param {string} configs.bulbColor - 燈泡的顏色。
+   * @param {number} configs.bulbIntensity - 燈泡的強度。
+   * @param {string} configs.label - 文件夾標籤的文字。
    */
-  constructor(config) {
-    // 預設配置
-    const defaultConfig = {
-      bulbColor: "#8ce197",
-      bulbIntensity: 1,
-      label: "自然",
-    };
+  constructor(configs) {
+    this.timelines = {};
 
-    // 合併預設配置和用戶提供的配置
-    config = { ...defaultConfig, ...config };
-
-    /**
-     * 燈泡的顏色。
-     * @type {string}
-     */
-    this.bulbColor = config.bulbColor;
-    /**
-     * 燈泡的強度。
-     * @type {number}
-     */
-    this.bulbIntensity = config.bulbIntensity;
-    /**
-     * 文件夾標籤的文字。
-     * @type {string}
-     */
-    this.label = config.label;
-    /**
-     * 表示文件夾框是否已附加到 DOM 中。
-     * @type {boolean}
-     * @private
-     */
+    this.isShow = false;
     this._isAppendTo = false;
 
-    /**
-     * 包含文件夾框元素的 jQuery 物件。
-     * @type {jQuery}
-     */
-    this.element = this._createFolderBoxContainer();
-    return this.bindTimeline();
+    this.element = this._createFolderBoxes(configs);
+    this._createTimelines();
   }
 
   /**
-   * 創建文件夾框元素。
+   * 創建文件夾框的容器元素。
    * @private
-   * @returns {jQuery} - 文件夾框元素的 jQuery 物件。
+   * @param {Object[]} configs - 用於配置文件夾框的物件。
+   * @returns {jQuery} - 文件夾框容器元素的 jQuery 物件。
    */
-  _createFolderBox() {
-    const box = $("<div>").addClass("folder-box");
-    const boxColor = "hsl(225, 10%, 23%)";
+  _createFolderBoxes(configs) {
+    const container = $("<div>").addClass("folder-boxes-container");
 
-    const folderIcon = createFolderIcon({ borderColor: boxColor });
-    const separator = createVerticalSeparator();
-    const bulb = createBulb({ width: 20, height: 20 });
-    const label = $("<label>").addClass("folder-box-label").text(this.label);
+    configs.forEach((config) => {
+      const element = this._createFolderBoxContainer(config);
+      this._bindTimeline(element, config).appendTo(container);
+    });
 
-    box.append(folderIcon, separator, label, bulb);
-
-    return box;
+    return container;
   }
 
   /**
    * 創建文件夾框容器元素。
    * @private
+   * @param {Object} config - 用於配置文件夾框的物件。
    * @returns {jQuery} - 文件夾框容器元素的 jQuery 物件。
    */
-  _createFolderBoxContainer() {
+  _createFolderBoxContainer(config) {
     const container = $("<div>").addClass("folder-box-container");
 
-    const box = this._createFolderBox();
+    const box = this._createFolderBox(config);
     const img1 = $("<img>").addClass("folder-box-img").css("width", "97.5%");
     gsap.set(img1, { y: 25 });
     const elements = [box, img1];
@@ -1243,62 +1211,123 @@ class FolderBox {
   }
 
   /**
-   * 綁定時間軸動畫效果。
-   * @returns {FolderBox} - 回傳 `FolderBox` 實例，以便進行方法鏈結。
+   * 創建文件夾框元素。
+   * @private
+   * @param {Object} config - 用於配置文件夾框的物件。
+   * @returns {jQuery} - 文件夾框元素的 jQuery 物件。
    */
-  bindTimeline() {
-    const box = this.element.find(".folder-box");
-    const bulb = this.element.find(".bulb-container");
-    const folderIcon = this.element.find(".folder-icon-container");
+  _createFolderBox(config) {
+    const box = $("<div>").addClass("folder-box");
+    const boxColor = "hsl(225, 10%, 23%)";
+
+    const folderIcon = createFolderIcon({ borderColor: boxColor });
+    const separator = createVerticalSeparator();
+    const bulb = createBulb({ width: 20, height: 20 });
+    const label = $("<label>").addClass("folder-box-label").text(config.label);
+
+    box.append(folderIcon, separator, label, bulb);
+
+    return box;
+  }
+
+  /**
+   * 綁定時間軸動畫效果。
+   * @private
+   * @param {jQuery} boxContainer - 文件夾框容器元素的 jQuery 物件。
+   * @param {Object} config - 用於配置文件夾框的物件。
+   * @returns {jQuery} - 文件夾框容器元素的 jQuery 物件。
+   */
+  _bindTimeline(boxContainer, config) {
+    const box = boxContainer.find(".folder-box");
+    const bulb = boxContainer.find(".bulb-container");
+    const folderIcon = boxContainer.find(".folder-icon-container");
 
     const t1 = createBulbLightTl(bulb, {
-      color: this.bulbColor,
-      intensity: this.bulbIntensity,
+      color: config.bulbColor,
+      intensity: config.bulbIntensity,
     });
     const t2 = createBulbLightTl(bulb, {
-      color: this.bulbColor,
-      intensity: this.bulbIntensity * 1.5,
+      color: config.bulbColor,
+      intensity: config.bulbIntensity * 1.5,
       yoyo: true,
     });
     const t3 = createFolderIconHoverTl(folderIcon);
     const t4 = createFolderBoxClickTl(box);
     const t5 = createFolderBoxHoverTl(box);
-    const t6 = createFolderBoxContainerHoverTl(this.element);
+    const t6 = createFolderBoxContainerHoverTl(boxContainer);
 
-    this.element.on("mouseover", ".folder-box", () => {
+    boxContainer.on("mouseover", ".folder-box", () => {
       t1.play();
       t3.play();
       t5.play();
       t6.play();
     });
-    this.element.on("mouseleave", ".folder-box", () => {
+    boxContainer.on("mouseleave", ".folder-box", () => {
       t1.reverse();
       t3.reverse();
       t5.reverse();
       t6.reverse();
     });
-    this.element.on("click", ".folder-box", () => {
+    boxContainer.on("click", ".folder-box", () => {
       t2.restart();
       t4.restart();
       t6.reverse();
     });
 
+    return boxContainer;
+  }
+
+  /**
+   * 創建並初始化文件夾框的時間軸效果。
+   * @private
+   * @returns {FolderBoxes} - 回傳 `FolderBoxes` 實例，以便進行方法鏈結。
+   */
+  _createTimelines() {
+    this.timelines.show = gsap
+      .timeline({
+        defaults: { ease: "back.out(4)", duration: 0.35 },
+        paused: true,
+      })
+      .from(this.element.children(), { scale: 0.5, stagger: 0.15 })
+      .from(
+        this.element.children(),
+        { ease: "set1", autoAlpha: 0, stagger: 0.15 },
+        "<"
+      );
+
     return this;
   }
 
   /**
-   * 解除時間軸動畫效果的綁定。
-   * @returns {FolderBox} - 回傳 `FolderBox` 實例，以便進行方法鏈結。
+   * 顯示文件夾框。
+   * @returns {FolderBoxes} - 回傳 `FolderBoxes` 實例，以便進行方法鏈結。
    */
-  unbindTimeline() {
-    this.element = this.element.off("mouseover mouseleave click");
+  show() {
+    if (this.isShow) return this;
+
+    this.isShow = true;
+    this.timelines.show.play();
+
+    return this;
+  }
+
+  /**
+   * 隱藏文件夾框。
+   * @returns {FolderBoxes} - 回傳 `FolderBoxes` 實例，以便進行方法鏈結。
+   */
+  hide() {
+    if (!this.isShow) return this;
+
+    this.isShow = false;
+    this.timelines.show.reverse();
+
     return this;
   }
 
   /**
    * 附加文件夾框到指定的 DOM 選擇器。
    * @param {string} selector - DOM 選擇器。
-   * @returns {FolderBox} - 回傳 `FolderBox` 實例，以便進行方法鏈結。
+   * @returns {FolderBoxes} - 回傳 `FolderBoxes` 實例，以便進行方法鏈結。
    */
   appendTo(selector) {
     if (this._isAppendTo) return;

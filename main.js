@@ -73,21 +73,22 @@ $(document).ready(async function () {
 
   //
   // 創建內容
-  const folderbox1 = new FolderBox({ bulbColor: "#8ce197", label: "自然" });
-  const folderbox2 = new FolderBox({ bulbColor: "#ffff7a", label: "物件" });
-  const folderbox3 = new FolderBox({ bulbColor: "#92e9ff", label: "場景" });
-  folderbox1.appendTo("#content");
-  folderbox2.appendTo("#content");
-  folderbox3.appendTo("#content");
+  const folderBoxes = new FolderBoxes([
+    { bulbColor: "#8ce197", bulbIntensity: 1, label: "自然" },
+    { bulbColor: "#ffff7a", bulbIntensity: 1, label: "物件" },
+    { bulbColor: "#92e9ff", bulbIntensity: 1, label: "場景" },
+  ]);
+  folderBoxes.appendTo("#content");
 
   // 之後移到正確地方
   const sortSelect = new SortSelect();
   sortSelect.appendTo("#sidebar");
 
   gsap
-    .timeline({
-      defaults: { ease: "power2.out", duration: 0.6 },
-      onComplete: () => gsap.set("body", { overflowY: "auto" }),
-    })
-    .to("#header, #sidebar, #version-display", { x: 0, y: 0, stagger: 0.35 });
+    .timeline({ defaults: { ease: "power2.out", duration: 0.6 } })
+    .to("#header, #sidebar, #version-display", { x: 0, y: 0, stagger: 0.35 })
+    .then(() => {
+      gsap.set("body", { overflowY: "auto" });
+      folderBoxes.show();
+    });
 });

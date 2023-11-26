@@ -3,12 +3,8 @@
   top: 100px;
   left: 260px;
   right: 0;
-  padding: 45px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: auto;
-  grid-column-gap: 30px;
-  grid-row-gap: 30px;
+  bottom: 0;
+  display: flex;
 }
 
 /* createBulb */
@@ -32,6 +28,19 @@
   );
   filter: blur(0.5px);
   border-radius: 50%;
+}
+
+/* createFolderboxes */
+.folder-boxes-container {
+  position: absolute;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 45px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto;
+  grid-column-gap: 30px;
+  grid-row-gap: 30px;
 }
 
 /* createFolderbox */

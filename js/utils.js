@@ -40,13 +40,13 @@ class ImageManager {
       const queue = new createjs.LoadQueue();
 
       queue.on("fileload", (e) => {
-        this.progressHandler({ name: "載入urls", state: "完成" });
+        this.progressHandler({ name: "載入urls", state: 100 });
         resolve(e.result);
       });
 
       queue.on("fileprogress", (e) => {
         const progress = Math.round(e.progress * 100);
-        this.progressHandler({ name: "載入urls", state: ` ${progress}%` });
+        this.progressHandler({ name: "載入urls", state: progress });
       });
 
       queue.loadFile({ src: "imagesUrls.json", type: createjs.Types.JSON });
@@ -69,7 +69,7 @@ class ImageManager {
       this.quenes[lcCategory].on("complete", () => {
         this.progressHandler({
           name: `載入 ${category} 資料夾`,
-          state: "完成",
+          state: 100,
         });
         resolve();
       });
@@ -78,7 +78,7 @@ class ImageManager {
         const progress = Math.round(e.progress * 100);
         this.progressHandler({
           name: `載入 ${category} 資料夾`,
-          state: ` ${progress}%`,
+          state: progress,
         });
       });
 

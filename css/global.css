@@ -44,3 +44,24 @@ button {
     rgba(255, 255, 255, 0.1) 2px 5px 10px -3px inset;
   cursor: pointer;
 }
+
+#loading-container {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 15;
+}
+
+#loading-container > img {
+  width: 150px;
+  height: auto;
+}
+
+progress {
+  position: fixed;
+  bottom: -15px;
+  width: calc(100% + 10px);
+  height: 30px;
+}

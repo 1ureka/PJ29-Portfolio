@@ -78,19 +78,28 @@ $(document).ready(async function () {
     { bulbColor: "#ffff7a", bulbIntensity: 1, label: "物件" },
     { bulbColor: "#92e9ff", bulbIntensity: 1, label: "場景" },
   ]);
-  folderBoxes.appendTo("#content");
+  folderBoxes
+    .appendTo("#content")
+    .onSelect((choose) => console.log("folderBoxes", choose));
 
   // 之後移到正確地方
   const sortSelect = new SortSelect();
   sortSelect.appendTo("#sidebar");
 
+  const id = "#header, #sidebar, #version-display";
   gsap
     .timeline({ defaults: { ease: "power2.out", duration: 0.6 } })
-    .to("#header, #sidebar, #version-display", { x: 0, y: 0, stagger: 0.35 })
+    .to("#loading-container", {
+      delay: 1,
+      scale: 0.25,
+      ease: "back.in(6)",
+    })
+    .to("#loading-container", { autoAlpha: 0 }, "<")
+    .to("progress", { autoAlpha: 0, y: 5 }, "<")
+    .to(id, { x: 0, y: 0, stagger: 0.35 }, "<")
+    .to("body", { onStart: () => folderBoxes.show(), duration: 0.65 }, "<0.6")
     .then(() => {
       gsap.set("body", { overflowY: "auto" });
-      folderBoxes
-        .show()
-        .onSelect((choose) => console.log("folderBoxes", choose));
+      $("#loading-container").remove();
     });
 });

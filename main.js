@@ -76,9 +76,24 @@ $(document).ready(async function () {
   //
   // 創建內容
   const folderBoxes = new FolderBoxes([
-    { bulbColor: "#8ce197", bulbIntensity: 1, label: "自然" },
-    { bulbColor: "#ffff7a", bulbIntensity: 1, label: "物件" },
-    { bulbColor: "#92e9ff", bulbIntensity: 1, label: "場景" },
+    {
+      bulbColor: "#8ce197",
+      bulbIntensity: 1,
+      label: "自然",
+      img: imageManager.getImage("nature", 0),
+    },
+    {
+      bulbColor: "#ffff7a",
+      bulbIntensity: 1,
+      label: "物件",
+      img: imageManager.getImage("props", 0),
+    },
+    {
+      bulbColor: "#92e9ff",
+      bulbIntensity: 1,
+      label: "場景",
+      img: imageManager.getImage("scene", 0),
+    },
   ]);
   folderBoxes.appendTo("#content").onSelect((label) => {
     switch (label) {

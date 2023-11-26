@@ -91,7 +91,12 @@ class ImageManager {
     });
 
     this.images[lcCategory] = this.quenes[lcCategory].getItems().map((e) => {
-      return { name: e.item.id, size: e.rawResult.size, JQuery: $(e.result) };
+      return {
+        name: e.item.id,
+        size: e.rawResult.size,
+        JQuery: $(e.result),
+        src: e.item.src,
+      };
     });
   }
 
@@ -116,7 +121,7 @@ class ImageManager {
    * 根據類別和識別符號獲取圖片物件。
    * @param {string} category - 圖片類別。
    * @param {number|string} identifier - 圖片索引或名稱。
-   * @returns {{ name: string, size: number, jQuery: JQuery } | null} 圖片物件，如果不存在則返回null。
+   * @returns {{ name: string, size: number, JQuery: JQuery } | null} 圖片物件，如果不存在則返回null。
    */
   getImage(category, identifier) {
     if (!this.images[category]) return null;
@@ -137,7 +142,7 @@ class ImageManager {
   /**
    * 根據類別獲取整個圖片物件陣列。
    * @param {string} category - 圖片類別。
-   * @returns {({ name: string, size: number, jQuery: JQuery })[] | null} 圖片物件陣列，如果不存在則返回null。
+   * @returns {({ name: string, size: number, JQuery: JQuery })[] | null} 圖片物件陣列，如果不存在則返回null。
    */
   getImageArray(category) {
     if (!this.images[category]) return null;

@@ -1199,6 +1199,7 @@ class FolderBoxes {
    * @param {string} configs.bulbColor - 燈泡的顏色。
    * @param {number} configs.bulbIntensity - 燈泡的強度。
    * @param {string} configs.label - 文件夾標籤的文字。
+   * @param {jQuery} configs.img - 圖片的jQuery物件
    */
   constructor(configs) {
     this.timelines = {};
@@ -1237,24 +1238,13 @@ class FolderBoxes {
     const container = $("<div>").addClass("folder-box-container");
 
     const box = this._createFolderBox(config);
-    const img1 = $("<img>").addClass("folder-box-img").css("width", "97.5%");
-    gsap.set(img1, { y: 25 });
-    const elements = [box, img1];
+    const img = $("<img>")
+      .attr("src", config.img.src)
+      .addClass("folder-box-img")
+      .css("width", "97.5%");
+    gsap.set(img, { y: 25 });
 
-    for (let index = 1; index < 3; index++) {
-      const img = $("<img>")
-        .addClass("folder-box-img")
-        .css("width", `${97.5 - index * 2}%`);
-      gsap.set(img, {
-        y: 25 + index * 5,
-        autoAlpha: 1 - 0.25 * index,
-        filter: `blur(${index}px)`,
-      });
-      elements.push(img);
-    }
-
-    elements.reverse();
-    container.append(elements);
+    container.append(img, box);
 
     return container;
   }

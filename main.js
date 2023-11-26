@@ -6,24 +6,12 @@ CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
 
 $(document).ready(async function () {
   // const imageManager = new ImageManager();
-  // $("body").css("overflow", "hidden");
-  // const p = $("<p>").appendTo("body").text("載入urls: 0%").css({
-  //   width: "100vw",
-  //   height: "100vh",
-  //   backgroundColor: "black",
-  //   zIndex: 99,
-  //   display: "flex",
-  //   alignItems: "center",
-  //   justifyContent: "center",
-  // });
   // imageManager.onProgress((log) => {
-  //   p.text(log);
+  //   $().text(log.name);
+  //   $().value(log.state);
   // });
   // await imageManager.load();
-  // setTimeout(() => {
-  //   p.hide(600);
-  //   $("body").css("overflow", "");
-  // }, 250);
+
   // console.log(
   //   imageManager.getImage(
   //     "nature",
@@ -33,10 +21,11 @@ $(document).ready(async function () {
   //   imageManager.getImageArray("scene")
   // );
 
+  //
   // 創建上下按鈕
   const scrollButtons = new ScrollButtons();
-  scrollButtons.appendTo("body");
   scrollButtons
+    .appendTo("body")
     .onUp((e) => {
       console.log($(e.currentTarget).attr("class"));
     })
@@ -58,18 +47,40 @@ $(document).ready(async function () {
 
   //
   // 創建header右方燈泡
-  const headerBulb = new HeaderBulb({ width: 30, height: 30, intensity: 1 });
+  const headerBulb = new HeaderBulb({
+    width: 30,
+    height: 30,
+    intensity: 1,
+  });
   headerBulb.appendTo("#header");
-  headerBulb.switchLight("red");
 
+  //
   // 創建側邊攔 - 資料夾選單
   const folderSelect = new FolderSelect({
     mainFolder: "作品集",
     subFolders: ["自然", "物件", "場景"],
   });
   folderSelect.appendTo("#sidebar").onSelect((label) => {
-    console.log("folderSelect", label);
+    switch (label) {
+      case "作品集":
+        headerBulb.switchLight("red");
+        break;
+      case "自然":
+        headerBulb.switchLight("green");
+        break;
+      case "物件":
+        headerBulb.switchLight("yellow");
+        break;
+      case "場景":
+        headerBulb.switchLight("blue");
+        break;
+    }
   });
+
+  //
+  // 創建排序選單
+  const sortSelect = new SortSelect();
+  sortSelect.appendTo("#sidebar");
 
   //
   // 創建內容
@@ -78,28 +89,49 @@ $(document).ready(async function () {
     { bulbColor: "#ffff7a", bulbIntensity: 1, label: "物件" },
     { bulbColor: "#92e9ff", bulbIntensity: 1, label: "場景" },
   ]);
-  folderBoxes
-    .appendTo("#content")
-    .onSelect((choose) => console.log("folderBoxes", choose));
+  folderBoxes.appendTo("#content").onSelect((label) => {
+    switch (label) {
+      case "作品集":
+        headerBulb.switchLight("red");
+        break;
+      case "自然":
+        headerBulb.switchLight("green");
+        break;
+      case "物件":
+        headerBulb.switchLight("yellow");
+        break;
+      case "場景":
+        headerBulb.switchLight("blue");
+        break;
+    }
+  });
 
-  // 之後移到正確地方
-  const sortSelect = new SortSelect();
-  sortSelect.appendTo("#sidebar");
+  //
+  // 開場動畫
+  const t1 = gsap
+    .timeline({ defaults: { ease: "power2.out", duration: 0.4 } })
+    .to("#loading-container", { scale: 0.5, ease: "back.in(6)" })
+    .to("#loading-container", { autoAlpha: 0, duration: 0.6 }, "<")
+    .to("progress", { autoAlpha: 0, y: 5, duration: 0.6 }, "<");
 
-  const id = "#header, #sidebar, #version-display";
-  gsap
+  const t2 = gsap
     .timeline({ defaults: { ease: "power2.out", duration: 0.6 } })
-    .to("#loading-container", {
-      delay: 1,
-      scale: 0.25,
-      ease: "back.in(6)",
-    })
-    .to("#loading-container", { autoAlpha: 0 }, "<")
-    .to("progress", { autoAlpha: 0, y: 5 }, "<")
-    .to(id, { x: 0, y: 0, stagger: 0.35 }, "<")
-    .to("body", { onStart: () => folderBoxes.show(), duration: 0.65 }, "<0.6")
-    .then(() => {
+    .to("#header, #sidebar, #version-display", { x: 0, y: 0, stagger: 0.35 });
+
+  const t3 = gsap
+    .timeline({ defaults: { ease: "power2.out", duration: 0.6 } })
+    .to("body", { onStart: () => folderBoxes.show(), duration: 0.65 })
+    .to("body", { onStart: () => scrollButtons.show(), duration: 0.65 }, "<");
+
+  const opening = gsap.timeline({
+    onComplete: () => {
       gsap.set("body", { overflowY: "auto" });
       $("#loading-container").remove();
-    });
+      headerBulb.switchLight("red");
+    },
+    delay: 1,
+    paused: true,
+  });
+
+  opening.add(t1).add(t2).add(t3, "<0.6").play();
 });

@@ -27,7 +27,7 @@ class ImageManager {
       await this._loadImages(category, urls);
     }
 
-    this.progressHandler({ name: "解析DOM . . .", state: "" });
+    this.progressHandler({ name: "載入完成", state: 100 });
   }
 
   /**

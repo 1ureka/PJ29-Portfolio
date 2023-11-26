@@ -338,8 +338,11 @@ class ScrollButtons {
    * 建構一個新的 `ScrollButtons` 實例。@constructor
    */
   constructor() {
+    this.timelines = {};
     this.handlers = {};
+
     this._isAppendTo = false;
+    this.isShow = false;
 
     /**
      * 包含上下滾動按鈕的 jQuery 物件。
@@ -351,7 +354,7 @@ class ScrollButtons {
 
     this.element = container;
 
-    return this;
+    this._createTimelines();
   }
 
   /**
@@ -375,6 +378,27 @@ class ScrollButtons {
     button.on("click", () => t2.restart());
 
     return button;
+  }
+
+  /**
+   * 創建並初始化上滾動按鈕的時間軸效果。
+   * @private
+   * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
+   */
+  _createTimelines() {
+    this.timelines.show = gsap
+      .timeline({
+        defaults: { ease: "back.out(4)", duration: 0.35 },
+        paused: true,
+      })
+      .from(this.element.children(), { scale: 0.5, stagger: 0.15 })
+      .from(
+        this.element.children(),
+        { ease: "set1", autoAlpha: 0, stagger: 0.15 },
+        "<"
+      );
+
+    return this;
   }
 
   /**
@@ -420,6 +444,32 @@ class ScrollButtons {
     this.handlers.up = null;
     this.element.off("click", ".down", this.handlers.down);
     this.handlers.down = null;
+
+    return this;
+  }
+
+  /**
+   * 顯示上滾動按鈕。
+   * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
+   */
+  show() {
+    if (this.isShow) return this;
+
+    this.isShow = true;
+    this.timelines.show.play();
+
+    return this;
+  }
+
+  /**
+   * 隱藏上滾動按鈕。
+   * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
+   */
+  hide() {
+    if (!this.isShow) return this;
+
+    this.isShow = false;
+    this.timelines.show.reverse();
 
     return this;
   }
@@ -1107,7 +1157,6 @@ class HeaderBulb {
 
     tlKeys.forEach((key) => {
       if (this._timelines[key]) {
-        console.log(this._timelines[key]);
         this._timelines[key].kill();
         this._timelines[key] = null;
       }

@@ -59,7 +59,7 @@ function createEraserIcon() {
   const t1 = createEraserIconHoverTl(container);
   const t2 = createEraserIconClickTl(container);
 
-  container.on("mouseover", () => t1.play());
+  container.on("mouseenter", () => t1.play());
   container.on("mouseleave", () => t1.reverse());
   container.on("click", () => t2.restart());
 
@@ -370,7 +370,7 @@ class ScrollButtons {
     const t1 = createScrollButtonHoverTl(button);
     const t2 = createScrollButtonClickTl(button);
 
-    button.on("mouseover", () => t1.play());
+    button.on("mouseenter", () => t1.play());
     button.on("mouseleave", () => t1.reverse());
     button.on("click", () => t2.restart());
 
@@ -528,7 +528,7 @@ class SearchBar {
     const input = this.element.find("input");
     const eraserIcon = this.element.find(".eraser-icon-container");
 
-    this.element.on("mouseover", () => {
+    this.element.on("mouseenter", () => {
       this.timelines.play();
     });
     this.element.on("mouseleave", () => {
@@ -834,7 +834,7 @@ class FolderSelect {
     const t2 = createFolderButtonHoverTl(button);
     const t3 = createFolderButtonClickTl(button);
 
-    button.on("mouseover", () => {
+    button.on("mouseenter", () => {
       t1.play();
       t2.play();
     });
@@ -967,7 +967,7 @@ class SortSelect {
       createSortButtonHoverTl(button),
     ];
 
-    button.on("mouseover", () => {
+    button.on("mouseenter", () => {
       hoverTls.forEach((tl) => {
         tl.play();
       });
@@ -1256,7 +1256,7 @@ class FolderBoxes {
     const t5 = createFolderBoxHoverTl(box);
     const t6 = createFolderBoxContainerHoverTl(boxContainer);
 
-    boxContainer.on("mouseover", ".folder-box", () => {
+    boxContainer.on("mouseenter", ".folder-box", () => {
       t1.play();
       t3.play();
       t5.play();
@@ -1321,6 +1321,24 @@ class FolderBoxes {
     this.isShow = false;
     this.timelines.show.reverse();
 
+    return this;
+  }
+
+  /**
+   * 設定按鈕選擇事件的處理函數。
+   * @param {Function} handler - 選擇事件的處理函數。
+   * @returns {FolderBoxes} - 回傳 `FolderBoxes` 實例，以便進行方法鏈結。
+   */
+  onSelect(handler) {
+    if (this._onSelectHandler)
+      this.element.off("click", ".folder-box", this._onSelectHandler);
+
+    this._onSelectHandler = function (e) {
+      const label = $(e.target).find(".folder-box-label").text();
+      handler(label);
+    };
+
+    this.element.on("click", ".folder-box", this._onSelectHandler);
     return this;
   }
 

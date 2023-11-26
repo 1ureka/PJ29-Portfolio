@@ -68,7 +68,7 @@ $(document).ready(async function () {
     subFolders: ["自然", "物件", "場景"],
   });
   folderSelect.appendTo("#sidebar").onSelect((label) => {
-    console.log(label);
+    console.log("folderSelect", label);
   });
 
   //
@@ -89,6 +89,8 @@ $(document).ready(async function () {
     .to("#header, #sidebar, #version-display", { x: 0, y: 0, stagger: 0.35 })
     .then(() => {
       gsap.set("body", { overflowY: "auto" });
-      folderBoxes.show();
+      folderBoxes
+        .show()
+        .onSelect((choose) => console.log("folderBoxes", choose));
     });
 });

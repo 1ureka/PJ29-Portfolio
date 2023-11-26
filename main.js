@@ -6,7 +6,24 @@ CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
 
 $(document).ready(async function () {
   // const imageManager = new ImageManager();
+  // $("body").css("overflow", "hidden");
+  // const p = $("<p>").appendTo("body").text("載入urls: 0%").css({
+  //   width: "100vw",
+  //   height: "100vh",
+  //   backgroundColor: "black",
+  //   zIndex: 99,
+  //   display: "flex",
+  //   alignItems: "center",
+  //   justifyContent: "center",
+  // });
+  // imageManager.onProgress((log) => {
+  //   p.text(log);
+  // });
   // await imageManager.load();
+  // setTimeout(() => {
+  //   p.hide(600);
+  //   $("body").css("overflow", "");
+  // }, 250);
   // console.log(
   //   imageManager.getImage(
   //     "nature",
@@ -66,4 +83,11 @@ $(document).ready(async function () {
   // 之後移到正確地方
   const sortSelect = new SortSelect();
   sortSelect.appendTo("#sidebar");
+
+  gsap
+    .timeline({
+      defaults: { ease: "power2.out", duration: 0.6 },
+      onComplete: () => gsap.set("body", { overflowY: "auto" }),
+    })
+    .to("#header, #sidebar, #version-display", { x: 0, y: 0, stagger: 0.35 });
 });

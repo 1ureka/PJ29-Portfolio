@@ -1403,6 +1403,7 @@ class FolderBoxes {
  * 這個類別用於創建和管理圖片庫組件。
  */
 class Gallery {
+  /** @param {jQuery} images - 圖片元素的jQuery對象陣列。 */
   constructor(images) {
     this.timelines = {};
 
@@ -1413,6 +1414,12 @@ class Gallery {
     this._createTimelines();
   }
 
+  /**
+   * 創建圖片庫的主要元素。
+   * @private
+   * @param {jQuery} images - 圖片元素的jQuery對象陣列。
+   * @returns {jQuery} - 圖片庫的主要元素。
+   */
   _createGallery(images) {
     const container = $("<div>").addClass("images-container");
 
@@ -1423,6 +1430,12 @@ class Gallery {
     return container;
   }
 
+  /**
+   * 創建單個圖片元素。
+   * @private
+   * @param {jQuery} image - 圖片元素的jQuery對象。
+   * @returns {jQuery} - 創建的圖片容器元素。
+   */
   _createImage(image) {
     const container = $("<div>").addClass("image-container");
 
@@ -1438,6 +1451,11 @@ class Gallery {
     return container;
   }
 
+  /**
+   * 綁定圖片元素的時間軸。
+   * @private
+   * @param {jQuery} imageContainer - 圖片容器的jQuery對象。
+   */
   _bindTimeline(imageContainer) {
     const image = imageContainer.find("img");
     const element = image.add(imageContainer.find(".reflex-plane"));
@@ -1466,6 +1484,12 @@ class Gallery {
     image.on("click", () => t2.restart());
   }
 
+  /**
+   * 創建滑鼠移動事件處理器。
+   * @private
+   * @param {jQuery} element - 被處理的元素。
+   * @returns {Function} - 滑鼠移動事件處理器函式。
+   */
   _createMousemoveHandler(element) {
     return (e) => {
       const centerX = element.offset().left + element.width() / 2;
@@ -1522,6 +1546,11 @@ class Gallery {
     return this;
   }
 
+  /**
+   * 切換圖片庫的顯示/隱藏狀態。
+   * @param {boolean} e - 顯示為 `true`，隱藏為 `false`。
+   * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
+   */
   toggle(e) {
     return e ? this.show() : this.hide();
   }

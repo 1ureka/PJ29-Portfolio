@@ -1352,13 +1352,18 @@ class FolderBoxes {
 
   /**
    * 隱藏文件夾框。
-   * @returns {FolderBoxes} - 回傳 `FolderBoxes` 實例，以便進行方法鏈結。
    */
-  hide() {
+  async hide() {
     if (!this.isShow) return this;
 
     this.isShow = false;
     this.timelines.show.reverse();
+
+    this.timelines.show.eventCallback("onReverseComplete", null);
+
+    await new Promise((resolve) => {
+      this.timelines.show.eventCallback("onReverseComplete", resolve);
+    });
 
     return this;
   }
@@ -1394,6 +1399,9 @@ class FolderBoxes {
   }
 }
 
+/**
+ * 這個類別用於創建和管理圖片庫組件。
+ */
 class Gallery {
   constructor(images) {
     this.timelines = {};

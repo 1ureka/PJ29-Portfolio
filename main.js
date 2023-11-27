@@ -103,10 +103,10 @@ $(document).ready(async function () {
       img: loadManager.getImage("scene", 0),
     },
   ]);
-  folderBoxes.appendTo("#content").onSelect((label) => {
-    folderBoxes.hide();
+  folderBoxes.appendTo("#content").onSelect(async (label) => {
+    await folderBoxes.hide();
+
     folderSelect.open();
-    // 之後這裡要有then
 
     switch (label) {
       case "自然":

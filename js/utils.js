@@ -1,10 +1,7 @@
 /**
- * 圖片管理器類別，用於載入並處理圖片資源。
+ * 用於載入並處理圖片資源的類別。
  */
-class ImageManager {
-  /**
-   * ImageManager的建構子，初始化內部狀態。
-   */
+class LoadManager {
   constructor() {
     /** 用於儲存載入佇列的物件。 @type {Object.<string, createjs.LoadQueue>} */
     this.quenes = {};
@@ -15,7 +12,7 @@ class ImageManager {
   }
 
   /**
-   * 異步載入圖片資源。
+   * 異步載入主進程。
    */
   async load() {
     /** 獲取載入的urls物件。 @type {Object.<string, string[]>} */
@@ -161,20 +158,6 @@ class ImageManager {
    */
   onProgress(handler) {
     this.progressHandler = handler;
-    return this;
-  }
-
-  // 之後會執行排序this.images[category]
-  sortBySize() {
-    return this;
-  }
-
-  sortByName() {
-    return this;
-  }
-
-  // 會有點難，可能得從生成imagesUrls.json時下手
-  sortByDate() {
     return this;
   }
 }

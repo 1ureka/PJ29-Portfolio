@@ -5,12 +5,12 @@ gsap.registerPlugin(CustomEase);
 CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
 
 $(document).ready(async function () {
-  const imageManager = new ImageManager();
-  imageManager.onProgress((log) => {
+  const loadManager = new LoadManager();
+  loadManager.onProgress((log) => {
     $("#loading-message").text(log.name);
     $("#progress-bar").css("width", `${log.state}%`);
   });
-  await imageManager.load();
+  await loadManager.load();
 
   //
   // 創建上下按鈕
@@ -80,19 +80,19 @@ $(document).ready(async function () {
       bulbColor: "#8ce197",
       bulbIntensity: 1,
       label: "自然",
-      img: imageManager.getImage("nature", 0),
+      img: loadManager.getImage("nature", 0),
     },
     {
       bulbColor: "#ffff7a",
       bulbIntensity: 1,
       label: "物件",
-      img: imageManager.getImage("props", 0),
+      img: loadManager.getImage("props", 0),
     },
     {
       bulbColor: "#92e9ff",
       bulbIntensity: 1,
       label: "場景",
-      img: imageManager.getImage("scene", 0),
+      img: loadManager.getImage("scene", 0),
     },
   ]);
   folderBoxes.appendTo("#content").onSelect((label) => {

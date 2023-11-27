@@ -1421,13 +1421,16 @@ class Gallery {
    * @returns {jQuery} - 圖片庫的主要元素。
    */
   _createGallery(images) {
-    const container = $("<div>").addClass("images-container");
+    const gallery = $("<div>").addClass("gallery");
+    const grid = $("<div>").addClass("images-grid");
 
     images.forEach((img) => {
-      this._createImage(img).appendTo(container);
+      this._createImage(img).appendTo(grid);
     });
 
-    return container;
+    grid.appendTo(gallery);
+
+    return gallery;
   }
 
   /**

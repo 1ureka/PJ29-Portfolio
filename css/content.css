@@ -1,0 +1,153 @@
+#content {
+  position: fixed;
+  top: 100px;
+  left: 260px;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+/* createBulb */
+.bulb-container,
+.bulb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.bulb {
+  background-color: #00000000;
+  box-shadow: 0px 0px 20px #00000000;
+  border-radius: 50%;
+}
+.bulb-filter {
+  background: radial-gradient(
+    circle at 5px 5px,
+    hsla(240, 0%, 0%, 0),
+    hsla(240, 0%, 0%, 0.35),
+    hsla(240, 0%, 0%, 0.9)
+  );
+  filter: blur(0.5px);
+  border-radius: 50%;
+}
+
+/* createFolderboxes */
+.folder-boxes-container {
+  position: absolute;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 45px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto;
+  grid-column-gap: 30px;
+  grid-row-gap: 30px;
+}
+
+/* createFolderbox */
+.folder-box {
+  box-sizing: border-box;
+  width: 100%;
+  height: 50px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.75) 0px 3px 4px,
+    rgba(0, 0, 0, 0.35) 10px 12px 3px -3px,
+    rgba(0, 0, 0, 0.45) 0px -5px 0px inset,
+    rgba(255, 255, 255, 0.1) 2px 5px 10px -3px inset;
+  z-index: 1;
+  cursor: pointer;
+}
+.folder-box-label {
+  width: calc(100% - 100px);
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  pointer-events: none;
+}
+
+/* createFolderBoxContainer */
+.folder-box-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+.folder-box-img {
+  position: absolute;
+  height: 100%;
+  border-radius: 10px;
+  box-shadow: 0px 0px 12px rgba(0, 0, 0, 1);
+  object-fit: cover;
+  background-color: darkolivegreen;
+}
+
+/* Gallery */
+.images-container {
+  position: absolute;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 25px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto;
+  grid-column-gap: 25px;
+  grid-row-gap: 25px;
+}
+
+.image-container {
+  position: relative;
+  width: 100%;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform-style: preserve-3d;
+}
+
+.image-container img {
+  position: relative;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: rgba(0, 0, 0, 0.75) 0px 3px 4px,
+    rgba(0, 0, 0, 0.35) 10px 12px 3px -3px,
+    rgba(0, 0, 0, 0.45) 0px -5px 0px inset,
+    rgba(255, 255, 255, 0.1) 2px 5px 10px -3px inset;
+}
+
+.reflex-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  transform: translateZ(-30px);
+}
+
+.reflex-plane {
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.15);
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0.15),
+    rgba(255, 255, 255, 0.3)
+  );
+  border-radius: 10px;
+}

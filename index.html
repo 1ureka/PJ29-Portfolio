@@ -1,198 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" href="icons/favicon.png" />
     <title>1ureka's CG</title>
+    <meta charset="UTF-8" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300&family=Noto+Sans+JP:wght@300&family=Noto+Sans+TC:wght@300&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" type="text/css" href="css/style_global.css" />
-    <link rel="stylesheet" type="text/css" href="css/style_background.css" />
-    <link rel="stylesheet" type="text/css" href="css/style_index.css" />
-    <link rel="stylesheet" type="text/css" href="css/style_gallery.css" />
-    <link rel="stylesheet" type="text/css" href="css/style_fullscreen.css" />
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.js"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.min.js"
+      integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+      crossorigin="anonymous"
+    ></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/CustomEase.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/CustomEase.min.js"></script>
     <script src="https://code.createjs.com/1.0.0/preloadjs.min.js"></script>
-    <script>
-      $(document).on("contextmenu", function (e) {
-        e.preventDefault();
-      });
-      gsap.registerPlugin(ScrollTrigger);
-      gsap.registerPlugin(CustomEase);
-      //製作漸進模式
-      CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
-    </script>
-    <script src="js/preload.js"></script>
-    <script src="js/main.js"></script>
+    <!-- 樣式表 -->
+    <link rel="stylesheet" href="style.css" />
+    <!-- 點擊效果 -->
+    <link rel="stylesheet" href="lib/clickParticle.css" />
+    <script src="lib/clickParticle.js"></script>
   </head>
   <body>
-    <div class="loading-container">
-      <img class="loading" src="images/icon/loading.gif" />
+    <div id="header">
+      <img id="favicon" src="icons/favicon.png" />
+      <h1>1ureka's CG</h1>
     </div>
-    <div class="moving-images-container">
-      <div class="moving-images a">
-        <!-- 左側隨機選擇的圖片將在JavaScript中插入 -->
-      </div>
-      <div class="moving-images b">
-        <!-- 中間隨機選擇的圖片將在JavaScript中插入 -->
-      </div>
-      <div class="moving-images c">
-        <!-- 右側隨機選擇的圖片將在JavaScript中插入 -->
-      </div>
-      <div class="moving-images d">
-        <!-- 右側隨機選擇的圖片將在JavaScript中插入 -->
-      </div>
+    <div id="sidebar"></div>
+    <div id="version-display"><p>版本： @0.0.1</p></div>
+    <div id="content"><!-- 項目將在這裡動態顯示 --></div>
+    <div id="loading-container">
+      <img src="icons/loading.gif" />
+      <p id="loading-message">準備開始載入 . . .</p>
     </div>
-    <!-- 主頁內容 -->
-    <div class="content">
-      <div class="title">
-        <img class="ico" src="images/icon/computer_folder.png" />
-        <h1>1ureka's CG</h1>
-      </div>
-      <div class="page-btn-container">
-        <div class="page-btn Nature">
-          <div class="page-btn-title" data-image="Nature">Nature</div>
-          <div class="btn-shadow blue"></div>
-        </div>
-        <div class="page-btn Props">
-          <div class="page-btn-title" data-image="Props">Props</div>
-          <div class="btn-shadow yellow"></div>
-        </div>
-        <div class="page-btn Scene">
-          <div class="page-btn-title" data-image="Scene">Scene</div>
-          <div class="btn-shadow red"></div>
-        </div>
-      </div>
-      <div class="tool-bar-container">
-        <div class="setting-bar">
-          <img class="setting-btn" src="images/icon/setting.gif" />
-          <div class="options-icon">
-            <img class="animation-btn" src="images/icon/film.png" />
-            <img class="language-btn" src="images/icon/language.png" />
-            <img class="color-btn" src="images/icon/palette.png" />
-            <img class="bottom-btn" src="images/icon/top (red).png" />
-          </div>
-          <div class="line"></div>
-          <div class="options-lable">
-            <div class="animation-lable-container">
-              <div class="animation-lable-red">animation</div>
-              <div class="animation-lable-white">animation</div>
-            </div>
-            <div class="language-lable-container">
-              <div class="language-lable-red">language</div>
-              <div class="language-lable-white">language</div>
-            </div>
-            <div class="color-lable-container">
-              <div class="color-lable-red">color</div>
-              <div class="color-lable-white">color</div>
-            </div>
-            <div class="bottom-lable-container">
-              <div class="bottom-lable-red">back</div>
-              <div class="bottom-lable-white">back</div>
-            </div>
-          </div>
-          <div class="options-animation">
-            <div class="option">
-              <div class="pause-lable-container">
-                <div class="pause-lable-red">pause</div>
-                <div class="pause-lable-white">pause</div>
-              </div>
-              <img class="pause-btn" src="images/icon/pause.png" />
-            </div>
-            <div class="option">
-              <div class="reverse-lable-container">
-                <div class="reverse-lable-red">reverse</div>
-                <div class="reverse-lable-white">reverse</div>
-              </div>
-              <img class="reverse-btn" src="images/icon/reverse.png" />
-            </div>
-          </div>
-          <div class="options-language">
-            <div class="english" lang="en">English</div>
-            <div class="japanese" lang="ja">日本語</div>
-            <div class="chinese" lang="zh-Hant">繁體中文</div>
-          </div>
-          <div class="options-color">
-            <div class="option">
-              <img class="background-icon" src="images/icon/background.png" />
-              <div class="color-picker-background">
-                <input
-                  type="color"
-                  class="color-picker-bottom"
-                  value="#101316"
-                />
-                <div class="color-picker-top"></div>
-              </div>
-            </div>
-            <div class="option">
-              <img class="interface-icon" src="images/icon/interface.png" />
-              <div class="color-picker-interface">
-                <input
-                  type="color"
-                  class="color-picker-bottom"
-                  value="#1A1A1A"
-                />
-                <div class="color-picker-top"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="search-bar">
-          <img class="search-btn" src="images/icon/search.png" />
-          <input type="text" class="search-input" name="search-input" />
-        </div>
-        <div class="close-bar">
-          <img class="stop-btn" src="images/icon/off.png" />
-          <img class="restart-btn" src="images/icon/restart.png" />
-          <div class="stop-lable-container">
-            <div class="stop-lable-red">close</div>
-            <div class="stop-lable-white">close</div>
-          </div>
-          <div class="restart-lable-container">
-            <div class="restart-lable-red">restart</div>
-            <div class="restart-lable-white">restart</div>
-          </div>
-          <div class="line"></div>
-        </div>
-      </div>
-    </div>
-    <!-- 圖片牆 -->
-    <div class="gallery">
-      <div class="image-grid">
-        <!-- JavaScript 會自動生成圖片 -->
-      </div>
-      <div class="bottom"></div>
-    </div>
-    <div class="back-to-home">
-      <img src="images/icon/home (blue).png" />
-    </div>
-    <div class="top-btn">
-      <img src="images/icon/top (blue).png" />
-    </div>
-    <!-- 預覽與全螢幕 -->
-    <div class="fullscreen-overlay">
-      <div class="close-btn">
-        <img src="images/icon/close.png" />
-      </div>
-      <div class="prevImage-btn">
-        <img src="images/icon/top (blue).png" />
-      </div>
-      <div class="nextImage-btn">
-        <img src="images/icon/top (blue).png" />
-      </div>
-      <div class="fullscreen-image-container">
-        <img src="" />
-      </div>
-      <div class="text-container">
-        <p>image name</p>
-        <div>.jpg</div>
-      </div>
-    </div>
+    <div id="progress-bar"></div>
+    <div id="particle-container"></div>
+
+    <!-- 組件、時間軸、全局函數... -->
+    <script src="js/utils.js"></script>
+    <script src="js/timeline.js"></script>
+    <script src="js/component.js"></script>
+
+    <!-- main記得放在最後 -->
+    <script src="main.js"></script>
   </body>
 </html>

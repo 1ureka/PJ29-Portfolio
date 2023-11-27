@@ -55,15 +55,23 @@ $(document).ready(async function () {
     switch (label) {
       case "作品集":
         headerBulb.switchLight("red");
+        switchGallery("hide");
+        folderBoxes.show();
         break;
       case "自然":
         headerBulb.switchLight("green");
+        folderBoxes.hide();
+        switchGallery("nature");
         break;
       case "物件":
         headerBulb.switchLight("yellow");
+        folderBoxes.hide();
+        switchGallery("props");
         break;
       case "場景":
         headerBulb.switchLight("blue");
+        folderBoxes.hide();
+        switchGallery("scene");
         break;
     }
   });
@@ -96,28 +104,48 @@ $(document).ready(async function () {
     },
   ]);
   folderBoxes.appendTo("#content").onSelect((label) => {
+    folderBoxes.hide();
+    folderSelect.open();
+    // 之後這裡要有then
+
     switch (label) {
-      case "作品集":
-        headerBulb.switchLight("red");
-        break;
       case "自然":
         headerBulb.switchLight("green");
+        switchGallery("nature");
         break;
       case "物件":
         headerBulb.switchLight("yellow");
+        switchGallery("props");
         break;
       case "場景":
         headerBulb.switchLight("blue");
+        switchGallery("scene");
         break;
     }
   });
 
   //
   // 創建內容
-  const natureGallery = new Gallery(
-    loadManager.getImageArray("nature").map((obj) => obj.JQuery)
-  );
-  natureGallery.appendTo("#content");
+  const gallery = {};
+  const categories = ["nature", "props", "scene"];
+
+  categories.forEach((category) => {
+    // 取得相應類別的圖片數組
+    const imageArray = loadManager.getImageArray(category);
+    // 使用 map 處理每個圖片對象，提取出 JQuery 對象
+    const jqueryArray = imageArray.map((obj) => obj.JQuery);
+
+    gallery[category] = new Gallery(jqueryArray);
+    gallery[category].appendTo("#content");
+  });
+
+  const switchGallery = (e) => {
+    const keys = Object.keys(gallery);
+
+    if (e === "hide") keys.forEach((key) => gallery[key].hide());
+
+    keys.forEach((key) => gallery[key].toggle(e === key));
+  };
 
   //
   // 開場動畫
@@ -133,7 +161,7 @@ $(document).ready(async function () {
 
   const t3 = gsap
     .timeline({ defaults: { ease: "power2.out", duration: 0.6 } })
-    // .to("body", { onStart: () => folderBoxes.show(), duration: 0.65 })
+    .to("body", { onStart: () => folderBoxes.show(), duration: 0.65 })
     .to("body", { onStart: () => scrollButtons.show(), duration: 0.65 }, "<");
 
   const opening = gsap.timeline({

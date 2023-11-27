@@ -1396,8 +1396,13 @@ class FolderBoxes {
 
 class Gallery {
   constructor(images) {
-    console.log(images);
+    this.timelines = {};
+
+    this.isShow = false;
+    this._isAppendTo = false;
+
     this.element = this._createGallery(images);
+    this._createTimelines();
   }
 
   _createGallery(images) {
@@ -1468,6 +1473,49 @@ class Gallery {
         rotateY: offsetX / 15,
       });
     };
+  }
+
+  /**
+   * 創建並初始化圖片庫的時間軸效果。
+   * @private
+   * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
+   */
+  _createTimelines() {
+    this.timelines.show = gsap
+      .timeline({ defaults: { ease: "set1" }, paused: true })
+      .from(this.element, { autoAlpha: 0, duration: 0.2 });
+
+    return this;
+  }
+
+  /**
+   * 顯示圖片庫。
+   * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
+   */
+  show() {
+    if (this.isShow) return this;
+
+    this.isShow = true;
+    this.timelines.show.play();
+
+    return this;
+  }
+
+  /**
+   * 隱藏圖片庫。
+   * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
+   */
+  hide() {
+    if (!this.isShow) return this;
+
+    this.isShow = false;
+    this.timelines.show.reverse();
+
+    return this;
+  }
+
+  toggle(e) {
+    return e ? this.show() : this.hide();
   }
 
   /**

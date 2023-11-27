@@ -1475,8 +1475,8 @@ class Gallery {
 
       gsap.to(element, {
         overwrite: "auto",
-        ease: "power2.out",
-        duration: 0.6,
+        ease: "back.out(10)",
+        duration: 0.5,
         rotateX: -offsetY / 7,
         rotateY: offsetX / 15,
       });

@@ -326,7 +326,7 @@ function createImageClickTl(container) {
       defaults: { duration: 0.1, ease: "set1" },
       paused: true,
     })
-    .to(container, { scale: 0.8, repeat: 1, yoyo: true });
+    .to(container, { scale: 0.9, repeat: 1, yoyo: true });
 
   return tl;
 }

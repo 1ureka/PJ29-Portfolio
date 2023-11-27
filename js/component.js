@@ -1429,7 +1429,7 @@ class Gallery {
     const image = imageContainer.find("img");
     const element = image.add(imageContainer.find(".reflex-plane"));
     const t1 = createImageHoverTl(imageContainer);
-    // const t2 = createImageClickTl(imageContainer);
+    const t2 = createImageClickTl(imageContainer);
     const mousemoveHandler = this._createMousemoveHandler(element);
 
     image.on("mouseenter", () => {
@@ -1450,7 +1450,7 @@ class Gallery {
         rotateY: 0,
       });
     });
-    // image.on("click", "img", () => t2.restart());
+    image.on("click", () => t2.restart());
   }
 
   _createMousemoveHandler(element) {

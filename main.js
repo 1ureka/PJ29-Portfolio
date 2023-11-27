@@ -113,6 +113,13 @@ $(document).ready(async function () {
   });
 
   //
+  // 創建內容
+  const natureGallery = new Gallery(
+    loadManager.getImageArray("nature").map((obj) => obj.JQuery)
+  );
+  natureGallery.appendTo("#content");
+
+  //
   // 開場動畫
   const t1 = gsap
     .timeline({ defaults: { ease: "power2.out", duration: 0.4 } })
@@ -126,12 +133,11 @@ $(document).ready(async function () {
 
   const t3 = gsap
     .timeline({ defaults: { ease: "power2.out", duration: 0.6 } })
-    .to("body", { onStart: () => folderBoxes.show(), duration: 0.65 })
+    // .to("body", { onStart: () => folderBoxes.show(), duration: 0.65 })
     .to("body", { onStart: () => scrollButtons.show(), duration: 0.65 }, "<");
 
   const opening = gsap.timeline({
     onComplete: () => {
-      gsap.set("body", { overflowY: "auto" });
       $("#loading-container").remove();
       headerBulb.switchLight("red");
     },

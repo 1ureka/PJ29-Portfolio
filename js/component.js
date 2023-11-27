@@ -1393,3 +1393,92 @@ class FolderBoxes {
     return this;
   }
 }
+
+class Gallery {
+  constructor(images) {
+    console.log(images);
+    this.element = this._createGallery(images);
+  }
+
+  _createGallery(images) {
+    const container = $("<div>").addClass("images-container");
+
+    images.forEach((img) => {
+      this._createImage(img).appendTo(container);
+    });
+
+    return container;
+  }
+
+  _createImage(image) {
+    const container = $("<div>").addClass("image-container");
+
+    const reflexContainer = $("<div>").addClass("reflex-container");
+    const reflexPlane = $("<div>")
+      .addClass("reflex-plane")
+      .appendTo(reflexContainer);
+
+    container.append(reflexContainer, image);
+
+    this._bindTimeline(container);
+
+    return container;
+  }
+
+  _bindTimeline(imageContainer) {
+    const image = imageContainer.find("img");
+    const element = image.add(imageContainer.find(".reflex-plane"));
+    const t1 = createImageHoverTl(imageContainer);
+    // const t2 = createImageClickTl(imageContainer);
+    const mousemoveHandler = this._createMousemoveHandler(element);
+
+    image.on("mouseenter", () => {
+      t1.play();
+
+      image.on("mousemove", mousemoveHandler);
+    });
+    image.on("mouseleave", () => {
+      t1.reverse();
+
+      image.off("mousemove", mousemoveHandler);
+
+      gsap.to(element, {
+        overwrite: "auto",
+        ease: "set1",
+        duration: 0.5,
+        rotateX: 0,
+        rotateY: 0,
+      });
+    });
+    // image.on("click", "img", () => t2.restart());
+  }
+
+  _createMousemoveHandler(element) {
+    return (e) => {
+      const centerX = element.offset().left + element.width() / 2;
+      const centerY = element.offset().top + element.height() / 2;
+      const offsetX = e.pageX - centerX;
+      const offsetY = e.pageY - centerY;
+
+      gsap.to(element, {
+        overwrite: "auto",
+        ease: "power2.out",
+        duration: 0.6,
+        rotateX: -offsetY / 7,
+        rotateY: offsetX / 15,
+      });
+    };
+  }
+
+  /**
+   * 附加實例元素到指定的 DOM 選擇器。
+   * @param {string} selector - DOM 選擇器。
+   * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
+   */
+  appendTo(selector) {
+    if (this._isAppendTo) return;
+    this._isAppendTo = true;
+    this.element = this.element.appendTo(selector);
+    return this;
+  }
+}

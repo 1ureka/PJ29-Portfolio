@@ -304,6 +304,33 @@ function createFolderBoxContainerHoverTl(container) {
   return tl;
 }
 
+function createImageHoverTl(container) {
+  const tl = gsap
+    .timeline({
+      defaults: { duration: 0.2, ease: "set1" },
+      paused: true,
+    })
+    .fromTo(
+      container.find("img"),
+      { filter: "brightness(0.8)" },
+      { filter: "brightness(1)" }
+    )
+    .to(container, { scale: 1.05 }, "<");
+
+  return tl;
+}
+
+function createImageClickTl(container) {
+  const tl = gsap
+    .timeline({
+      defaults: { duration: 0.1, ease: "set1" },
+      paused: true,
+    })
+    .to(container, { scale: 0.8, repeat: 1, yoyo: true });
+
+  return tl;
+}
+
 //
 // 過場
 //

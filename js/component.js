@@ -1091,38 +1091,18 @@ class HeaderBulb {
     // 合併預設配置和用戶提供的配置
     config = { ...defaultConfig, ...config };
 
-    /**
-     * 燈泡的寬度。
-     * @type {number}
-     */
+    /** 燈泡的寬度。 * @type {number} */
     this.width = config.width;
-    /**
-     * 燈泡的高度。
-     * @type {number}
-     */
+    /** 燈泡的高度。 @type {number} */
     this.height = config.height;
-    /**
-     * 燈泡的強度。
-     * @type {number}
-     */
+    /** 燈泡的強度。 @type {number} */
     this.intensity = config.intensity;
-    /**
-     * 表示燈泡是否已附加到 DOM 中。
-     * @type {boolean}
-     * @private
-     */
+    /** 燈泡目前的色彩。 @type {"red" | "green" | "yellow" | "blue" | "off"} */
+    this.currentColor = "off";
+
     this._isAppendTo = false;
-    /**
-     * 用於存儲時間軸動畫的物件。
-     * @type {Object}
-     * @private
-     */
+
     this._timelines = {};
-    /**
-     * 顏色對應表，將顏色名稱映射到實際的顏色值。
-     * @type {Object}
-     * @private
-     */
     this._colorMap = {
       red: "#ea81af",
       green: "#8ce197",
@@ -1135,8 +1115,6 @@ class HeaderBulb {
      * @type {jQuery}
      */
     this.element = this._createBulb();
-
-    return this;
   }
 
   /**
@@ -1173,6 +1151,22 @@ class HeaderBulb {
       color: this._colorMap[color],
       intensity: this.intensity,
     }).play();
+    this.currentColor = color;
+
+    return this;
+  }
+
+  /**
+   * 使燈泡的顏色閃爍。
+   */
+  flickerLight() {
+    this._killTimeline();
+    this._timelines[this.currentColor] = createBulbLightT2(this.element, {
+      color: this._colorMap[this.currentColor],
+      intensity: this.intensity,
+    }).play();
+
+    return this;
   }
 
   /**
@@ -1234,7 +1228,6 @@ class FolderBoxes {
     const container = $("<div>").addClass("folder-box-container");
 
     const box = this._createFolderBox(config);
-    console.log(config);
     const img = $("<img>")
       .attr("src", config.img.src)
       .addClass("folder-box-img")

@@ -29,9 +29,11 @@ $(document).ready(async function () {
     .appendTo("#header")
     .onInput(() => {
       console.log("input", searchBar.input);
+      headerBulb.flickerLight();
     })
     .onClear(() => {
       console.log("clear");
+      headerBulb.flickerLight();
     });
 
   //

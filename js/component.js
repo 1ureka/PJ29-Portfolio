@@ -1403,8 +1403,9 @@ class FolderBoxes {
  * 這個類別用於創建和管理圖片庫組件。
  */
 class Gallery {
-  /** @param {jQuery} images - 圖片元素的jQuery對象陣列。 */
+  /** @param {string[]} urls - 圖片的 URL 陣列。 */
   constructor(urls) {
+    /** @type {string[]} */
     this.urls = urls;
     this.timelines = {};
 
@@ -1415,8 +1416,7 @@ class Gallery {
   /**
    * 創建圖片庫的主要元素。
    * @private
-   * @param {jQuery} images - 圖片元素的jQuery對象陣列。
-   * @returns {jQuery} - 圖片庫的主要元素。
+   * @returns {Promise<jQuery>} - 圖片庫的主要元素。
    */
   async _createGallery() {
     const gallery = $("<div>").addClass("gallery");
@@ -1434,7 +1434,7 @@ class Gallery {
   /**
    * 創建單個圖片元素。
    * @private
-   * @param {jQuery} image - 圖片元素的jQuery對象。
+   * @param {string} url - 圖片的 URL。
    * @returns {Promise<jQuery>} - 創建的圖片容器元素。
    */
   async _createImage(url) {
@@ -1532,6 +1532,7 @@ class Gallery {
 
   /**
    * 顯示圖片庫。
+   * @returns {Promise<Gallery>} - 回傳 `Gallery` 實例，以便進行方法鏈結。
    */
   async show() {
     if (this.isShow) return this;
@@ -1547,6 +1548,7 @@ class Gallery {
 
   /**
    * 隱藏圖片庫。
+   * @returns {Promise<Gallery>} - 回傳 `Gallery` 實例，以便進行方法鏈結。
    */
   async hide() {
     if (!this.isShow) return this;
@@ -1569,6 +1571,7 @@ class Gallery {
   /**
    * 切換圖片庫的顯示/隱藏狀態。
    * @param {boolean} e - 顯示為 `true`，隱藏為 `false`。
+   * @returns {Promise<Gallery>} - 回傳 `Gallery` 實例，以便進行方法鏈結。
    */
   async toggle(e) {
     return e ? await this.show() : await this.hide();

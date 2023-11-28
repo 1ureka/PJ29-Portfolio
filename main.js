@@ -51,11 +51,11 @@ $(document).ready(async function () {
     mainFolder: "作品集",
     subFolders: ["自然", "物件", "場景"],
   });
-  folderSelect.appendTo("#sidebar").onSelect((label) => {
+  folderSelect.appendTo("#sidebar").onSelect(async (label) => {
     switch (label) {
       case "作品集":
         headerBulb.switchLight("red");
-        switchGallery("hide");
+        await switchGallery("hide");
         folderBoxes.show();
         break;
       case "自然":
@@ -126,6 +126,7 @@ $(document).ready(async function () {
 
   //
   // 創建內容
+  /** @type {{ [key: string]: Gallery }} */
   const gallery = {};
   const categories = ["nature", "props", "scene"];
 
@@ -139,10 +140,10 @@ $(document).ready(async function () {
     gallery[category].appendTo("#content");
   });
 
-  const switchGallery = (e) => {
+  const switchGallery = async (e) => {
     const keys = Object.keys(gallery);
 
-    if (e === "hide") keys.forEach((key) => gallery[key].hide());
+    if (e === "hide") await Promise.all(keys.map((key) => gallery[key].hide()));
 
     keys.forEach((key) => gallery[key].toggle(e === key));
   };

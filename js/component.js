@@ -1540,11 +1540,17 @@ class Gallery {
    * 隱藏圖片庫。
    * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
    */
-  hide() {
+  async hide() {
     if (!this.isShow) return this;
 
     this.isShow = false;
     this.timelines.show.reverse();
+
+    this.timelines.show.eventCallback("onReverseComplete", null);
+
+    await new Promise((resolve) => {
+      this.timelines.show.eventCallback("onReverseComplete", resolve);
+    });
 
     return this;
   }

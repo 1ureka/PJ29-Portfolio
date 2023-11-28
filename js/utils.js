@@ -91,7 +91,7 @@ class LoadManager {
       return {
         name: e.item.id,
         size: e.rawResult.size,
-        JQuery: $(e.result),
+        JQuery: $(e.result).attr("decoding", "async"),
         src: e.item.src,
       };
     });
@@ -160,4 +160,8 @@ class LoadManager {
     this.progressHandler = handler;
     return this;
   }
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

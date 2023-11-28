@@ -1404,14 +1404,12 @@ class FolderBoxes {
  */
 class Gallery {
   /** @param {jQuery} images - 圖片元素的jQuery對象陣列。 */
-  constructor(images) {
+  constructor(urls) {
+    this.urls = urls;
     this.timelines = {};
 
     this.isShow = false;
     this._isAppendTo = false;
-
-    this.element = this._createGallery(images);
-    this._createTimelines();
   }
 
   /**
@@ -1420,15 +1418,15 @@ class Gallery {
    * @param {jQuery} images - 圖片元素的jQuery對象陣列。
    * @returns {jQuery} - 圖片庫的主要元素。
    */
-  _createGallery(images) {
+  async _createGallery() {
     const gallery = $("<div>").addClass("gallery");
     const grid = $("<div>").addClass("images-grid");
 
-    images.forEach((img) => {
-      this._createImage(img).appendTo(grid);
-    });
+    const images = await Promise.all(
+      this.urls.map((url) => this._createImage(url))
+    );
 
-    grid.appendTo(gallery);
+    grid.append(images).appendTo(gallery);
 
     return gallery;
   }
@@ -1437,17 +1435,26 @@ class Gallery {
    * 創建單個圖片元素。
    * @private
    * @param {jQuery} image - 圖片元素的jQuery對象。
-   * @returns {jQuery} - 創建的圖片容器元素。
+   * @returns {Promise<jQuery>} - 創建的圖片容器元素。
    */
-  _createImage(image) {
+  async _createImage(url) {
     const container = $("<div>").addClass("image-container");
 
+    const image = $("<img>").attr("src", url).attr("decoding", "async");
     const reflexContainer = $("<div>").addClass("reflex-container");
-    const reflexPlane = $("<div>")
-      .addClass("reflex-plane")
-      .appendTo(reflexContainer);
+    $("<div>").addClass("reflex-plane").appendTo(reflexContainer);
 
     container.append(reflexContainer, image);
+
+    async function decode(image) {
+      try {
+        await image.decode();
+      } catch (error) {
+        await decode(image);
+      }
+    }
+
+    await decode(image[0]);
 
     this._bindTimeline(container);
 
@@ -1525,10 +1532,12 @@ class Gallery {
 
   /**
    * 顯示圖片庫。
-   * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
    */
-  show() {
+  async show() {
     if (this.isShow) return this;
+
+    this.element = await this._createGallery();
+    this._createTimelines().appendTo("#content");
 
     this.isShow = true;
     this.timelines.show.play();
@@ -1538,7 +1547,6 @@ class Gallery {
 
   /**
    * 隱藏圖片庫。
-   * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
    */
   async hide() {
     if (!this.isShow) return this;
@@ -1551,6 +1559,9 @@ class Gallery {
     await new Promise((resolve) => {
       this.timelines.show.eventCallback("onReverseComplete", resolve);
     });
+    this.element.remove();
+    this.element = null;
+    this._isAppendTo = false;
 
     return this;
   }
@@ -1558,10 +1569,9 @@ class Gallery {
   /**
    * 切換圖片庫的顯示/隱藏狀態。
    * @param {boolean} e - 顯示為 `true`，隱藏為 `false`。
-   * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
    */
-  toggle(e) {
-    return e ? this.show() : this.hide();
+  async toggle(e) {
+    return e ? await this.show() : await this.hide();
   }
 
   /**

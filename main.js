@@ -1,5 +1,3 @@
-gsap.registerPlugin(ScrollTrigger);
-
 gsap.registerPlugin(CustomEase);
 
 CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
@@ -60,17 +58,17 @@ $(document).ready(async function () {
         break;
       case "自然":
         headerBulb.switchLight("green");
-        folderBoxes.hide();
+        await folderBoxes.hide();
         switchGallery("nature");
         break;
       case "物件":
         headerBulb.switchLight("yellow");
-        folderBoxes.hide();
+        await folderBoxes.hide();
         switchGallery("props");
         break;
       case "場景":
         headerBulb.switchLight("blue");
-        folderBoxes.hide();
+        await folderBoxes.hide();
         switchGallery("scene");
         break;
     }
@@ -105,23 +103,21 @@ $(document).ready(async function () {
   ]);
   folderBoxes.appendTo("#content").onSelect(async (label) => {
     await folderBoxes.hide();
-
-    folderSelect.open();
-
     switch (label) {
       case "自然":
+        await switchGallery("nature");
         headerBulb.switchLight("green");
-        switchGallery("nature");
         break;
       case "物件":
+        await switchGallery("props");
         headerBulb.switchLight("yellow");
-        switchGallery("props");
         break;
       case "場景":
+        await switchGallery("scene");
         headerBulb.switchLight("blue");
-        switchGallery("scene");
         break;
     }
+    folderSelect.open();
   });
 
   //
@@ -134,10 +130,9 @@ $(document).ready(async function () {
     // 取得相應類別的圖片數組
     const imageArray = loadManager.getImageArray(category);
     // 使用 map 處理每個圖片對象，提取出 JQuery 對象
-    const jqueryArray = imageArray.map((obj) => obj.JQuery);
+    const urlArray = imageArray.map((obj) => obj.src);
 
-    gallery[category] = new Gallery(jqueryArray);
-    gallery[category].appendTo("#content");
+    gallery[category] = new Gallery(urlArray);
   });
 
   const switchGallery = async (e) => {
@@ -145,7 +140,7 @@ $(document).ready(async function () {
 
     if (e === "hide") await Promise.all(keys.map((key) => gallery[key].hide()));
 
-    keys.forEach((key) => gallery[key].toggle(e === key));
+    await Promise.all(keys.map((key) => gallery[key].toggle(e === key)));
   };
 
   //

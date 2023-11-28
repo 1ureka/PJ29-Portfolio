@@ -1196,10 +1196,6 @@ class FolderBoxes {
    * 建構一個新的 `FolderBox` 實例。
    * @constructor
    * @param {Object[]} configs - 用於配置文件夾框的物件。
-   * @param {string} configs.bulbColor - 燈泡的顏色。
-   * @param {number} configs.bulbIntensity - 燈泡的強度。
-   * @param {string} configs.label - 文件夾標籤的文字。
-   * @param {jQuery} configs.img - 圖片的jQuery物件
    */
   constructor(configs) {
     this.timelines = {};
@@ -1238,6 +1234,7 @@ class FolderBoxes {
     const container = $("<div>").addClass("folder-box-container");
 
     const box = this._createFolderBox(config);
+    console.log(config);
     const img = $("<img>")
       .attr("src", config.img.src)
       .addClass("folder-box-img")
@@ -1523,9 +1520,20 @@ class Gallery {
    * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
    */
   _createTimelines() {
+    const images = this.element.children().children();
     this.timelines.show = gsap
       .timeline({ defaults: { ease: "set1" }, paused: true })
-      .from(this.element, { autoAlpha: 0, duration: 0.2 });
+      .from(this.element, { autoAlpha: 0, duration: 0.05 })
+      .from(
+        images,
+        {
+          autoAlpha: 0,
+          scale: 0.5,
+          ease: "back.out(2)",
+          stagger: { from: "random", amount: 0.35 },
+        },
+        "<"
+      );
 
     return this;
   }
@@ -1539,6 +1547,7 @@ class Gallery {
 
     this.element = await this._createGallery();
     this._createTimelines().appendTo("#content");
+    await delay(100);
 
     this.isShow = true;
     this.timelines.show.play();

@@ -315,7 +315,7 @@ function createImageHoverTl(container) {
       { filter: "brightness(0.8)" },
       { filter: "brightness(1)" }
     )
-    .to(container, { scale: 1.05 }, "<");
+    .fromTo(container, { scale: 1 }, { scale: 1.05 }, "<");
 
   return tl;
 }

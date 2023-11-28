@@ -59,16 +59,19 @@ $(document).ready(async function () {
       case "自然":
         headerBulb.switchLight("green");
         await folderBoxes.hide();
+        await delay(100);
         switchGallery("nature");
         break;
       case "物件":
         headerBulb.switchLight("yellow");
         await folderBoxes.hide();
+        await delay(100);
         switchGallery("props");
         break;
       case "場景":
         headerBulb.switchLight("blue");
         await folderBoxes.hide();
+        await delay(100);
         switchGallery("scene");
         break;
     }

@@ -1401,6 +1401,7 @@ class Gallery {
 
     this.isShow = false;
     this._isAppendTo = false;
+    this._isRegisterOnSelect = false;
   }
 
   /**
@@ -1540,6 +1541,7 @@ class Gallery {
 
     this.element = await this._createGallery();
     this._createTimelines().appendTo("#content");
+    this.element.on("click", "img", this._onSelectHandler);
     await delay(100);
 
     this.isShow = true;
@@ -1577,6 +1579,23 @@ class Gallery {
    */
   async toggle(e) {
     return e ? await this.show() : await this.hide();
+  }
+
+  /**
+   * 設定圖片庫選擇事件的處理函數。
+   * @param {Function} handler - 選擇事件的處理函數。
+   * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
+   */
+  onSelect(handler) {
+    if (this._isRegisterOnSelect && this.element)
+      this.element.off("click", "img", this._onSelectHandler);
+
+    this._isRegisterOnSelect = true;
+    this._onSelectHandler = function () {
+      handler($(this));
+    };
+
+    return this;
   }
 
   /**

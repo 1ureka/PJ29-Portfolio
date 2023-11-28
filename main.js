@@ -138,6 +138,7 @@ $(document).ready(async function () {
     const urlArray = imageArray.map((obj) => obj.src);
 
     gallery[category] = new Gallery(urlArray);
+    gallery[category].onSelect((e) => console.log(e.attr("src")));
   });
 
   const switchGallery = async (e) => {

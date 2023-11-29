@@ -134,26 +134,41 @@ $(document).ready(async function () {
   const categories = ["nature", "props", "scene"];
 
   categories.forEach((category) => {
-    // 取得相應類別的圖片數組
+    // 取得相應類別的圖片數組，並使用 map 處理每個圖片對象，提取出 JQuery 對象
     const imageArray = loadManager.getImageArray(category);
-    // 使用 map 處理每個圖片對象，提取出 JQuery 對象
     const urlArray = imageArray.map((obj) => obj.src);
 
     gallery[category] = new Gallery(urlArray);
+
     gallery[category].onSelect(async (e) => {
       await delay(50);
       await gallery[category].hide();
-      previewImage.show(e.attr("src"));
-      scrollButtons.hide();
-
-      await delay(2000);
-      await previewImage.hide();
-
-      gallery[category].show();
-      scrollButtons.show();
+      await enterPreviewMenu();
+      previewImage.show(e.attr("src"), category);
     });
   });
 
+  //
+  // 創建內容
+  const previewImage = new PreviewImage();
+  previewImage.appendTo("#content");
+
+  //
+  // 創建預覽時的選單按鈕
+  const previewButtons = new PreviewButtons();
+  previewButtons.appendTo("#sidebar").onSelect(async (e) => {
+    const targetClass = $(e.target).attr("class");
+    const category = previewImage.category;
+
+    if (targetClass === "return-button") {
+      await previewImage.hide();
+      await gallery[category].show();
+      leavePreviewMenu();
+    }
+  });
+
+  //
+  // 過場
   const switchGallery = async (e) => {
     const keys = Object.keys(gallery);
 
@@ -161,11 +176,20 @@ $(document).ready(async function () {
 
     await Promise.all(keys.map((key) => gallery[key].toggle(e === key)));
   };
-
-  //
-  // 創建內容
-  const previewImage = new PreviewImage();
-  previewImage.appendTo("#content");
+  const enterPreviewMenu = async () => {
+    await Promise.all([
+      folderSelect.hide(),
+      sortSelect.hide(),
+      scrollButtons.hide(),
+    ]);
+    previewButtons.show();
+  };
+  const leavePreviewMenu = async () => {
+    await previewButtons.hide();
+    scrollButtons.show();
+    folderSelect.show();
+    sortSelect.show();
+  };
 
   //
   // 開場動畫

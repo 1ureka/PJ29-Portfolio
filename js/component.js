@@ -362,6 +362,7 @@ class component {
   appendTo(selector) {
     if (this._isAppendTo) return;
     this._isAppendTo = true;
+    this.parent = selector;
     this.element = this.element.appendTo(selector);
     return this;
   }
@@ -370,15 +371,15 @@ class component {
 /**
  * 這個類別提供創建和控制上下滾動按鈕的功能。
  */
-class ScrollButtons {
+class ScrollButtons extends component {
   /**
    * 建構一個新的 `ScrollButtons` 實例。@constructor
    */
   constructor() {
+    super();
     this._timelines = {};
     this.handlers = {};
 
-    this._isAppendTo = false;
     this.isShow = false;
 
     /**
@@ -514,37 +515,19 @@ class ScrollButtons {
 
     return this;
   }
-
-  /**
-   * 附加上下按鈕到指定的 DOM 選擇器。
-   * @param {string} selector - DOM 選擇器。
-   * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
-   */
-  appendTo(selector) {
-    if (this._isAppendTo) return;
-    this._isAppendTo = true;
-    this.parent = selector;
-    this.element = this.element.appendTo(selector);
-    return this;
-  }
 }
 
 /**
  * 這個類別提供創建和控制搜尋列的功能，包含搜尋圖示、文字輸入框和橡皮擦圖示。
  */
-class SearchBar {
+class SearchBar extends component {
   /**
    * 建構一個新的 `SearchBar` 實例。@constructor
    */
   constructor() {
+    super();
     this.timelines = {};
     this.handlers = {};
-    /**
-     * 表示搜尋列是否已附加到 DOM 中。
-     * @type {boolean}
-     * @private
-     */
-    this._isAppendTo = false;
     /**
      * 用於存儲父級 DOM 選擇器。
      * @type {string}
@@ -556,7 +539,7 @@ class SearchBar {
      * @type {jQuery}
      */
     this.element = this._createSearchBar();
-    return this._createTimelines()._bindTimeline();
+    this._createTimelines()._bindTimeline();
   }
 
   /**
@@ -768,57 +751,28 @@ class SearchBar {
 
     return this;
   }
-
-  /**
-   * 附加搜尋欄到指定的 DOM 選擇器。
-   * @param {string} selector - DOM 選擇器。
-   * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
-   */
-  appendTo(selector) {
-    if (this._isAppendTo) return;
-    this._isAppendTo = true;
-    this.parent = selector;
-    this.element = this.element.appendTo(selector);
-    return this;
-  }
 }
 
 /**
  * 這個類別用於創建和管理在sidebar的資料夾選單元素
  */
-class FolderSelect {
+class FolderSelect extends component {
   /**
    * 建構一個新的 `FolderSelect` 實例。
    * @constructor
-   * @param {Object} config - 用於配置選單的物件。
-   * @param {string} config.mainFolder - 選單主資料夾的名字。
-   * @param {string[]} config.subFolders - 選單子資料夾的名字陣列。
+   * @param {Object[]} configs - 用於配置選單的物件。
    */
-  constructor(config) {
-    // 預設配置
-    const defaultConfig = {
-      mainFolder: "main",
-      subFolders: ["demo1", "demo2"],
-    };
-
-    // 合併預設配置和用戶提供的配置
-    config = { ...defaultConfig, ...config };
+  constructor(configs) {
+    super();
 
     /** 表示選單是否已關閉。  */
     this.isClosed = true;
-    /** 選單主資料夾的名字。 @type {string} */
-    this.mainFolder = config.mainFolder;
-    /** 選單子資料夾的名字陣列。 @type {string[]} */
-    this.subFolders = config.subFolders;
-    /** 子資料夾的數量。 @type {number} */
-    this.length = config.subFolders.length;
 
     this._timelines = {};
-    this._isAppendTo = false;
     this.isShow = true;
 
     /** 包含選單的 jQuery 物件。 @type {jQuery} */
-    this.element = this._createFolderSelect();
+    this.element = this._createFolderSelect(configs);
     this._createTimelines();
   }
 
@@ -827,20 +781,23 @@ class FolderSelect {
    * @private
    * @returns {jQuery} 資料夾選擇器的容器。
    */
-  _createFolderSelect() {
+  _createFolderSelect(configs) {
     const select = $("<div>").addClass("folder-select");
 
-    if (this.subFolders.length <= 0) {
-      console.log("初始化FolderSelect錯誤：沒有子資料夾");
+    if (configs.length < 1) {
+      console.log("初始化FolderSelect錯誤：沒有資料夾");
       return;
     }
 
-    const main = this._createFolderButton(this.mainFolder);
+    const main = this._createFolderButton(
+      configs[0].label,
+      configs[0].category
+    );
     const hr = createHorizontalSeparator({ margin: 8 });
     select.append(main, hr);
 
-    this.subFolders.forEach((folderName) => {
-      this._createFolderButton(folderName).appendTo(select);
+    configs.slice(1).forEach((config) => {
+      this._createFolderButton(config.label, config.category).appendTo(select);
     });
 
     // 製作時間軸也包括初始化收起狀態
@@ -863,8 +820,10 @@ class FolderSelect {
    * @param {string} name - 資料夾名稱。
    * @returns {jQuery} 資料夾按鈕。
    */
-  _createFolderButton(name) {
-    const button = $("<button>").addClass("folder-button");
+  _createFolderButton(name, category) {
+    const button = $("<button>")
+      .addClass("folder-button")
+      .data("category", category);
 
     const configs = [
       {
@@ -924,8 +883,8 @@ class FolderSelect {
       this.element.off("click", ".folder-button", this._onSelectHandler);
 
     this._onSelectHandler = function (e) {
-      const label = $(e.target).find(".folder-button-label").text();
-      handler(label);
+      const category = $(e.target).data("category");
+      handler(category);
     };
 
     this.element.on("click", ".folder-button", this._onSelectHandler);
@@ -955,13 +914,23 @@ class FolderSelect {
   }
 
   /**
-   * 移除選單選擇事件的處理函數。
+   * 暫時移除選單選擇事件的處理函數。
    * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
    */
   off() {
     if (this._onSelectHandler) {
       this.element.off("click", ".folder-button", this._onSelectHandler);
-      this._onSelectHandler = null;
+    }
+    return this;
+  }
+
+  /**
+   * 重新註冊選單選擇事件的處理函數。
+   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
+   */
+  on() {
+    if (this._onSelectHandler) {
+      this.element.on("click", ".folder-button", this._onSelectHandler);
     }
     return this;
   }
@@ -1008,28 +977,17 @@ class FolderSelect {
 
     return this;
   }
-
-  /**
-   * 附加選單到指定的 DOM 選擇器。
-   * @param {string} selector - DOM 選擇器。
-   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
-   */
-  appendTo(selector) {
-    if (this._isAppendTo) return;
-    this._isAppendTo = true;
-    this.element = this.element.appendTo(selector);
-    return this;
-  }
 }
 
 /**
  * 這個類別用於創建和管理在sidebar的排序選單元素
  */
-class SortSelect {
+class SortSelect extends component {
   constructor() {
+    super();
+
     this._timelines = {};
     this.isClosed = true;
-    this._isAppendTo = false;
     this.isShow = true;
 
     this.element = this._createSortSelect();
@@ -1158,33 +1116,20 @@ class SortSelect {
 
     return this;
   }
-
-  /**
-   * 附加選單到指定的 DOM 選擇器。
-   * @param {string} selector - DOM 選擇器。
-   * @returns {SortSelect} - 回傳 `SortSelect` 實例，以便進行方法鏈結。
-   */
-  appendTo(selector) {
-    if (this._isAppendTo) return;
-    this._isAppendTo = true;
-    this.element = this.element.appendTo(selector);
-    return this;
-  }
 }
 
 /**
  * 這個類別用於創建和管理在header的燈泡元素
  */
-class HeaderBulb {
+class HeaderBulb extends component {
   /**
    * 建構一個新的 `HeaderBulb` 實例。
    * @constructor
    * @param {Object} config - 用於配置燈泡的物件。
-   * @param {number} config.width - 燈泡的寬度。
-   * @param {number} config.height - 燈泡的高度。
-   * @param {number} config.intensity - 燈泡的強度。
+   * @param {Object} colorMap - 用於配置圖片牆與燈泡顏色對應關係的映射表。
    */
-  constructor(config) {
+  constructor(config, colorMap) {
+    super();
     // 預設配置
     const defaultConfig = {
       width: 40,
@@ -1201,23 +1146,13 @@ class HeaderBulb {
     this.height = config.height;
     /** 燈泡的強度。 @type {number} */
     this.intensity = config.intensity;
-    /** 燈泡目前的色彩。 @type {"red" | "green" | "yellow" | "blue" | "off"} */
+    /** 燈泡目前的色彩。 @type {string | "off"} */
     this.currentColor = "off";
 
-    this._isAppendTo = false;
-
     this._timelines = {};
-    this._colorMap = {
-      red: "#ea81af",
-      green: "#8ce197",
-      yellow: "#ffff7a",
-      blue: "#92e9ff",
-    };
+    this._colorMap = colorMap;
 
-    /**
-     * 包含燈泡的 jQuery 物件。
-     * @type {jQuery}
-     */
+    /** 包含燈泡的 jQuery 物件。 @type {jQuery} */
     this.element = this._createBulb();
   }
 
@@ -1235,26 +1170,30 @@ class HeaderBulb {
    * @private
    */
   _killTimeline() {
-    const tlKeys = ["red", "green", "yellow", "blue"];
+    const tlKeys = Object.values(this._colorMap);
 
-    tlKeys.forEach((key) => {
-      if (this._timelines[key]) {
-        this._timelines[key].kill();
-        this._timelines[key] = null;
+    tlKeys.forEach((color) => {
+      if (this._timelines[color]) {
+        this._timelines[color].kill();
+        this._timelines[color] = null;
       }
     });
   }
 
   /**
    * 切換燈泡的顏色。
-   * @param {"red" | "green" | "yellow" | "blue"} color
+   * @param {string} gallery
    */
-  switchLight(color) {
+  switchLight(gallery) {
     this._killTimeline();
+
+    const color = this._colorMap[gallery];
+
     this._timelines[color] = createBulbLightT2(this.element, {
-      color: this._colorMap[color],
+      color: color,
       intensity: this.intensity,
     }).play();
+
     this.currentColor = color;
 
     return this;
@@ -1272,34 +1211,23 @@ class HeaderBulb {
 
     return this;
   }
-
-  /**
-   * 附加燈泡到指定的 DOM 選擇器。
-   * @param {string} selector - DOM 選擇器。
-   * @returns {HeaderBulb} - 回傳 `HeaderBulb` 實例，以便進行方法鏈結。
-   */
-  appendTo(selector) {
-    if (this._isAppendTo) return;
-    this._isAppendTo = true;
-    this.element = this.element.appendTo(selector);
-    return this;
-  }
 }
 
 /**
  * 這個類別用於創建和管理具有特定特效的文件夾框元素。
  */
-class FolderBoxes {
+class FolderBoxes extends component {
   /**
    * 建構一個新的 `FolderBox` 實例。
    * @constructor
    * @param {Object[]} configs - 用於配置文件夾框的物件。
    */
   constructor(configs) {
+    super();
+
     this.timelines = {};
 
     this.isShow = false;
-    this._isAppendTo = false;
 
     this.element = this._createFolderBoxes(configs);
     this._createTimelines();
@@ -1350,7 +1278,9 @@ class FolderBoxes {
    * @returns {jQuery} - 文件夾框元素的 jQuery 物件。
    */
   _createFolderBox(config) {
-    const box = $("<div>").addClass("folder-box");
+    const box = $("<div>")
+      .addClass("folder-box")
+      .data("category", config.category);
     const boxColor = "hsl(225, 10%, 23%)";
 
     const folderIcon = createFolderIcon({ borderColor: boxColor });
@@ -1472,23 +1402,11 @@ class FolderBoxes {
       this.element.off("click", ".folder-box", this._onSelectHandler);
 
     this._onSelectHandler = function (e) {
-      const label = $(e.target).find(".folder-box-label").text();
-      handler(label);
+      const category = $(e.target).data("category");
+      handler(category);
     };
 
     this.element.on("click", ".folder-box", this._onSelectHandler);
-    return this;
-  }
-
-  /**
-   * 附加文件夾框到指定的 DOM 選擇器。
-   * @param {string} selector - DOM 選擇器。
-   * @returns {FolderBoxes} - 回傳 `FolderBoxes` 實例，以便進行方法鏈結。
-   */
-  appendTo(selector) {
-    if (this._isAppendTo) return;
-    this._isAppendTo = true;
-    this.element = this.element.appendTo(selector);
     return this;
   }
 }
@@ -1496,15 +1414,15 @@ class FolderBoxes {
 /**
  * 這個類別用於創建和管理圖片庫組件。
  */
-class Gallery {
+class Gallery extends component {
   /** @param {string[]} urls - 圖片的 URL 陣列。 */
   constructor(urls) {
+    super();
     /** @type {string[]} */
     this.urls = urls;
     this.timelines = {};
 
     this.isShow = false;
-    this._isAppendTo = false;
     this._isRegisterOnSelect = false;
   }
 
@@ -1692,18 +1610,6 @@ class Gallery {
       handler($(this));
     };
 
-    return this;
-  }
-
-  /**
-   * 附加實例元素到指定的 DOM 選擇器。
-   * @param {string} selector - DOM 選擇器。
-   * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
-   */
-  appendTo(selector) {
-    if (this._isAppendTo) return;
-    this._isAppendTo = true;
-    this.element = this.element.appendTo(selector);
     return this;
   }
 }

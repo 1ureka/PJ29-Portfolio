@@ -38,47 +38,39 @@ $(document).ready(async function () {
 
   //
   // 創建header右方燈泡
-  const headerBulb = new HeaderBulb({
-    width: 30,
-    height: 30,
-    intensity: 1,
-  });
+  const headerBulb = new HeaderBulb(
+    { width: 30, height: 30, intensity: 1 },
+    { main: "#ea81af", nature: "#8ce197", props: "#ffff7a", scene: "#92e9ff" }
+  );
   headerBulb.appendTo("#header");
 
   //
   // 創建側邊攔 - 資料夾選單
-  const folderSelect = new FolderSelect({
-    mainFolder: "作品集",
-    subFolders: ["自然", "物件", "場景"],
-  });
-  folderSelect.appendTo("#sidebar").onSelect(async (label) => {
-    folderSelect.element.css("pointerEvents", "none");
-    switch (label) {
-      case "作品集":
-        headerBulb.switchLight("red");
-        await switchGallery("hide");
-        folderBoxes.show();
-        break;
-      case "自然":
-        headerBulb.switchLight("green");
-        await folderBoxes.hide();
-        await delay(100);
-        await switchGallery("nature");
-        break;
-      case "物件":
-        headerBulb.switchLight("yellow");
-        await folderBoxes.hide();
-        await delay(100);
-        await switchGallery("props");
-        break;
-      case "場景":
-        headerBulb.switchLight("blue");
-        await folderBoxes.hide();
-        await delay(100);
-        await switchGallery("scene");
-        break;
+  const folderSelect = new FolderSelect([
+    { label: "作品集", category: "main" },
+    { label: "自然", category: "nature" },
+    { label: "物件", category: "props" },
+    { label: "場景", category: "scene" },
+  ]);
+  folderSelect.appendTo("#sidebar").onSelect(async (category) => {
+    folderSelect.off();
+
+    if (category === "main") {
+      await switchGallery("main");
+
+      headerBulb.switchLight("main");
+      folderBoxes.show();
+
+      folderSelect.on();
+      return;
     }
-    folderSelect.element.css("pointerEvents", "auto");
+
+    await folderBoxes.hide();
+    await delay(100);
+    await switchGallery(category);
+    headerBulb.switchLight(category);
+
+    folderSelect.on();
   });
 
   //
@@ -94,37 +86,32 @@ $(document).ready(async function () {
       bulbIntensity: 1,
       label: "自然",
       img: loadManager.getImage("nature", 0),
+      category: "nature",
     },
     {
       bulbColor: "#ffff7a",
       bulbIntensity: 1,
       label: "物件",
       img: loadManager.getImage("props", 0),
+      category: "props",
     },
     {
       bulbColor: "#92e9ff",
       bulbIntensity: 1,
       label: "場景",
       img: loadManager.getImage("scene", 0),
+      category: "scene",
     },
   ]);
-  folderBoxes.appendTo("#content").onSelect(async (label) => {
+  folderBoxes.appendTo("#content").onSelect(async (category) => {
+    folderSelect.off();
+
     await folderBoxes.hide();
-    switch (label) {
-      case "自然":
-        await switchGallery("nature");
-        headerBulb.switchLight("green");
-        break;
-      case "物件":
-        await switchGallery("props");
-        headerBulb.switchLight("yellow");
-        break;
-      case "場景":
-        await switchGallery("scene");
-        headerBulb.switchLight("blue");
-        break;
-    }
-    folderSelect.open();
+    await switchGallery(category);
+
+    headerBulb.switchLight(category);
+
+    folderSelect.open().on();
   });
 
   //
@@ -169,12 +156,13 @@ $(document).ready(async function () {
 
   //
   // 過場
-  const switchGallery = async (e) => {
+  const switchGallery = async (category) => {
     const keys = Object.keys(gallery);
 
-    if (e === "hide") await Promise.all(keys.map((key) => gallery[key].hide()));
+    if (category === "main")
+      await Promise.all(keys.map((key) => gallery[key].hide()));
 
-    await Promise.all(keys.map((key) => gallery[key].toggle(e === key)));
+    await Promise.all(keys.map((key) => gallery[key].toggle(category === key)));
   };
   const enterPreviewMenu = async () => {
     await Promise.all([
@@ -211,7 +199,7 @@ $(document).ready(async function () {
   const opening = gsap.timeline({
     onComplete: () => {
       $("#loading-container").remove();
-      headerBulb.switchLight("red");
+      headerBulb.switchLight("main");
     },
     delay: 1,
     paused: true,

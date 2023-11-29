@@ -140,6 +140,21 @@ function createSortIconHoverTl(container) {
   return tl;
 }
 
+function createFullscreenIconHoverTl(container) {
+  const img1 = container.find("img").slice(0, 4);
+  const img2 = container.find("img").slice(4);
+  gsap.set(img2, { autoAlpha: 0, scale: 0.5 });
+  const tl = gsap
+    .timeline({
+      defaults: { duration: 0.15, ease: "back.out(4)", stagger: 0.05 },
+      paused: true,
+    })
+    .to(img1, { autoAlpha: 0, scale: 0.5, ease: "back.in(3)" })
+    .to(img2, { autoAlpha: 1, scale: 1 });
+
+  return tl;
+}
+
 function createSortButtonHoverTl(button) {
   const buttonTimeline = gsap
     .timeline({ defaults: { duration: 0.2, ease: "set1" }, paused: true })
@@ -346,6 +361,17 @@ function createScaleHoverTl(element, fromScale, toScale) {
       paused: true,
     })
     .fromTo(element, { scale: fromScale }, { scale: toScale });
+
+  return tl;
+}
+
+function createColorHoverTl(element, toColor, duration = 0.2) {
+  const tl = gsap
+    .timeline({
+      defaults: { duration: duration, ease: "set1" },
+      paused: true,
+    })
+    .to(element, { backgroundColor: toColor });
 
   return tl;
 }

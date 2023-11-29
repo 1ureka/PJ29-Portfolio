@@ -146,6 +146,17 @@ function createSortIcon() {
   return container;
 }
 
+function createFullscreenIcon() {
+  const container = $("<div>").addClass("fullscreen-icon-container");
+
+  const img1 = $("<img>").attr("src", "");
+  const img2 = $("<img>").attr("src", "");
+
+  container.append(img1, img2);
+
+  return container;
+}
+
 /**
  * 創建垂直分隔線。
  * @param {Object} config - 用於設定分隔線的配置物件。
@@ -330,6 +341,26 @@ function createBulb(config) {
 //
 // 複雜
 //
+/**
+ * 組件的預設空白類
+ */
+class component {
+  constructor() {
+    this._isAppendTo = false;
+  }
+
+  /**
+   * 附加實例元素到指定的 DOM 選擇器。
+   * @param {string} selector - DOM 選擇器。
+   */
+  appendTo(selector) {
+    if (this._isAppendTo) return;
+    this._isAppendTo = true;
+    this.element = this.element.appendTo(selector);
+    return this;
+  }
+}
+
 /**
  * 這個類別提供創建和控制上下滾動按鈕的功能。
  */
@@ -1437,14 +1468,6 @@ class Gallery {
 
     container.append(reflexContainer, image);
 
-    async function decode(image) {
-      try {
-        await image.decode();
-      } catch (error) {
-        await decode(image);
-      }
-    }
-
     await decode(image[0]);
 
     this._bindTimeline(container);
@@ -1558,6 +1581,7 @@ class Gallery {
     if (!this.isShow) return this;
 
     this.isShow = false;
+    this.element.find(".image-container").off();
     this.timelines.show.reverse();
 
     this.timelines.show.eventCallback("onReverseComplete", null);
@@ -1608,5 +1632,133 @@ class Gallery {
     this._isAppendTo = true;
     this.element = this.element.appendTo(selector);
     return this;
+  }
+}
+
+class PreviewImage extends component {
+  constructor() {
+    super();
+
+    this.url = "";
+    this._timelines = {};
+
+    this.element = this._createImageContainer();
+    this._createTimelines();
+  }
+
+  _createImageContainer() {
+    const container = $("<div>").addClass("preview-container");
+    const image = $("<img>").attr("src", "").attr("decoding", "async");
+
+    image.appendTo(container);
+
+    return container;
+  }
+
+  _createTimelines() {
+    const image = this.element.children();
+    this._timelines.show = gsap
+      .timeline({ defaults: { ease: "set1", duration: 0.35 }, paused: true })
+      .from(this.element, { autoAlpha: 0, duration: 0.05 })
+      .from(image, {
+        autoAlpha: 0,
+        scale: 0.5,
+        y: -100,
+        ease: "back.out(2)",
+      });
+  }
+
+  show(url) {
+    if (url === this.url) {
+      this._timelines.show.restart();
+      return this;
+    }
+
+    this.url = url;
+    this.element.find("img").attr("src", url);
+
+    this._timelines.show.restart();
+
+    return this;
+  }
+
+  async hide() {
+    this._timelines.show.reverse();
+
+    this._timelines.show.eventCallback("onReverseComplete", null);
+
+    await new Promise((resolve) => {
+      this._timelines.show.eventCallback("onReverseComplete", resolve);
+    });
+
+    return this;
+  }
+}
+
+class PreviewButtons extends component {
+  constructor() {
+    super();
+
+    this._timelines = {};
+    this.url = "";
+
+    this.isShow = false;
+
+    this.element = this._createPreviewButtons();
+  }
+
+  _createPreviewButtons() {
+    const container = $("<div>").addClass("preview-buttons-container");
+
+    const button1 = this._createReturnButton();
+    const button2 = this._createFullscreenButton();
+
+    container.append(button1, button2);
+
+    return container;
+  }
+
+  _createReturnButton() {
+    const button = $("<button>").addClass("return-button");
+
+    const img = $("<img>").attr("src", "").addClass("return-icon-img");
+    const gif = $("<img>").attr("src", "").addClass("return-icon-gif");
+
+    button.append(img);
+
+    button.on("mouseenter", () => {
+      img.fadeout(100, () => gif.appendTo(button));
+    });
+    button.on("mouseleave", () => {
+      gif.fadeout(100, () => gif.remove());
+      img.fadein(100);
+    });
+
+    this._bindTimeline(button);
+
+    return button;
+  }
+
+  _createFullscreenButton() {
+    const button = $("<button>").addClass("fullscreen-button");
+
+    const img = createFullscreenIcon().appendTo(button);
+
+    const t1 = createFullscreenIconHoverTl();
+    button.on("mouseenter", () => t1.play());
+    button.on("mouseleave", () => t1.reverse());
+
+    this._bindTimeline(button);
+
+    return button;
+  }
+
+  _bindTimeline(button) {
+    const hoverTl = createScaleHoverTl(button, 1, 1.1);
+    const clickTl = createScaleClickTl(button, 0.75);
+
+    button.on("mouseenter", () => hoverTl.play());
+    button.on("mouseleave", () => hoverTl.reverse());
+    button.on("click", () => clickTl.restart());
   }
 }

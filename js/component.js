@@ -146,13 +146,19 @@ function createSortIcon() {
   return container;
 }
 
+/**
+ * 創建包含全螢幕圖示的容器。
+ * @returns {jQuery} 排序全螢幕的容器。
+ */
 function createFullscreenIcon() {
   const container = $("<div>").addClass("fullscreen-icon-container");
 
-  const img1 = $("<img>").attr("src", "");
-  const img2 = $("<img>").attr("src", "");
-
-  container.append(img1, img2);
+  for (let n = 1; n < 9; n++) {
+    const img = $("<img>")
+      .attr("src", `icons/fullscreen ${n}.png`)
+      .appendTo(container);
+    if (n >= 5) gsap.set(img, { autoAlpha: 0 });
+  }
 
   return container;
 }
@@ -369,7 +375,7 @@ class ScrollButtons {
    * 建構一個新的 `ScrollButtons` 實例。@constructor
    */
   constructor() {
-    this.timelines = {};
+    this._timelines = {};
     this.handlers = {};
 
     this._isAppendTo = false;
@@ -417,7 +423,7 @@ class ScrollButtons {
    * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
    */
   _createTimelines() {
-    this.timelines.show = gsap
+    this._timelines.show = gsap
       .timeline({
         defaults: { ease: "back.out(4)", duration: 0.35 },
         paused: true,
@@ -481,26 +487,30 @@ class ScrollButtons {
 
   /**
    * 顯示上滾動按鈕。
-   * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
    */
   show() {
     if (this.isShow) return this;
 
     this.isShow = true;
-    this.timelines.show.play();
+    this._timelines.show.play();
 
     return this;
   }
 
   /**
    * 隱藏上滾動按鈕。
-   * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
    */
-  hide() {
+  async hide() {
     if (!this.isShow) return this;
 
     this.isShow = false;
-    this.timelines.show.reverse();
+    this._timelines.show.reverse();
+
+    this._timelines.show.eventCallback("onReverseComplete", null);
+
+    await new Promise((resolve) => {
+      this._timelines.show.eventCallback("onReverseComplete", resolve);
+    });
 
     return this;
   }
@@ -794,46 +804,22 @@ class FolderSelect {
     // 合併預設配置和用戶提供的配置
     config = { ...defaultConfig, ...config };
 
-    /**
-     * 表示選單是否已關閉。
-     * @type {boolean}
-     */
+    /** 表示選單是否已關閉。  */
     this.isClosed = true;
-    /**
-     * 選單主資料夾的名字。
-     * @type {string}
-     */
+    /** 選單主資料夾的名字。 @type {string} */
     this.mainFolder = config.mainFolder;
-    /**
-     * 選單子資料夾的名字陣列。
-     * @type {string[]}
-     */
+    /** 選單子資料夾的名字陣列。 @type {string[]} */
     this.subFolders = config.subFolders;
-    /**
-     * 子資料夾的數量。
-     * @type {number}
-     */
+    /** 子資料夾的數量。 @type {number} */
     this.length = config.subFolders.length;
-    /**
-     * 時間軸物件，用於管理動畫。
-     * @type {Object}
-     * @private
-     */
+
     this._timelines = {};
-    /**
-     * 表示選單是否已附加到 DOM 中。
-     * @type {boolean}
-     * @private
-     */
     this._isAppendTo = false;
+    this.isShow = true;
 
-    /**
-     * 包含選單的 jQuery 物件。
-     * @type {jQuery}
-     */
+    /** 包含選單的 jQuery 物件。 @type {jQuery} */
     this.element = this._createFolderSelect();
-
-    return this;
+    this._createTimelines();
   }
 
   /**
@@ -981,6 +967,49 @@ class FolderSelect {
   }
 
   /**
+   * 創建並初始化選單的時間軸效果。
+   * @private
+   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
+   */
+  _createTimelines() {
+    this._timelines.hide = gsap
+      .timeline({ defaults: { ease: "set1" }, paused: true })
+      .to(this.element, { autoAlpha: 0, x: -100 });
+
+    return this;
+  }
+
+  /**
+   * 顯示選單。
+   */
+  show() {
+    if (this.isShow) return this;
+
+    this.isShow = true;
+    this._timelines.hide.reverse();
+
+    return this;
+  }
+
+  /**
+   * 隱藏選單。
+   */
+  async hide() {
+    if (!this.isShow) return this;
+
+    this.isShow = false;
+    this._timelines.hide.play();
+
+    this._timelines.hide.eventCallback("onComplete", null);
+
+    await new Promise((resolve) => {
+      this._timelines.hide.eventCallback("onComplete", resolve);
+    });
+
+    return this;
+  }
+
+  /**
    * 附加選單到指定的 DOM 選擇器。
    * @param {string} selector - DOM 選擇器。
    * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
@@ -1001,9 +1030,10 @@ class SortSelect {
     this._timelines = {};
     this.isClosed = true;
     this._isAppendTo = false;
-    this.element = this._createSortSelect();
+    this.isShow = true;
 
-    return this;
+    this.element = this._createSortSelect();
+    this._createTimelines();
   }
 
   _createSortSelect() {
@@ -1083,6 +1113,49 @@ class SortSelect {
     if (this.isClosed) return this;
     this._timelines.open.reverse();
     this.isClosed = true;
+    return this;
+  }
+
+  /**
+   * 創建並初始化選單的時間軸效果。
+   * @private
+   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
+   */
+  _createTimelines() {
+    this._timelines.hide = gsap
+      .timeline({ defaults: { ease: "set1" }, paused: true })
+      .to(this.element, { autoAlpha: 0, x: -100 });
+
+    return this;
+  }
+
+  /**
+   * 顯示選單。
+   */
+  show() {
+    if (this.isShow) return this;
+
+    this.isShow = true;
+    this._timelines.hide.reverse();
+
+    return this;
+  }
+
+  /**
+   * 隱藏選單。
+   */
+  async hide() {
+    if (!this.isShow) return this;
+
+    this.isShow = false;
+    this._timelines.hide.play();
+
+    this._timelines.hide.eventCallback("onComplete", null);
+
+    await new Promise((resolve) => {
+      this._timelines.hide.eventCallback("onComplete", resolve);
+    });
+
     return this;
   }
 
@@ -1635,10 +1708,14 @@ class Gallery {
   }
 }
 
+/**
+ * 這個類別用於創建和管理預覽圖片組件。
+ */
 class PreviewImage extends component {
   constructor() {
     super();
 
+    this.category = "";
     this.url = "";
     this._timelines = {};
 
@@ -1668,13 +1745,14 @@ class PreviewImage extends component {
       });
   }
 
-  show(url) {
+  show(url, category) {
     if (url === this.url) {
       this._timelines.show.restart();
       return this;
     }
 
     this.url = url;
+    this.category = category;
     this.element.find("img").attr("src", url);
 
     this._timelines.show.restart();
@@ -1695,16 +1773,21 @@ class PreviewImage extends component {
   }
 }
 
+/**
+ * 這個類別用於創建和管理預覽選單組件。
+ */
 class PreviewButtons extends component {
   constructor() {
     super();
 
     this._timelines = {};
     this.url = "";
+    this._onSelectHandler = null;
 
     this.isShow = false;
 
     this.element = this._createPreviewButtons();
+    this._createTimelines();
   }
 
   _createPreviewButtons() {
@@ -1721,17 +1804,18 @@ class PreviewButtons extends component {
   _createReturnButton() {
     const button = $("<button>").addClass("return-button");
 
-    const img = $("<img>").attr("src", "").addClass("return-icon-img");
-    const gif = $("<img>").attr("src", "").addClass("return-icon-gif");
+    const iconContainer = $("<div>").addClass(".return-icon-container");
+    const img = $("<img>").attr("src", "").appendTo(iconContainer);
+    const gif = $("<img>").attr("src", "").appendTo(iconContainer);
 
-    button.append(img);
+    button.append(iconContainer);
 
     button.on("mouseenter", () => {
-      img.fadeout(100, () => gif.appendTo(button));
+      img.fadeOut(100, () => gif.appendTo(iconContainer));
     });
     button.on("mouseleave", () => {
-      gif.fadeout(100, () => gif.remove());
-      img.fadein(100);
+      gif.fadeOut(100, () => gif.remove());
+      img.fadeIn(100);
     });
 
     this._bindTimeline(button);
@@ -1744,7 +1828,7 @@ class PreviewButtons extends component {
 
     const img = createFullscreenIcon().appendTo(button);
 
-    const t1 = createFullscreenIconHoverTl();
+    const t1 = createFullscreenIconHoverTl(img);
     button.on("mouseenter", () => t1.play());
     button.on("mouseleave", () => t1.reverse());
 
@@ -1754,11 +1838,69 @@ class PreviewButtons extends component {
   }
 
   _bindTimeline(button) {
-    const hoverTl = createScaleHoverTl(button, 1, 1.1);
+    const hoverT1 = createScaleHoverTl(button, 1, 1.1);
+    const hoverT2 = createColorHoverTl(button, "#ea81af");
     const clickTl = createScaleClickTl(button, 0.75);
 
-    button.on("mouseenter", () => hoverTl.play());
-    button.on("mouseleave", () => hoverTl.reverse());
+    const hoverPlay = () => {
+      hoverT1.play();
+      hoverT2.play();
+    };
+    const hoverReverse = () => {
+      hoverT1.reverse();
+      hoverT2.reverse();
+    };
+
+    button.on("mouseenter", hoverPlay);
+    button.on("mouseleave", hoverReverse);
     button.on("click", () => clickTl.restart());
+  }
+
+  _createTimelines() {
+    this._timelines.show = gsap
+      .timeline({ defaults: { ease: "set1" }, paused: true })
+      .from(this.element, { autoAlpha: 0, duration: 0.05 })
+      .from(this.element.children(), {
+        autoAlpha: 0,
+        scale: 0.5,
+        ease: "back.out(4)",
+        stagger: 0.1,
+      });
+
+    return this;
+  }
+
+  show() {
+    if (this.isShow) return this;
+
+    this.isShow = true;
+    this._timelines.show.play();
+
+    return this;
+  }
+
+  async hide() {
+    if (!this.isShow) return this;
+
+    this.isShow = false;
+    this._timelines.show.reverse();
+
+    this._timelines.show.eventCallback("onReverseComplete", null);
+
+    await new Promise((resolve) => {
+      this._timelines.show.eventCallback("onReverseComplete", resolve);
+    });
+
+    return this;
+  }
+
+  onSelect(handler) {
+    if (this._onSelectHandler)
+      this.element.off("click", "button", this._onSelectHandler);
+
+    this._onSelectHandler = handler;
+
+    this.element.on("click", "button", this._onSelectHandler);
+    return this;
   }
 }

@@ -282,7 +282,7 @@ function createFolderBoxHoverTl(box) {
       defaults: { duration: 0.2, ease: "set1" },
       paused: true,
     })
-    .to(box, { width: "+=20" });
+    .fromTo(box, { minWidth: "100%" }, { minWidth: "105%" });
 
   return tl;
 }

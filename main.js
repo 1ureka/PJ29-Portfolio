@@ -52,6 +52,7 @@ $(document).ready(async function () {
     subFolders: ["自然", "物件", "場景"],
   });
   folderSelect.appendTo("#sidebar").onSelect(async (label) => {
+    folderSelect.element.css("pointerEvents", "none");
     switch (label) {
       case "作品集":
         headerBulb.switchLight("red");
@@ -62,21 +63,22 @@ $(document).ready(async function () {
         headerBulb.switchLight("green");
         await folderBoxes.hide();
         await delay(100);
-        switchGallery("nature");
+        await switchGallery("nature");
         break;
       case "物件":
         headerBulb.switchLight("yellow");
         await folderBoxes.hide();
         await delay(100);
-        switchGallery("props");
+        await switchGallery("props");
         break;
       case "場景":
         headerBulb.switchLight("blue");
         await folderBoxes.hide();
         await delay(100);
-        switchGallery("scene");
+        await switchGallery("scene");
         break;
     }
+    folderSelect.element.css("pointerEvents", "auto");
   });
 
   //
@@ -138,7 +140,18 @@ $(document).ready(async function () {
     const urlArray = imageArray.map((obj) => obj.src);
 
     gallery[category] = new Gallery(urlArray);
-    gallery[category].onSelect((e) => console.log(e.attr("src")));
+    gallery[category].onSelect(async (e) => {
+      await delay(50);
+      await gallery[category].hide();
+      previewImage.show(e.attr("src"));
+      scrollButtons.hide();
+
+      await delay(2000);
+      await previewImage.hide();
+
+      gallery[category].show();
+      scrollButtons.show();
+    });
   });
 
   const switchGallery = async (e) => {
@@ -148,6 +161,11 @@ $(document).ready(async function () {
 
     await Promise.all(keys.map((key) => gallery[key].toggle(e === key)));
   };
+
+  //
+  // 創建內容
+  const previewImage = new PreviewImage();
+  previewImage.appendTo("#content");
 
   //
   // 開場動畫

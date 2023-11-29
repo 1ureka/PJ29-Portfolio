@@ -162,6 +162,24 @@ class LoadManager {
   }
 }
 
+/**
+ * 延遲執行的 Promise 函式，用於等待一定的時間。
+ * @param {number} ms - 要延遲的時間（毫秒）。
+ * @returns {Promise<void>} 一個 Promise，在指定時間後被解析。
+ */
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * 使用 async/await 解碼圖片，如果解碼失敗，將進行重試直到成功。
+ * @param {Image} image - 要解碼的圖片物件。
+ * @returns {Promise<void>} 一個 Promise，在解碼完成後被解析。
+ */
+async function decode(image) {
+  try {
+    await image.decode();
+  } catch (error) {
+    await decode(image);
+  }
 }

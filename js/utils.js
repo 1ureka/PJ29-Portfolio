@@ -5,7 +5,7 @@ class LoadManager {
   constructor() {
     /** 用於儲存載入佇列的物件。 @type {Object.<string, createjs.LoadQueue>} */
     this.quenes = {};
-    /** 用於儲存載入的圖片物件。 @type {Object.<string, { name: string, size: number, jQuery: JQuery }>} */
+    /** 用於儲存載入的圖片物件。 @type {Object.<string, { name: string, size: number, img: img, src: string }[]>} */
     this.images = {};
     /** 用於處理載入進度的處理器函式。 */
     this.progressHandler = (log) => console.log(log);
@@ -91,7 +91,7 @@ class LoadManager {
       return {
         name: e.item.id,
         size: e.rawResult.size,
-        JQuery: $(e.result).attr("decoding", "async"),
+        img: e.result,
         src: e.item.src,
       };
     });
@@ -118,7 +118,7 @@ class LoadManager {
    * 根據類別和識別符號獲取圖片物件。
    * @param {string} category - 圖片類別。
    * @param {number|string} identifier - 圖片索引或名稱。
-   * @returns {{ name: string, size: number, JQuery: JQuery } | null} 圖片物件，如果不存在則返回null。
+   * @returns {{ name: string, size: number, img: img, src: string } | null} 圖片物件，如果不存在則返回null。
    */
   getImage(category, identifier) {
     if (!this.images[category]) return null;
@@ -139,7 +139,7 @@ class LoadManager {
   /**
    * 根據類別獲取整個圖片物件陣列。
    * @param {string} category - 圖片類別。
-   * @returns {({ name: string, size: number, JQuery: JQuery })[] | null} 圖片物件陣列，如果不存在則返回null。
+   * @returns {{ name: string, size: number, img: img, src: string }[] | null} 圖片物件陣列，如果不存在則返回null。
    */
   getImageArray(category) {
     if (!this.images[category]) return null;
@@ -162,6 +162,24 @@ class LoadManager {
   }
 }
 
+/**
+ * 延遲執行的 Promise 函式，用於等待一定的時間。
+ * @param {number} ms - 要延遲的時間（毫秒）。
+ * @returns {Promise<void>} 一個 Promise，在指定時間後被解析。
+ */
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * 使用 async/await 解碼圖片，如果解碼失敗，將進行重試直到成功。
+ * @param {Image} image - 要解碼的圖片物件。
+ * @returns {Promise<void>} 一個 Promise，在解碼完成後被解析。
+ */
+async function decode(image) {
+  try {
+    await image.decode();
+  } catch (error) {
+    await decode(image);
+  }
 }

@@ -29,9 +29,11 @@ $(document).ready(async function () {
     .appendTo("#header")
     .onInput(() => {
       console.log("input", searchBar.input);
+      headerBulb.flickerLight();
     })
     .onClear(() => {
       console.log("clear");
+      headerBulb.flickerLight();
     });
 
   //
@@ -50,6 +52,7 @@ $(document).ready(async function () {
     subFolders: ["自然", "物件", "場景"],
   });
   folderSelect.appendTo("#sidebar").onSelect(async (label) => {
+    folderSelect.element.css("pointerEvents", "none");
     switch (label) {
       case "作品集":
         headerBulb.switchLight("red");
@@ -59,19 +62,23 @@ $(document).ready(async function () {
       case "自然":
         headerBulb.switchLight("green");
         await folderBoxes.hide();
-        switchGallery("nature");
+        await delay(100);
+        await switchGallery("nature");
         break;
       case "物件":
         headerBulb.switchLight("yellow");
         await folderBoxes.hide();
-        switchGallery("props");
+        await delay(100);
+        await switchGallery("props");
         break;
       case "場景":
         headerBulb.switchLight("blue");
         await folderBoxes.hide();
-        switchGallery("scene");
+        await delay(100);
+        await switchGallery("scene");
         break;
     }
+    folderSelect.element.css("pointerEvents", "auto");
   });
 
   //
@@ -127,20 +134,61 @@ $(document).ready(async function () {
   const categories = ["nature", "props", "scene"];
 
   categories.forEach((category) => {
-    // 取得相應類別的圖片數組
+    // 取得相應類別的圖片數組，並使用 map 處理每個圖片對象，提取出 JQuery 對象
     const imageArray = loadManager.getImageArray(category);
-    // 使用 map 處理每個圖片對象，提取出 JQuery 對象
     const urlArray = imageArray.map((obj) => obj.src);
 
     gallery[category] = new Gallery(urlArray);
+
+    gallery[category].onSelect(async (e) => {
+      await delay(50);
+      await gallery[category].hide();
+      await enterPreviewMenu();
+      previewImage.show(e.attr("src"), category);
+    });
   });
 
+  //
+  // 創建內容
+  const previewImage = new PreviewImage();
+  previewImage.appendTo("#content");
+
+  //
+  // 創建預覽時的選單按鈕
+  const previewButtons = new PreviewButtons();
+  previewButtons.appendTo("#sidebar").onSelect(async (e) => {
+    const targetClass = $(e.target).attr("class");
+    const category = previewImage.category;
+
+    if (targetClass === "return-button") {
+      await previewImage.hide();
+      await gallery[category].show();
+      leavePreviewMenu();
+    }
+  });
+
+  //
+  // 過場
   const switchGallery = async (e) => {
     const keys = Object.keys(gallery);
 
     if (e === "hide") await Promise.all(keys.map((key) => gallery[key].hide()));
 
     await Promise.all(keys.map((key) => gallery[key].toggle(e === key)));
+  };
+  const enterPreviewMenu = async () => {
+    await Promise.all([
+      folderSelect.hide(),
+      sortSelect.hide(),
+      scrollButtons.hide(),
+    ]);
+    previewButtons.show();
+  };
+  const leavePreviewMenu = async () => {
+    await previewButtons.hide();
+    scrollButtons.show();
+    folderSelect.show();
+    sortSelect.show();
   };
 
   //

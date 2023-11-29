@@ -83,11 +83,8 @@ function createFolderIconHoverTl(container) {
 function createFolderButtonHoverTl(button) {
   const buttonTimeline = gsap
     .timeline({ defaults: { duration: 0.2, ease: "set1" }, paused: true })
-    .to(button, {
-      scale: 1.05,
-      x: 10,
-      backgroundColor: "#ea81af",
-    })
+    .to(button, { x: 10, backgroundColor: "#ea81af" })
+    .fromTo(button, { scale: 1 }, { scale: 1.05 }, "<")
     .to(
       button.find(".folder-button-layer1 > *"),
       { y: 40, stagger: 0.2 / 3 },
@@ -143,14 +140,26 @@ function createSortIconHoverTl(container) {
   return tl;
 }
 
+function createFullscreenIconHoverTl(container) {
+  const img1 = container.find("img").slice(0, 4);
+  const img2 = container.find("img").slice(4);
+  gsap.set(img2, { autoAlpha: 0, scale: 0.5 });
+  const tl = gsap
+    .timeline({
+      defaults: { duration: 0.15, ease: "back.out(4)", stagger: 0.05 },
+      paused: true,
+    })
+    .to(img1, { autoAlpha: 0, scale: 0.5, ease: "back.in(3)" })
+    .to(img2, { autoAlpha: 1, scale: 1 });
+
+  return tl;
+}
+
 function createSortButtonHoverTl(button) {
   const buttonTimeline = gsap
     .timeline({ defaults: { duration: 0.2, ease: "set1" }, paused: true })
-    .to(button, {
-      scale: 1.05,
-      x: 10,
-      backgroundColor: "#ea81af",
-    });
+    .to(button, { x: 10, backgroundColor: "#ea81af" })
+    .fromTo(button, { scale: 1 }, { scale: 1.05 }, "<");
 
   return buttonTimeline;
 }
@@ -315,7 +324,7 @@ function createImageHoverTl(container) {
       { filter: "brightness(0.8)" },
       { filter: "brightness(1)" }
     )
-    .to(container, { scale: 1.05 }, "<");
+    .fromTo(container, { scale: 1 }, { scale: 1.05 }, "<");
 
   return tl;
 }
@@ -332,5 +341,37 @@ function createImageClickTl(container) {
 }
 
 //
-// 過場
+// 通用型
 //
+function createScaleClickTl(element, toScale) {
+  const tl = gsap
+    .timeline({
+      defaults: { duration: 0.1, ease: "set1" },
+      paused: true,
+    })
+    .to(element, { scale: toScale, repeat: 1, yoyo: true });
+
+  return tl;
+}
+
+function createScaleHoverTl(element, fromScale, toScale) {
+  const tl = gsap
+    .timeline({
+      defaults: { duration: 0.2, ease: "set1" },
+      paused: true,
+    })
+    .fromTo(element, { scale: fromScale }, { scale: toScale });
+
+  return tl;
+}
+
+function createColorHoverTl(element, toColor, duration = 0.2) {
+  const tl = gsap
+    .timeline({
+      defaults: { duration: duration, ease: "set1" },
+      paused: true,
+    })
+    .to(element, { backgroundColor: toColor });
+
+  return tl;
+}

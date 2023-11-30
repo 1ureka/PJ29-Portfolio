@@ -19,39 +19,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: 18
 
       - name: Install dependencies
         run: npm install
 
       - name: Update imagesUrls.json
-        run: |
-          node <<EOF
-          const fs = require('fs');
-          const path = require('path');
-
-          const mainfolder = path.join(__dirname, 'images/jpg');
-          console.log(mainfolder)
-          const subfolders = ['Nature', 'Props', 'Scene'];
-          console.log(subfolders)
-          const imagePaths = {};
-
-          for (const subfolder of subfolders) {
-            const subfolderPath = path.join(mainfolder, subfolder);
-            try {
-              const allFiles = fs.readdirSync(subfolderPath);
-              const jpgFiles = allFiles.filter((file) => file.endsWith('.jpg'));
-              const jpgPaths = jpgFiles.map((file) => path.join(subfolderPath, file));
-
-              imagePaths[subfolder] = jpgPaths;
-            } catch (error) {
-              console.log("Error reading image files");
-            }
-          }
-
-          const jsonContent = JSON.stringify(imagePaths, null, 2);
-          fs.writeFileSync('imagesUrls.json', jsonContent);
-          EOF
+        run: node js/build.mjs
 
       - name: Commit and push changes
         run: |

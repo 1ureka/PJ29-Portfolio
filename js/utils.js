@@ -62,7 +62,7 @@ class LoadManager {
     const manifest = this._createManifest(urls);
     const lcCategory = category.toLowerCase();
 
-    this.quenes[lcCategory] = new createjs.LoadQueue();
+    this.quenes[lcCategory] = new createjs.LoadQueue(false);
 
     await new Promise((resolve) => {
       const baseProgress = this.currentProgress;

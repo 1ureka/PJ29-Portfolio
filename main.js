@@ -124,10 +124,14 @@ $(document).ready(async function () {
     gallery[category] = new Gallery(urlArray);
 
     gallery[category].onSelect(async (e) => {
+      const url = e.attr("src");
+
       await delay(50);
       await gallery[category].hide();
       await enterPreviewMenu();
-      previewImage.show(e.attr("src"), category);
+
+      previewImage.show(url, category);
+      imageName.show(findImageName(url));
     });
   });
 
@@ -146,9 +150,16 @@ $(document).ready(async function () {
     if (targetClass === "return-button") {
       await previewImage.hide();
       await gallery[category].show();
+
       leavePreviewMenu();
+      scrollButtons.scrollElement = gallery[category].element;
     }
   });
+
+  //
+  // 創建內容
+  const imageName = new ImageName();
+  imageName.appendTo("#header");
 
   //
   // 過場
@@ -162,17 +173,19 @@ $(document).ready(async function () {
   };
   const enterPreviewMenu = async () => {
     await Promise.all([
+      scrollButtons.hide(),
       folderSelect.hide(),
       sortSelect.hide(),
-      scrollButtons.hide(),
+      searchBar.hide(),
     ]);
     previewButtons.show();
   };
   const leavePreviewMenu = async () => {
-    await previewButtons.hide();
+    await Promise.all([previewButtons.hide(), imageName.hide()]);
     scrollButtons.show();
     folderSelect.show();
     sortSelect.show();
+    searchBar.show();
   };
 
   //

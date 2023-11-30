@@ -559,16 +559,9 @@ class SearchBar extends component {
     super();
     this._timelines = {};
     this.handlers = {};
-    /**
-     * 用於存儲父級 DOM 選擇器。
-     * @type {string}
-     * @private
-     */
-    this.parent = "";
-    /**
-     * 包含搜尋列的 jQuery 物件。
-     * @type {jQuery}
-     */
+    this.isShow = true;
+
+    /** 包含搜尋列的 jQuery 物件。 @type {jQuery} */
     this.element = this._createSearchBar();
     this._createTimelines()._bindTimeline();
   }
@@ -1654,11 +1647,6 @@ class PreviewImage extends component {
   }
 
   show(url, category) {
-    if (url === this.url) {
-      this._timelines.show.restart();
-      return this;
-    }
-
     this.url = url;
     this.category = category;
     this.element.find("img").attr("src", url);
@@ -1809,6 +1797,101 @@ class PreviewButtons extends component {
     this._onSelectHandler = handler;
 
     this.element.on("click", "button", this._onSelectHandler);
+    return this;
+  }
+}
+
+/**
+ * 這個類別用於創建和管理預覽圖片檔名組件。
+ */
+class ImageName extends component {
+  constructor() {
+    super();
+
+    this.isShow = false;
+    this._timelines = {};
+
+    const container = $("<div>")
+      .addClass("file-name-container")
+      .append(
+        $("<p>").addClass("file-name"),
+        $("<button>")
+          .addClass("extend-button")
+          .append($("<label>").text(".jpg"))
+      );
+
+    this.element = container;
+
+    this._bindTimeline(container)._createTimelines();
+  }
+
+  _bindTimeline(container) {
+    const button = container.find(".extend-button");
+
+    const t1 = createScaleHoverTl(button, 1, 1.1);
+    const t2 = createColorHoverTl(button, "#ea81af", 0.2);
+    const t3 = gsap
+      .timeline({ defaults: { ease: "set1", duration: 0.2 }, paused: true })
+      .to(button.find("label"), {
+        color: "hsl(225, 10%, 23%)",
+        fontWeight: "bold",
+      });
+
+    const t4 = createScaleClickTl(button, 0.8);
+
+    button.on("mouseenter", () => {
+      t1.play();
+      t2.play();
+      t3.play();
+    });
+    button.on("mouseleave", () => {
+      t1.reverse();
+      t2.reverse();
+      t3.reverse();
+    });
+    button.on("click", () => t4.restart());
+
+    return this;
+  }
+
+  _createTimelines() {
+    this._timelines.show = gsap
+      .timeline({ defaults: { ease: "set1" }, paused: true })
+      .from(this.element, { autoAlpha: 0, duration: 0.05 })
+      .from(this.element.children(), {
+        autoAlpha: 0,
+        scale: 0.5,
+        ease: "back.out(4)",
+        stagger: 0.1,
+      });
+
+    return this;
+  }
+
+  show(name) {
+    if (this.isShow) return this;
+
+    this.element.find(".file-name").text(name);
+    this.isShow = true;
+    this._timelines.show.play();
+
+    return this;
+  }
+
+  async hide() {
+    if (!this.isShow) return this;
+
+    this.isShow = false;
+    this._timelines.show.reverse();
+
+    this._timelines.show.eventCallback("onReverseComplete", null);
+
+    await new Promise((resolve) => {
+      this._timelines.show.eventCallback("onReverseComplete", resolve);
+    });
+
+    this.element.find(".file-name").text("");
+
     return this;
   }
 }

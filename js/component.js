@@ -557,7 +557,7 @@ class SearchBar extends component {
    */
   constructor() {
     super();
-    this.timelines = {};
+    this._timelines = {};
     this.handlers = {};
     /**
      * 用於存儲父級 DOM 選擇器。
@@ -604,22 +604,26 @@ class SearchBar extends component {
     const input = this.element.find("input");
     const searchIcon = this.element.find(".search-icon-container");
 
-    this.timelines.outline = createOutlineTl(input);
+    this._timelines.outline = createOutlineTl(input);
     const { t1, t2 } = createSearchIconHoverTl(searchIcon);
-    this.timelines.hover1 = t1;
-    this.timelines.hover2 = t2;
+    this._timelines.hover1 = t1;
+    this._timelines.hover2 = t2;
 
-    this.timelines.play = () => {
-      this.timelines.outline.play();
-      this.timelines.hover1.play();
-      this.timelines.hover2.play();
+    this._timelines.play = () => {
+      this._timelines.outline.play();
+      this._timelines.hover1.play();
+      this._timelines.hover2.play();
     };
 
-    this.timelines.reverse = () => {
-      this.timelines.outline.reverse();
-      this.timelines.hover1.reverse();
-      this.timelines.hover2.reverse();
+    this._timelines.reverse = () => {
+      this._timelines.outline.reverse();
+      this._timelines.hover1.reverse();
+      this._timelines.hover2.reverse();
     };
+
+    this._timelines.hide = gsap
+      .timeline({ defaults: { ease: "set1" }, paused: true })
+      .to(this.element, { autoAlpha: 0, y: -100 });
 
     return this;
   }
@@ -634,16 +638,16 @@ class SearchBar extends component {
     const eraserIcon = this.element.find(".eraser-icon-container");
 
     this.element.on("mouseenter", () => {
-      this.timelines.play();
+      this._timelines.play();
     });
     this.element.on("mouseleave", () => {
-      if (!input.is(":focus")) this.timelines.reverse();
+      if (!input.is(":focus")) this._timelines.reverse();
     });
     this.element.on("focus", "input", () => {
-      this.timelines.play();
+      this._timelines.play();
     });
     this.element.on("blur", "input", () => {
-      this.timelines.reverse();
+      this._timelines.reverse();
     });
     this.element.on("keyup", "input", () => {
       if (this.input) {
@@ -660,59 +664,31 @@ class SearchBar extends component {
   }
 
   /**
-   * 終止所有時間軸動畫。
-   * @private
-   * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
-   */
-  _killTimelines() {
-    Object.values(this.timelines).forEach((timeline) => {
-      if (timeline instanceof TimelineMax) {
-        timeline.kill();
-      }
-    });
-
-    this.timelines = {};
-    return this;
-  }
-
-  /**
    * 顯示搜尋列。
-   * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
    */
   show() {
-    if (this.element) {
-      console.log("show:元素已存在");
-      return this;
-    }
+    if (this.isShow) return this;
 
-    this.element = this._createSearchBar();
-    this._createTimelines()._bindTimeline();
-
-    if (this.handlers.input) {
-      this.element.on("keyup", "input", this.handlers.input);
-    }
-
-    if (this.parent) {
-      this.appendTo(this.parent);
-    }
+    this.isShow = true;
+    this._timelines.hide.reverse();
 
     return this;
   }
 
   /**
    * 隱藏搜尋列。
-   * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
    */
-  hide() {
-    if (!this.element) {
-      console.log("hide:元素已隱藏");
-      return this;
-    }
+  async hide() {
+    if (!this.isShow) return this;
 
-    this._killTimelines();
-    this.element.remove(); // remove會自動解除on事件監聽
-    this.element = null;
-    this._isAppendTo = false;
+    this.isShow = false;
+    this._timelines.hide.play();
+
+    this._timelines.hide.eventCallback("onComplete", null);
+
+    await new Promise((resolve) => {
+      this._timelines.hide.eventCallback("onComplete", resolve);
+    });
 
     return this;
   }
@@ -725,13 +701,12 @@ class SearchBar extends component {
   onInput(handler) {
     if (this.handlers.input) console.error("已經註冊過onInput");
 
-    this.handlers.input = handler;
-
-    if (!this.element) return; //若元素隱藏則等到show時會再綁定
-
-    this.element.on("keyup", "input", () => {
+    this.handlers.input = () => {
       if (this.input) handler();
-    });
+    };
+
+    this.element.on("keyup", "input", this.handlers.input);
+
     return this;
   }
 
@@ -744,6 +719,11 @@ class SearchBar extends component {
     if (this.handlers.clear) console.error("已經註冊過onClear");
 
     this.handlers.clear = handler;
+
+    this.element.on("keyup", "input", () => {
+      if (!this.input) this.handlers.clear();
+    });
+
     return this;
   }
 
@@ -753,10 +733,6 @@ class SearchBar extends component {
    * @name SearchBar#input
    */
   get input() {
-    if (!this.element) {
-      console.log("get input: 元素隱藏中");
-      return "";
-    }
     return this.element.find("input").val();
   }
 
@@ -767,11 +743,6 @@ class SearchBar extends component {
    * @name SearchBar#input
    */
   set input(value) {
-    if (!this.element) {
-      console.log("set input: 元素隱藏中，無法寫入");
-      return this;
-    }
-
     this.element.find("input").val(value);
 
     if (value !== "" && this.handlers.input) {
@@ -1236,7 +1207,7 @@ class HeaderBulb extends component {
   flickerLight() {
     this._killTimeline();
     this._timelines[this.currentColor] = createBulbLightT2(this.element, {
-      color: this._colorMap[this.currentColor],
+      color: this.currentColor,
       intensity: this.intensity,
     }).play();
 

@@ -1739,18 +1739,34 @@ class PreviewButtons extends component {
   _createReturnButton() {
     const button = $("<button>").addClass("return-button");
 
-    const iconContainer = $("<div>").addClass(".return-icon-container");
-    const img = $("<img>").attr("src", "").appendTo(iconContainer);
-    const gif = $("<img>").attr("src", "").appendTo(iconContainer);
+    const iconContainer = $("<div>").addClass("return-icon-container");
+
+    const makeImg = () => {
+      return $("<img>")
+        .attr("src", "icons/return.png")
+        .addClass("return-img")
+        .appendTo(iconContainer);
+    };
+    const makeGif = () => {
+      const timestamp = $.now();
+      return $("<img>")
+        .attr("src", `icons/return.gif?timestamp=${timestamp}`)
+        .addClass("return-gif")
+        .appendTo(iconContainer);
+    };
 
     button.append(iconContainer);
+    makeImg();
 
     button.on("mouseenter", () => {
-      img.fadeOut(100, () => gif.appendTo(iconContainer));
+      const imgs = button.find(".return-img");
+      imgs.remove();
+      makeGif().show();
     });
     button.on("mouseleave", () => {
-      gif.fadeOut(100, () => gif.remove());
-      img.fadeIn(100);
+      const gifs = button.find(".return-gif");
+      gifs.hide(500, () => gifs.remove());
+      makeImg().hide().show(500);
     });
 
     this._bindTimeline(button);

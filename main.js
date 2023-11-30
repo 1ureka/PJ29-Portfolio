@@ -13,14 +13,7 @@ $(document).ready(async function () {
   //
   // 創建上下按鈕
   const scrollButtons = new ScrollButtons();
-  scrollButtons
-    .appendTo("body")
-    .onUp((e) => {
-      console.log($(e.currentTarget).attr("class"));
-    })
-    .onDown((e) => {
-      console.log($(e.currentTarget).attr("class"));
-    });
+  scrollButtons.appendTo("body");
 
   //
   // 創建搜尋欄
@@ -61,6 +54,7 @@ $(document).ready(async function () {
       headerBulb.switchLight("main");
       folderBoxes.show();
 
+      scrollButtons.scrollElement = folderBoxes.element;
       folderSelect.on();
       return;
     }
@@ -70,6 +64,7 @@ $(document).ready(async function () {
     await switchGallery(category);
     headerBulb.switchLight(category);
 
+    scrollButtons.scrollElement = gallery[category].element;
     folderSelect.on();
   });
 
@@ -111,6 +106,7 @@ $(document).ready(async function () {
 
     headerBulb.switchLight(category);
 
+    scrollButtons.scrollElement = gallery[category].element;
     folderSelect.open().on();
   });
 
@@ -128,10 +124,14 @@ $(document).ready(async function () {
     gallery[category] = new Gallery(urlArray);
 
     gallery[category].onSelect(async (e) => {
+      const url = e.attr("src");
+
       await delay(50);
       await gallery[category].hide();
       await enterPreviewMenu();
-      previewImage.show(e.attr("src"), category);
+
+      previewImage.show(url, category);
+      imageName.show(findImageName(url));
     });
   });
 
@@ -150,9 +150,16 @@ $(document).ready(async function () {
     if (targetClass === "return-button") {
       await previewImage.hide();
       await gallery[category].show();
+
       leavePreviewMenu();
+      scrollButtons.scrollElement = gallery[category].element;
     }
   });
+
+  //
+  // 創建內容
+  const imageName = new ImageName();
+  imageName.appendTo("#header");
 
   //
   // 過場
@@ -166,17 +173,19 @@ $(document).ready(async function () {
   };
   const enterPreviewMenu = async () => {
     await Promise.all([
+      scrollButtons.hide(),
       folderSelect.hide(),
       sortSelect.hide(),
-      scrollButtons.hide(),
+      searchBar.hide(),
     ]);
     previewButtons.show();
   };
   const leavePreviewMenu = async () => {
-    await previewButtons.hide();
+    await Promise.all([previewButtons.hide(), imageName.hide()]);
     scrollButtons.show();
     folderSelect.show();
     sortSelect.show();
+    searchBar.show();
   };
 
   //

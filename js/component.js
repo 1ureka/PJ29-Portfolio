@@ -391,6 +391,8 @@ class ScrollButtons extends component {
       .append(this._createScrollButton("up"), this._createScrollButton("down"));
 
     this.element = container;
+    /** @type {HTMLElement} */
+    this._scrollElement;
 
     this._createTimelines();
   }
@@ -440,15 +442,46 @@ class ScrollButtons extends component {
   }
 
   /**
+   * 將滾動元素設定為指定的 jQuery 元素，同時設定上滾動和下滾動按鈕的點擊事件處理程序。
+   * @param {jQuery} element - 欲添加滾動按鈕的 jQuery 元素。
+   */
+  set scrollElement(element) {
+    this._scrollElement = element[0];
+    this._onUp(() => this._up())._onDown(() => this._down());
+  }
+
+  /**
+   * 捲動至頂部的方法。
+   * @private
+   */
+  _up() {
+    if (this._scrollElement)
+      this._scrollElement.scrollTo({ top: 0, behavior: "smooth" });
+
+    return this;
+  }
+
+  /**
+   * 捲動至底部的方法。
+   * @private
+   */
+  _down() {
+    if (this._scrollElement)
+      this._scrollElement.scrollTo({
+        top: this._scrollElement.scrollHeight,
+        behavior: "smooth",
+      });
+
+    return this;
+  }
+
+  /**
    * 註冊上滾動按鈕的點擊事件處理程序。
-   * @param {Function} handler - 點擊事件的處理程序。
+   * @private @param {Function} handler - 點擊事件的處理程序。
    * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
    */
-  onUp(handler) {
-    if (this.handlers.up) {
-      console.error("onUp: 已經註冊過");
-      return this;
-    }
+  _onUp(handler) {
+    if (this.handlers.up) this.element.off("click", ".up", this.handlers.up);
 
     this.handlers.up = handler;
     this.element.on("click", ".up", this.handlers.up);
@@ -458,14 +491,12 @@ class ScrollButtons extends component {
 
   /**
    * 註冊下滾動按鈕的點擊事件處理程序。
-   * @param {Function} handler - 點擊事件的處理程序。
+   * @private @param {Function} handler - 點擊事件的處理程序。
    * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
    */
-  onDown(handler) {
-    if (this.handlers.down) {
-      console.error("onDown: 已經註冊過");
-      return this;
-    }
+  _onDown(handler) {
+    if (this.handlers.down)
+      this.element.off("click", ".down", this.handlers.down);
 
     this.handlers.down = handler;
     this.element.on("click", ".down", this.handlers.down);
@@ -526,18 +557,11 @@ class SearchBar extends component {
    */
   constructor() {
     super();
-    this.timelines = {};
+    this._timelines = {};
     this.handlers = {};
-    /**
-     * 用於存儲父級 DOM 選擇器。
-     * @type {string}
-     * @private
-     */
-    this.parent = "";
-    /**
-     * 包含搜尋列的 jQuery 物件。
-     * @type {jQuery}
-     */
+    this.isShow = true;
+
+    /** 包含搜尋列的 jQuery 物件。 @type {jQuery} */
     this.element = this._createSearchBar();
     this._createTimelines()._bindTimeline();
   }
@@ -573,22 +597,26 @@ class SearchBar extends component {
     const input = this.element.find("input");
     const searchIcon = this.element.find(".search-icon-container");
 
-    this.timelines.outline = createOutlineTl(input);
+    this._timelines.outline = createOutlineTl(input);
     const { t1, t2 } = createSearchIconHoverTl(searchIcon);
-    this.timelines.hover1 = t1;
-    this.timelines.hover2 = t2;
+    this._timelines.hover1 = t1;
+    this._timelines.hover2 = t2;
 
-    this.timelines.play = () => {
-      this.timelines.outline.play();
-      this.timelines.hover1.play();
-      this.timelines.hover2.play();
+    this._timelines.play = () => {
+      this._timelines.outline.play();
+      this._timelines.hover1.play();
+      this._timelines.hover2.play();
     };
 
-    this.timelines.reverse = () => {
-      this.timelines.outline.reverse();
-      this.timelines.hover1.reverse();
-      this.timelines.hover2.reverse();
+    this._timelines.reverse = () => {
+      this._timelines.outline.reverse();
+      this._timelines.hover1.reverse();
+      this._timelines.hover2.reverse();
     };
+
+    this._timelines.hide = gsap
+      .timeline({ defaults: { ease: "set1" }, paused: true })
+      .to(this.element, { autoAlpha: 0, y: -100 });
 
     return this;
   }
@@ -603,16 +631,16 @@ class SearchBar extends component {
     const eraserIcon = this.element.find(".eraser-icon-container");
 
     this.element.on("mouseenter", () => {
-      this.timelines.play();
+      this._timelines.play();
     });
     this.element.on("mouseleave", () => {
-      if (!input.is(":focus")) this.timelines.reverse();
+      if (!input.is(":focus")) this._timelines.reverse();
     });
     this.element.on("focus", "input", () => {
-      this.timelines.play();
+      this._timelines.play();
     });
     this.element.on("blur", "input", () => {
-      this.timelines.reverse();
+      this._timelines.reverse();
     });
     this.element.on("keyup", "input", () => {
       if (this.input) {
@@ -629,59 +657,31 @@ class SearchBar extends component {
   }
 
   /**
-   * 終止所有時間軸動畫。
-   * @private
-   * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
-   */
-  _killTimelines() {
-    Object.values(this.timelines).forEach((timeline) => {
-      if (timeline instanceof TimelineMax) {
-        timeline.kill();
-      }
-    });
-
-    this.timelines = {};
-    return this;
-  }
-
-  /**
    * 顯示搜尋列。
-   * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
    */
   show() {
-    if (this.element) {
-      console.log("show:元素已存在");
-      return this;
-    }
+    if (this.isShow) return this;
 
-    this.element = this._createSearchBar();
-    this._createTimelines()._bindTimeline();
-
-    if (this.handlers.input) {
-      this.element.on("keyup", "input", this.handlers.input);
-    }
-
-    if (this.parent) {
-      this.appendTo(this.parent);
-    }
+    this.isShow = true;
+    this._timelines.hide.reverse();
 
     return this;
   }
 
   /**
    * 隱藏搜尋列。
-   * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
    */
-  hide() {
-    if (!this.element) {
-      console.log("hide:元素已隱藏");
-      return this;
-    }
+  async hide() {
+    if (!this.isShow) return this;
 
-    this._killTimelines();
-    this.element.remove(); // remove會自動解除on事件監聽
-    this.element = null;
-    this._isAppendTo = false;
+    this.isShow = false;
+    this._timelines.hide.play();
+
+    this._timelines.hide.eventCallback("onComplete", null);
+
+    await new Promise((resolve) => {
+      this._timelines.hide.eventCallback("onComplete", resolve);
+    });
 
     return this;
   }
@@ -694,13 +694,12 @@ class SearchBar extends component {
   onInput(handler) {
     if (this.handlers.input) console.error("已經註冊過onInput");
 
-    this.handlers.input = handler;
-
-    if (!this.element) return; //若元素隱藏則等到show時會再綁定
-
-    this.element.on("keyup", "input", () => {
+    this.handlers.input = () => {
       if (this.input) handler();
-    });
+    };
+
+    this.element.on("keyup", "input", this.handlers.input);
+
     return this;
   }
 
@@ -713,6 +712,11 @@ class SearchBar extends component {
     if (this.handlers.clear) console.error("已經註冊過onClear");
 
     this.handlers.clear = handler;
+
+    this.element.on("keyup", "input", () => {
+      if (!this.input) this.handlers.clear();
+    });
+
     return this;
   }
 
@@ -722,10 +726,6 @@ class SearchBar extends component {
    * @name SearchBar#input
    */
   get input() {
-    if (!this.element) {
-      console.log("get input: 元素隱藏中");
-      return "";
-    }
     return this.element.find("input").val();
   }
 
@@ -736,11 +736,6 @@ class SearchBar extends component {
    * @name SearchBar#input
    */
   set input(value) {
-    if (!this.element) {
-      console.log("set input: 元素隱藏中，無法寫入");
-      return this;
-    }
-
     this.element.find("input").val(value);
 
     if (value !== "" && this.handlers.input) {
@@ -994,6 +989,10 @@ class SortSelect extends component {
     this._createTimelines();
   }
 
+  /**
+   * 創建排序選單的元素。
+   * @private @returns {jQuery} 排序選單的元素。
+   */
   _createSortSelect() {
     const select = $("<div>").addClass("sort-select");
 
@@ -1014,6 +1013,10 @@ class SortSelect extends component {
     return select;
   }
 
+  /**
+   * 創建排序按鈕的元素。
+   * @private @returns {jQuery} 排序按鈕的元素。
+   */
   _createSortButton() {
     const button = $("<button>").addClass("sort-button");
     const iconContainer = createSortIcon();
@@ -1024,6 +1027,10 @@ class SortSelect extends component {
     return button;
   }
 
+  /**
+   * 綁定排序按鈕的時間軸效果。
+   * @private @param {jQuery} button - 排序按鈕的元素。
+   */
   _bindSortButtonTimeline(button) {
     const iconContainer = button.find(".sort-icon-container");
     const wIcon = iconContainer.children().eq(0);
@@ -1205,7 +1212,7 @@ class HeaderBulb extends component {
   flickerLight() {
     this._killTimeline();
     this._timelines[this.currentColor] = createBulbLightT2(this.element, {
-      color: this._colorMap[this.currentColor],
+      color: this.currentColor,
       intensity: this.intensity,
     }).play();
 
@@ -1629,6 +1636,10 @@ class PreviewImage extends component {
     this._createTimelines();
   }
 
+  /**
+   * 創建包含圖片的容器元素。
+   * @private @returns {jQuery} - 圖片容器元素的 jQuery 物件。
+   */
   _createImageContainer() {
     const container = $("<div>").addClass("preview-container");
     const image = $("<img>").attr("src", "").attr("decoding", "async");
@@ -1638,6 +1649,10 @@ class PreviewImage extends component {
     return container;
   }
 
+  /**
+   * 創建時間軸效果。
+   * @private
+   */
   _createTimelines() {
     const image = this.element.children();
     this._timelines.show = gsap
@@ -1651,12 +1666,13 @@ class PreviewImage extends component {
       });
   }
 
+  /**
+   * 顯示預覽圖片。
+   * @param {string} url - 圖片的 URL。
+   * @param {string} category - 圖片的類別。
+   * @returns {PreviewImage} - 回傳 `PreviewImage` 實例，以便進行方法鏈結。
+   */
   show(url, category) {
-    if (url === this.url) {
-      this._timelines.show.restart();
-      return this;
-    }
-
     this.url = url;
     this.category = category;
     this.element.find("img").attr("src", url);
@@ -1666,6 +1682,11 @@ class PreviewImage extends component {
     return this;
   }
 
+  /**
+   * 隱藏預覽圖片。
+   * @async
+   * @returns {Promise<PreviewImage>} - 回傳一個 Promise，當隱藏動畫完成後解析。
+   */
   async hide() {
     this._timelines.show.reverse();
 
@@ -1696,6 +1717,10 @@ class PreviewButtons extends component {
     this._createTimelines();
   }
 
+  /**
+   * 創建包含預覽按鈕的容器元素。
+   * @private @returns {jQuery} - 預覽按鈕容器元素的 jQuery 物件。
+   */
   _createPreviewButtons() {
     const container = $("<div>").addClass("preview-buttons-container");
 
@@ -1707,21 +1732,41 @@ class PreviewButtons extends component {
     return container;
   }
 
+  /**
+   * 創建返回按鈕元素。
+   * @private @returns {jQuery} - 返回按鈕元素的 jQuery 物件。
+   */
   _createReturnButton() {
     const button = $("<button>").addClass("return-button");
 
-    const iconContainer = $("<div>").addClass(".return-icon-container");
-    const img = $("<img>").attr("src", "").appendTo(iconContainer);
-    const gif = $("<img>").attr("src", "").appendTo(iconContainer);
+    const iconContainer = $("<div>").addClass("return-icon-container");
+
+    const makeImg = () => {
+      return $("<img>")
+        .attr("src", "icons/return.png")
+        .addClass("return-img")
+        .appendTo(iconContainer);
+    };
+    const makeGif = () => {
+      const timestamp = $.now();
+      return $("<img>")
+        .attr("src", `icons/return.gif?timestamp=${timestamp}`)
+        .addClass("return-gif")
+        .appendTo(iconContainer);
+    };
 
     button.append(iconContainer);
+    makeImg();
 
     button.on("mouseenter", () => {
-      img.fadeOut(100, () => gif.appendTo(iconContainer));
+      const imgs = button.find(".return-img");
+      imgs.remove();
+      makeGif().show();
     });
     button.on("mouseleave", () => {
-      gif.fadeOut(100, () => gif.remove());
-      img.fadeIn(100);
+      const gifs = button.find(".return-gif");
+      gifs.hide(500, () => gifs.remove());
+      makeImg().hide().show(500);
     });
 
     this._bindTimeline(button);
@@ -1729,6 +1774,10 @@ class PreviewButtons extends component {
     return button;
   }
 
+  /**
+   * 創建全螢幕按鈕元素。
+   * @private @returns {jQuery} - 全螢幕按鈕元素的 jQuery 物件。
+   */
   _createFullscreenButton() {
     const button = $("<button>").addClass("fullscreen-button");
 
@@ -1743,6 +1792,10 @@ class PreviewButtons extends component {
     return button;
   }
 
+  /**
+   * 綁定按鈕的時間軸效果。
+   * @private @param {jQuery} button - 按鈕元素的 jQuery 物件。
+   */
   _bindTimeline(button) {
     const hoverT1 = createScaleHoverTl(button, 1, 1.1);
     const hoverT2 = createColorHoverTl(button, "#ea81af");
@@ -1762,6 +1815,10 @@ class PreviewButtons extends component {
     button.on("click", () => clickTl.restart());
   }
 
+  /**
+   * 創建並初始化按鈕的時間軸效果。
+   * @private
+   */
   _createTimelines() {
     this._timelines.show = gsap
       .timeline({ defaults: { ease: "set1" }, paused: true })
@@ -1776,6 +1833,9 @@ class PreviewButtons extends component {
     return this;
   }
 
+  /**
+   * 顯示預覽按鈕。
+   */
   show() {
     if (this.isShow) return this;
 
@@ -1785,6 +1845,9 @@ class PreviewButtons extends component {
     return this;
   }
 
+  /**
+   * 隱藏預覽按鈕。
+   */
   async hide() {
     if (!this.isShow) return this;
 
@@ -1800,6 +1863,10 @@ class PreviewButtons extends component {
     return this;
   }
 
+  /**
+   * 設置選擇按鈕時的處理程序。
+   * @param {function} handler - 選擇按鈕時的處理程序。
+   */
   onSelect(handler) {
     if (this._onSelectHandler)
       this.element.off("click", "button", this._onSelectHandler);
@@ -1807,6 +1874,116 @@ class PreviewButtons extends component {
     this._onSelectHandler = handler;
 
     this.element.on("click", "button", this._onSelectHandler);
+    return this;
+  }
+}
+
+/**
+ * 這個類別用於創建和管理預覽圖片檔名組件。
+ */
+class ImageName extends component {
+  constructor() {
+    super();
+
+    this.isShow = false;
+    this._timelines = {};
+
+    const container = $("<div>")
+      .addClass("file-name-container")
+      .append(
+        $("<p>").addClass("file-name"),
+        $("<button>")
+          .addClass("extend-button")
+          .append($("<label>").text(".jpg"))
+      );
+
+    this.element = container;
+
+    this._bindTimeline(container)._createTimelines();
+  }
+
+  /**
+   * 綁定元素的時間軸效果。
+   * @private @param {jQuery} container - 元素的 jQuery 物件。
+   */
+  _bindTimeline(container) {
+    const button = container.find(".extend-button");
+
+    const t1 = createScaleHoverTl(button, 1, 1.1);
+    const t2 = createColorHoverTl(button, "#ea81af", 0.2);
+    const t3 = gsap
+      .timeline({ defaults: { ease: "set1", duration: 0.2 }, paused: true })
+      .to(button.find("label"), {
+        color: "hsl(225, 10%, 23%)",
+        fontWeight: "bold",
+      });
+
+    const t4 = createScaleClickTl(button, 0.8);
+
+    button.on("mouseenter", () => {
+      t1.play();
+      t2.play();
+      t3.play();
+    });
+    button.on("mouseleave", () => {
+      t1.reverse();
+      t2.reverse();
+      t3.reverse();
+    });
+    button.on("click", () => t4.restart());
+
+    return this;
+  }
+
+  /**
+   * 創建並初始化時間軸效果。
+   * @private
+   */
+  _createTimelines() {
+    this._timelines.show = gsap
+      .timeline({ defaults: { ease: "set1" }, paused: true })
+      .from(this.element, { autoAlpha: 0, duration: 0.05 })
+      .from(this.element.children(), {
+        autoAlpha: 0,
+        scale: 0.5,
+        ease: "back.out(4)",
+        stagger: 0.1,
+      });
+
+    return this;
+  }
+
+  /**
+   * 顯示組件並設置圖片名稱。
+   * @param {string} name - 圖片的名稱。
+   */
+  show(name) {
+    if (this.isShow) return this;
+
+    this.element.find(".file-name").text(name);
+    this.isShow = true;
+    this._timelines.show.play();
+
+    return this;
+  }
+
+  /**
+   * 隱藏組件。
+   */
+  async hide() {
+    if (!this.isShow) return this;
+
+    this.isShow = false;
+    this._timelines.show.reverse();
+
+    this._timelines.show.eventCallback("onReverseComplete", null);
+
+    await new Promise((resolve) => {
+      this._timelines.show.eventCallback("onReverseComplete", resolve);
+    });
+
+    this.element.find(".file-name").text("");
+
     return this;
   }
 }

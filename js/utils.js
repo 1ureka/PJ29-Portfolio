@@ -183,3 +183,12 @@ async function decode(image) {
     await decode(image);
   }
 }
+
+/**
+ * 從圖片url找到檔名
+ * @param {string} url - 圖片的url
+ * @returns {string} - 圖片的檔名
+ */
+function findImageName(url) {
+  return url.match(/[^/\\]+$/)[0].replace(/\.jpg/, "");
+}

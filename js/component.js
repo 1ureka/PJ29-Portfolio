@@ -391,6 +391,8 @@ class ScrollButtons extends component {
       .append(this._createScrollButton("up"), this._createScrollButton("down"));
 
     this.element = container;
+    /** @type {HTMLElement} */
+    this._scrollElement;
 
     this._createTimelines();
   }
@@ -440,15 +442,46 @@ class ScrollButtons extends component {
   }
 
   /**
+   * 將滾動元素設定為指定的 jQuery 元素，同時設定上滾動和下滾動按鈕的點擊事件處理程序。
+   * @param {jQuery} element - 欲添加滾動按鈕的 jQuery 元素。
+   */
+  set scrollElement(element) {
+    this._scrollElement = element[0];
+    this._onUp(() => this._up())._onDown(() => this._down());
+  }
+
+  /**
+   * 捲動至頂部的方法。
+   * @private
+   */
+  _up() {
+    if (this._scrollElement)
+      this._scrollElement.scrollTo({ top: 0, behavior: "smooth" });
+
+    return this;
+  }
+
+  /**
+   * 捲動至底部的方法。
+   * @private
+   */
+  _down() {
+    if (this._scrollElement)
+      this._scrollElement.scrollTo({
+        top: this._scrollElement.scrollHeight,
+        behavior: "smooth",
+      });
+
+    return this;
+  }
+
+  /**
    * 註冊上滾動按鈕的點擊事件處理程序。
-   * @param {Function} handler - 點擊事件的處理程序。
+   * @private @param {Function} handler - 點擊事件的處理程序。
    * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
    */
-  onUp(handler) {
-    if (this.handlers.up) {
-      console.error("onUp: 已經註冊過");
-      return this;
-    }
+  _onUp(handler) {
+    if (this.handlers.up) this.element.off("click", ".up", this.handlers.up);
 
     this.handlers.up = handler;
     this.element.on("click", ".up", this.handlers.up);
@@ -458,14 +491,12 @@ class ScrollButtons extends component {
 
   /**
    * 註冊下滾動按鈕的點擊事件處理程序。
-   * @param {Function} handler - 點擊事件的處理程序。
+   * @private @param {Function} handler - 點擊事件的處理程序。
    * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
    */
-  onDown(handler) {
-    if (this.handlers.down) {
-      console.error("onDown: 已經註冊過");
-      return this;
-    }
+  _onDown(handler) {
+    if (this.handlers.down)
+      this.element.off("click", ".down", this.handlers.down);
 
     this.handlers.down = handler;
     this.element.on("click", ".down", this.handlers.down);

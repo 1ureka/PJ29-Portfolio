@@ -13,14 +13,7 @@ $(document).ready(async function () {
   //
   // 創建上下按鈕
   const scrollButtons = new ScrollButtons();
-  scrollButtons
-    .appendTo("body")
-    .onUp((e) => {
-      console.log($(e.currentTarget).attr("class"));
-    })
-    .onDown((e) => {
-      console.log($(e.currentTarget).attr("class"));
-    });
+  scrollButtons.appendTo("body");
 
   //
   // 創建搜尋欄
@@ -61,6 +54,7 @@ $(document).ready(async function () {
       headerBulb.switchLight("main");
       folderBoxes.show();
 
+      scrollButtons.scrollElement = folderBoxes.element;
       folderSelect.on();
       return;
     }
@@ -70,6 +64,7 @@ $(document).ready(async function () {
     await switchGallery(category);
     headerBulb.switchLight(category);
 
+    scrollButtons.scrollElement = gallery[category].element;
     folderSelect.on();
   });
 
@@ -111,6 +106,7 @@ $(document).ready(async function () {
 
     headerBulb.switchLight(category);
 
+    scrollButtons.scrollElement = gallery[category].element;
     folderSelect.open().on();
   });
 

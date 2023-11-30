@@ -989,6 +989,10 @@ class SortSelect extends component {
     this._createTimelines();
   }
 
+  /**
+   * 創建排序選單的元素。
+   * @private @returns {jQuery} 排序選單的元素。
+   */
   _createSortSelect() {
     const select = $("<div>").addClass("sort-select");
 
@@ -1009,6 +1013,10 @@ class SortSelect extends component {
     return select;
   }
 
+  /**
+   * 創建排序按鈕的元素。
+   * @private @returns {jQuery} 排序按鈕的元素。
+   */
   _createSortButton() {
     const button = $("<button>").addClass("sort-button");
     const iconContainer = createSortIcon();
@@ -1019,6 +1027,10 @@ class SortSelect extends component {
     return button;
   }
 
+  /**
+   * 綁定排序按鈕的時間軸效果。
+   * @private @param {jQuery} button - 排序按鈕的元素。
+   */
   _bindSortButtonTimeline(button) {
     const iconContainer = button.find(".sort-icon-container");
     const wIcon = iconContainer.children().eq(0);
@@ -1624,6 +1636,10 @@ class PreviewImage extends component {
     this._createTimelines();
   }
 
+  /**
+   * 創建包含圖片的容器元素。
+   * @private @returns {jQuery} - 圖片容器元素的 jQuery 物件。
+   */
   _createImageContainer() {
     const container = $("<div>").addClass("preview-container");
     const image = $("<img>").attr("src", "").attr("decoding", "async");
@@ -1633,6 +1649,10 @@ class PreviewImage extends component {
     return container;
   }
 
+  /**
+   * 創建時間軸效果。
+   * @private
+   */
   _createTimelines() {
     const image = this.element.children();
     this._timelines.show = gsap
@@ -1646,6 +1666,12 @@ class PreviewImage extends component {
       });
   }
 
+  /**
+   * 顯示預覽圖片。
+   * @param {string} url - 圖片的 URL。
+   * @param {string} category - 圖片的類別。
+   * @returns {PreviewImage} - 回傳 `PreviewImage` 實例，以便進行方法鏈結。
+   */
   show(url, category) {
     this.url = url;
     this.category = category;
@@ -1656,6 +1682,11 @@ class PreviewImage extends component {
     return this;
   }
 
+  /**
+   * 隱藏預覽圖片。
+   * @async
+   * @returns {Promise<PreviewImage>} - 回傳一個 Promise，當隱藏動畫完成後解析。
+   */
   async hide() {
     this._timelines.show.reverse();
 
@@ -1686,6 +1717,10 @@ class PreviewButtons extends component {
     this._createTimelines();
   }
 
+  /**
+   * 創建包含預覽按鈕的容器元素。
+   * @private @returns {jQuery} - 預覽按鈕容器元素的 jQuery 物件。
+   */
   _createPreviewButtons() {
     const container = $("<div>").addClass("preview-buttons-container");
 
@@ -1697,6 +1732,10 @@ class PreviewButtons extends component {
     return container;
   }
 
+  /**
+   * 創建返回按鈕元素。
+   * @private @returns {jQuery} - 返回按鈕元素的 jQuery 物件。
+   */
   _createReturnButton() {
     const button = $("<button>").addClass("return-button");
 
@@ -1719,6 +1758,10 @@ class PreviewButtons extends component {
     return button;
   }
 
+  /**
+   * 創建全螢幕按鈕元素。
+   * @private @returns {jQuery} - 全螢幕按鈕元素的 jQuery 物件。
+   */
   _createFullscreenButton() {
     const button = $("<button>").addClass("fullscreen-button");
 
@@ -1733,6 +1776,10 @@ class PreviewButtons extends component {
     return button;
   }
 
+  /**
+   * 綁定按鈕的時間軸效果。
+   * @private @param {jQuery} button - 按鈕元素的 jQuery 物件。
+   */
   _bindTimeline(button) {
     const hoverT1 = createScaleHoverTl(button, 1, 1.1);
     const hoverT2 = createColorHoverTl(button, "#ea81af");
@@ -1752,6 +1799,10 @@ class PreviewButtons extends component {
     button.on("click", () => clickTl.restart());
   }
 
+  /**
+   * 創建並初始化按鈕的時間軸效果。
+   * @private
+   */
   _createTimelines() {
     this._timelines.show = gsap
       .timeline({ defaults: { ease: "set1" }, paused: true })
@@ -1766,6 +1817,9 @@ class PreviewButtons extends component {
     return this;
   }
 
+  /**
+   * 顯示預覽按鈕。
+   */
   show() {
     if (this.isShow) return this;
 
@@ -1775,6 +1829,9 @@ class PreviewButtons extends component {
     return this;
   }
 
+  /**
+   * 隱藏預覽按鈕。
+   */
   async hide() {
     if (!this.isShow) return this;
 
@@ -1790,6 +1847,10 @@ class PreviewButtons extends component {
     return this;
   }
 
+  /**
+   * 設置選擇按鈕時的處理程序。
+   * @param {function} handler - 選擇按鈕時的處理程序。
+   */
   onSelect(handler) {
     if (this._onSelectHandler)
       this.element.off("click", "button", this._onSelectHandler);
@@ -1825,6 +1886,10 @@ class ImageName extends component {
     this._bindTimeline(container)._createTimelines();
   }
 
+  /**
+   * 綁定元素的時間軸效果。
+   * @private @param {jQuery} container - 元素的 jQuery 物件。
+   */
   _bindTimeline(container) {
     const button = container.find(".extend-button");
 
@@ -1854,6 +1919,10 @@ class ImageName extends component {
     return this;
   }
 
+  /**
+   * 創建並初始化時間軸效果。
+   * @private
+   */
   _createTimelines() {
     this._timelines.show = gsap
       .timeline({ defaults: { ease: "set1" }, paused: true })
@@ -1868,6 +1937,10 @@ class ImageName extends component {
     return this;
   }
 
+  /**
+   * 顯示組件並設置圖片名稱。
+   * @param {string} name - 圖片的名稱。
+   */
   show(name) {
     if (this.isShow) return this;
 
@@ -1878,6 +1951,9 @@ class ImageName extends component {
     return this;
   }
 
+  /**
+   * 隱藏組件。
+   */
   async hide() {
     if (!this.isShow) return this;
 

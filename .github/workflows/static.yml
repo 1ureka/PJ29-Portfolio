@@ -14,10 +14,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
@@ -28,9 +28,15 @@ jobs:
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
-          git add imagesUrls.json
-          git commit -m "Update imagesUrls.json"
-          git push
+          
+          # 檢查是否有更改
+          if [[ $(git status --porcelain) ]]; then
+            git add imagesUrls.json
+            git commit -m "Update imagesUrls.json"
+            git push
+          else
+            echo "No changes to commit."
+          fi
 
   push-to-deploy:
     needs: update-images-urls

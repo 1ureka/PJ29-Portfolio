@@ -1,0 +1,35 @@
+body {
+  background-color: hsl(210, 15%, 15%);
+}
+
+::-webkit-scrollbar-track {
+  background-color: hsl(210, 15%, 15%);
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(210, 0%, 35%);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(210, 0%, 60%);
+}
+
+button,
+.pop-up {
+  background-color: hsl(240, 5%, 10%);
+}
+
+#header,
+#version-display {
+  background-color: hsl(240, 5%, 10%);
+}
+
+#sidebar {
+  background-color: hsl(225, 7.5%, 5%);
+}
+
+.folder-box {
+  background-color: hsl(225, 10%, 23%);
+}
+
+input {
+  background-color: hsl(210, 0%, 25%);
+}

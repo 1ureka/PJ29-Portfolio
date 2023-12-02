@@ -1,0 +1,13 @@
+@import url("folderBoxes.css");
+@import url("gallery.css");
+@import url("previewImage.css");
+
+#content {
+  position: fixed;
+  top: 100px;
+  left: 260px;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  overflow: hidden;
+}

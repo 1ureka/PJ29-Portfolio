@@ -1,0 +1,34 @@
+/* PreviewButtons */
+.preview-buttons-container {
+  position: absolute;
+  bottom: 70px;
+  width: 240px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+.return-button,
+.fullscreen-button {
+  position: relative;
+  width: 100px;
+  height: 45px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.return-icon-container,
+.fullscreen-icon-container {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+.return-icon-container img,
+.fullscreen-icon-container img {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+}

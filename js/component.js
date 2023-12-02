@@ -10,10 +10,10 @@ function createScrollIcon() {
 
   const img1 = $("<img>")
     .addClass("scroll-icon-img")
-    .attr("src", `icons/up (white).png`);
+    .attr("src", `images/icons/up (white).png`);
   const img2 = $("<img>")
     .addClass("scroll-icon-img")
-    .attr("src", `icons/up (dark).png`);
+    .attr("src", `images/icons/up (dark).png`);
   gsap.set(img2, { y: 40 });
 
   container.append(img1, img2);
@@ -36,7 +36,7 @@ function createSearchIcon() {
 
   const img = $("<img>")
     .addClass("search-icon-img")
-    .attr("src", `icons/search.png`);
+    .attr("src", `images/icons/search.png`);
 
   container.append(lens, img);
 
@@ -50,8 +50,8 @@ function createSearchIcon() {
 function createEraserIcon() {
   const container = $("<div>").addClass("eraser-icon-container").hide();
 
-  const img1 = $("<img>").attr("src", `icons/erase (line).png`);
-  const img2 = $("<img>").attr("src", `icons/erase.png`);
+  const img1 = $("<img>").attr("src", `images/icons/erase (line).png`);
+  const img2 = $("<img>").attr("src", `images/icons/erase.png`);
   gsap.set(img2, { x: 10 });
 
   container.append(img1, img2);
@@ -89,7 +89,7 @@ function createFolderIcon(config) {
 
   const img = $("<img>")
     .addClass("folder-icon-img")
-    .attr("src", `icons/folder (${config.imgColor}).png`);
+    .attr("src", `images/icons/folder (${config.imgColor}).png`);
   const front = $("<div>")
     .addClass("folder-icon-front")
     .css("backgroundColor", config.backgroundColor)
@@ -112,7 +112,7 @@ function createSortImg(darkTheme = false) {
     $("<img>")
       .attr(
         "src",
-        `icons/sort (line${index + 1})${darkTheme ? " (dark)" : ""}.png`
+        `images/icons/sort (line${index + 1})${darkTheme ? " (dark)" : ""}.png`
       )
       .css("transformOrigin", `${30 - index * 3}px ${8 + index * 8}px`)
   );
@@ -120,7 +120,7 @@ function createSortImg(darkTheme = false) {
   const arrows = Array.from({ length: 2 }, () =>
     $("<img>").attr(
       "src",
-      `icons/sort (arrow)${darkTheme ? " (dark)" : ""}.png`
+      `images/icons/sort (arrow)${darkTheme ? " (dark)" : ""}.png`
     )
   );
 
@@ -197,7 +197,7 @@ function createFullscreenIcon() {
 
   for (let n = 1; n < 9; n++) {
     const img = $("<img>")
-      .attr("src", `icons/fullscreen ${n}.png`)
+      .attr("src", `images/icons/fullscreen ${n}.png`)
       .appendTo(container);
     if (n >= 5) gsap.set(img, { autoAlpha: 0 });
   }
@@ -1984,14 +1984,14 @@ class PreviewButtons extends component {
 
     const makeImg = () => {
       return $("<img>")
-        .attr("src", "icons/return.png")
+        .attr("src", "images/icons/return.png")
         .addClass("return-img")
         .appendTo(iconContainer);
     };
     const makeGif = () => {
       const timestamp = $.now();
       return $("<img>")
-        .attr("src", `icons/return.gif?timestamp=${timestamp}`)
+        .attr("src", `images/icons/return.gif?timestamp=${timestamp}`)
         .addClass("return-gif")
         .appendTo(iconContainer);
     };

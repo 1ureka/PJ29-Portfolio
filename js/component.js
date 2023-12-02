@@ -146,6 +146,48 @@ function createSortIcon() {
   return container;
 }
 
+function createNameIcon() {
+  const icons = ["white", "dark"].map((theme) => {
+    const container = $("<div>").addClass("name-icon-container");
+
+    const img = $("<img>").attr("src", "");
+
+    container.append(img);
+
+    return container;
+  });
+
+  return icons;
+}
+
+function createDateIcon() {
+  const icons = ["white", "dark"].map((theme) => {
+    const container = $("<div>").addClass("date-icon-container");
+
+    const img = $("<img>").attr("src", "");
+
+    container.append(img);
+
+    return container;
+  });
+
+  return icons;
+}
+
+function createSizeIcon() {
+  const icons = ["white", "dark"].map((theme) => {
+    const container = $("<div>").addClass("size-icon-container");
+
+    const img = $("<img>").attr("src", "");
+
+    container.append(img);
+
+    return container;
+  });
+
+  return icons;
+}
+
 /**
  * 創建包含全螢幕圖示的容器。
  * @returns {jQuery} 排序全螢幕的容器。
@@ -340,6 +382,21 @@ function createBulb(config) {
     .appendTo(bulb);
 
   container.append(bulb);
+
+  return container;
+}
+
+/**
+ * 創建一個開關元素
+ * @returns {jQuery} - 包含開關的jQuery物件。
+ */
+function createToggler() {
+  const container = $("<div>").addClass("toggler-container");
+
+  const inner = $("<div>").addClass("toggler-inner");
+  const dot = $("<div>").addClass("toggler-dot");
+
+  container.append(inner, dot);
 
   return container;
 }
@@ -796,7 +853,7 @@ class FolderSelect extends component {
     });
 
     // 製作時間軸也包括初始化收起狀態
-    this._timelines.open = createFolderSelectOpenTl(select);
+    this._timelines.open = createSelectOpenTl(select);
 
     main.on("click", () => {
       if (this.isClosed) {
@@ -996,11 +1053,22 @@ class SortSelect extends component {
   _createSortSelect() {
     const select = $("<div>").addClass("sort-select");
 
-    const main = this._createSortButton();
+    const main = this._createSortButton(createSortIcon(), "");
     const hr = createHorizontalSeparator({ margin: 8 });
-    select.append(main, hr);
+    const toggler = this._createReverseToggler();
+    select.append(main, hr, toggler);
 
-    this._timelines.open = createFolderSelectOpenTl(select);
+    const sortButtonsConfigs = [
+      { icons: createNameIcon(), label: "依名稱排序" },
+      { icons: createDateIcon(), label: "依日期排序" },
+      { icons: createSizeIcon(), label: "依大小排序" },
+    ];
+    sortButtonsConfigs.forEach((config) => {
+      const button = this._createSortButton(config.icons, config.label);
+      select.append(button);
+    });
+
+    this._timelines.open = createSelectOpenTl(select);
 
     main.on("click", () => {
       if (this.isClosed) {
@@ -1017,10 +1085,28 @@ class SortSelect extends component {
    * 創建排序按鈕的元素。
    * @private @returns {jQuery} 排序按鈕的元素。
    */
-  _createSortButton() {
+  _createSortButton(icon, name) {
     const button = $("<button>").addClass("sort-button");
-    const iconContainer = createSortIcon();
-    button.append(iconContainer);
+
+    if (name === "") {
+      icon.appendTo(button);
+      this._bindMainButtonTimeline(button);
+
+      return button;
+    }
+
+    const configs = [
+      { separator: { margin: 8 } },
+      { separator: { margin: 8, backgroundColor: "hsl(240, 5%, 10%)" } },
+    ];
+
+    configs.forEach((config, index) => {
+      const layer = $("<div>").addClass(`sort-button-layer${index + 1}`);
+      const separator = createVerticalSeparator(config.separator);
+      const label = $("<label>").addClass("sort-button-label").text(name);
+
+      layer.append(icon[index], separator, label).appendTo(button);
+    });
 
     this._bindSortButtonTimeline(button);
 
@@ -1028,10 +1114,41 @@ class SortSelect extends component {
   }
 
   /**
+   * 創建反轉排序開關的容器
+   * @private @returns {jQuery} 反轉排序開關的容器元素。
+   */
+  _createReverseToggler() {
+    const container = $("<button>")
+      .addClass("reverse-container")
+      .css("cursor", "default");
+
+    const label = $("<label>").addClass("sort-button-label").text("反轉排序");
+    const toggler = createToggler();
+    gsap.set(toggler, { scale: 0.8 });
+
+    container.append(label, toggler);
+
+    const t1 = createToggleTl(toggler);
+    const t2 = createTogglerHoverTl(toggler);
+
+    container.on("click", ".toggler-container", () => {
+      if (t1.progress() === 0 || t1.reversed()) {
+        t1.play();
+      } else {
+        t1.reverse();
+      }
+    });
+    container.on("mouseenter", ".toggler-container", () => t2.play());
+    container.on("mouseleave", ".toggler-container", () => t2.reverse());
+
+    return container;
+  }
+
+  /**
    * 綁定排序按鈕的時間軸效果。
    * @private @param {jQuery} button - 排序按鈕的元素。
    */
-  _bindSortButtonTimeline(button) {
+  _bindMainButtonTimeline(button) {
     const iconContainer = button.find(".sort-icon-container");
     const wIcon = iconContainer.children().eq(0);
     const dIcon = iconContainer.children().eq(1);
@@ -1040,8 +1157,32 @@ class SortSelect extends component {
       ...createSortImgHoverTl(wIcon),
       ...createSortImgHoverTl(dIcon),
       createSortIconHoverTl(iconContainer),
-      createSortButtonHoverTl(button),
+      createScaleHoverTl(button, 1, 1.05),
+      createColorHoverTl(button, "#ea81af"),
+      createTranslateHoverTl(button, 0, -5),
+      createZIndexHoverTl(button, 5, 6),
     ];
+
+    button.on("mouseenter", () => {
+      hoverTls.forEach((tl) => {
+        tl.play();
+      });
+    });
+    button.on("mouseleave", () => {
+      hoverTls.forEach((tl) => {
+        tl.reverse();
+      });
+    });
+
+    const clickTl = createFolderButtonClickTl(button);
+
+    button.on("click", () => clickTl.restart());
+  }
+
+  _bindSortButtonTimeline(button) {
+    const iconContainer = button.find(".sort-icon-container");
+
+    const hoverTls = [createSortButtonHoverTl(button)];
 
     button.on("mouseenter", () => {
       hoverTls.forEach((tl) => {
@@ -1079,6 +1220,106 @@ class SortSelect extends component {
     this._timelines.open.reverse();
     this.isClosed = true;
     return this;
+  }
+
+  /**
+   * 創建並初始化選單的時間軸效果。
+   * @private
+   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
+   */
+  _createTimelines() {
+    this._timelines.hide = gsap
+      .timeline({ defaults: { ease: "set1" }, paused: true })
+      .to(this.element, { autoAlpha: 0, x: -100 });
+
+    return this;
+  }
+
+  /**
+   * 顯示選單。
+   */
+  show() {
+    if (this.isShow) return this;
+
+    this.isShow = true;
+    this._timelines.hide.reverse();
+
+    return this;
+  }
+
+  /**
+   * 隱藏選單。
+   */
+  async hide() {
+    if (!this.isShow) return this;
+
+    this.isShow = false;
+    this._timelines.hide.play();
+
+    this._timelines.hide.eventCallback("onComplete", null);
+
+    await new Promise((resolve) => {
+      this._timelines.hide.eventCallback("onComplete", resolve);
+    });
+
+    return this;
+  }
+}
+
+/**
+ * 這個類別用於創建和管理sidebar的設定選單元素
+ */
+class SettingSelect extends component {
+  constructor() {
+    super();
+
+    this._timelines = {};
+    this.element = this._createMainButton().add(this._createSelect());
+    this._createTimelines();
+
+    this.isShow = true;
+  }
+
+  _createMainButton() {
+    const button = $("<button>").addClass("setting-button");
+
+    this._bindTimeline(button);
+
+    return button;
+  }
+
+  _createSelect() {
+    const container = $("<div>").addClass("setting-select");
+
+    return container;
+  }
+
+  /**
+   * 綁定按鈕的時間軸效果。
+   * @private @param {jQuery} button - 按鈕元素的 jQuery 物件。
+   */
+  _bindTimeline(button) {
+    const hoverTls = [
+      createScaleHoverTl(button, 1, 1.05),
+      createColorHoverTl(button, "#ea81af"),
+      createTranslateHoverTl(button, 0, -5),
+      createZIndexHoverTl(button, 5, 6),
+    ];
+
+    button.on("mouseenter", () => {
+      hoverTls.forEach((tl) => {
+        tl.play();
+      });
+    });
+    button.on("mouseleave", () => {
+      hoverTls.forEach((tl) => {
+        tl.reverse();
+      });
+    });
+
+    const clickTl = createScaleClickTl(button, 0.9);
+
+    button.on("click", () => clickTl.restart());
   }
 
   /**

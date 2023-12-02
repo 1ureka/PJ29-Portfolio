@@ -74,6 +74,11 @@ $(document).ready(async function () {
   sortSelect.appendTo("#sidebar");
 
   //
+  // 創建設定選單 - 選項
+  const settingSelect = new SettingSelect();
+  settingSelect.appendTo("#sidebar");
+
+  //
   // 創建內容
   const folderBoxes = new FolderBoxes([
     {
@@ -174,6 +179,7 @@ $(document).ready(async function () {
   const enterPreviewMenu = async () => {
     await Promise.all([
       scrollButtons.hide(),
+      settingSelect.hide(),
       folderSelect.hide(),
       sortSelect.hide(),
       searchBar.hide(),
@@ -183,6 +189,7 @@ $(document).ready(async function () {
   const leavePreviewMenu = async () => {
     await Promise.all([previewButtons.hide(), imageName.hide()]);
     scrollButtons.show();
+    settingSelect.show();
     folderSelect.show();
     sortSelect.show();
     searchBar.show();

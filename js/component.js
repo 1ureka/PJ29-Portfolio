@@ -1439,7 +1439,7 @@ class Gallery extends component {
     const image = imageContainer.find("img");
     const element = image.add(imageContainer.find(".reflex-plane"));
     const t1 = createImageHoverTl(imageContainer);
-    const t2 = createImageClickTl(imageContainer);
+    const t2 = createScaleYoyoTl(imageContainer, 0.9);
     const mousemoveHandler = this._createMousemoveHandler(element);
 
     image.on("mouseenter", () => {

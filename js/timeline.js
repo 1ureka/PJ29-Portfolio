@@ -74,17 +74,6 @@ function createImageHoverTl(container) {
   return tl;
 }
 
-function createImageClickTl(container) {
-  const tl = gsap
-    .timeline({
-      defaults: { duration: 0.1, ease: "set1" },
-      paused: true,
-    })
-    .to(container, { scale: 0.9, repeat: 1, yoyo: true });
-
-  return tl;
-}
-
 //
 // 通用型
 //

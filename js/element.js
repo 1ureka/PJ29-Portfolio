@@ -420,32 +420,52 @@ class SizeIcon extends IconInterface {
 }
 
 /**
- * 表示一個圖示的工廠，可以根據指定的類型創建不同種類的圖示。 @class
+ * 燈泡元素
  */
-class IconFac {
-  constructor() {
-    /**
-     * 包含不同類型圖示的工廠方法映射。
-     * @type {Object.<string, Function>}
-     */
-    this.map = {
-      scroll: () => new ScrollIcon(),
-      search: () => new SearchIcon(),
-      sort: () => new SortIcon(),
-      name: () => new NameIcon(),
-      date: () => new DateIcon(),
-      size: () => new SizeIcon(),
-    };
+class Bulb {
+  constructor(width, height) {
+    this.element = this._createBulb(width, height);
   }
 
-  /**
-   * 根據指定的類型創建對應的圖示。
-   * @param {string} type - 圖示的類型。
-   * @returns {IconInterface} 具體類型的圖示實例。
-   */
-  type(type) {
-    return this.map[type]();
+  _createBulb(width, height) {
+    const container = $("<div>")
+      .addClass("bulb-container")
+      .css({
+        width: `${width + 20}px`,
+        height: `${height + 20}px`,
+      });
+
+    const bulb = $("<div>")
+      .addClass("bulb")
+      .css({ width: `${width}px`, height: `${height}px` });
+    const bulbFilter = $("<div>")
+      .addClass("bulb-filter")
+      .css({ width: `${width}px`, height: `${height}px` });
+
+    bulbFilter.appendTo(bulb);
+
+    bulb.appendTo(container);
+
+    return container;
+  }
+
+  createTimeline(toColor, toIntensity = 1) {
+    const i = toIntensity;
+    const c = toColor;
+
+    const bulb = this.element.find(".bulb");
+    const bulbFilter = this.element.find(".bulb-filter");
+
+    const tl = gsap
+      .timeline({
+        defaults: { duration: 0.2, ease: "set1" },
+        paused: true,
+      })
+      .to(bulb, { backgroundColor: c }, "<")
+      .to(bulbFilter, { filter: "blur(3px)" }, "<")
+      .to(bulb, { boxShadow: `0 0 20px ${i * 5}px ${c}` }, "<")
+      .to(bulb, { boxShadow: `0 0 20px 0px ${c}` });
+
+    return tl;
   }
 }
-
-const Icon = new IconFac();

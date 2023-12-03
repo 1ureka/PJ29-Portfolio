@@ -58,64 +58,6 @@ function createSortButtonHoverTl(button) {
   return tl;
 }
 
-function createBulbLightTl(bulbContainer, config) {
-  // 預設配置
-  const defaultConfig = {
-    color: "#8ce197",
-    intensity: 1,
-    yoyo: false,
-  };
-
-  // 合併預設配置和用戶提供的配置
-  config = { ...defaultConfig, ...config };
-
-  const tl = gsap
-    .timeline({
-      defaults: { duration: config.yoyo ? 0.1 : 0.2, ease: "set1" },
-      paused: true,
-    })
-    .to(bulbContainer.find(".bulb"), {
-      backgroundColor: config.color,
-      boxShadow: `0 0 20px ${(config.intensity - 1) * 10}px ${config.color}`,
-      yoyo: config.yoyo,
-      repeat: config.yoyo ? 1 : 0,
-    })
-    .to(bulbContainer.find(".bulb-filter"), { filter: "blur(3px)" }, "<");
-
-  return tl;
-}
-
-function createBulbLightT2(bulbContainer, config) {
-  // 預設配置
-  const defaultConfig = {
-    color: "#8ce197",
-    intensity: 1,
-  };
-
-  // 合併預設配置和用戶提供的配置
-  config = { ...defaultConfig, ...config };
-
-  const tl = gsap
-    .timeline({
-      defaults: { duration: 0.2, ease: "set1" },
-      paused: true,
-    })
-    .to(bulbContainer.find(".bulb"), { backgroundColor: config.color }, "<")
-    .to(bulbContainer.find(".bulb-filter"), { filter: "blur(3px)" }, "<")
-    .to(
-      bulbContainer.find(".bulb"),
-      {
-        boxShadow: `0 0 20px ${config.intensity * 5}px ${config.color}`,
-      },
-      "<"
-    )
-    .to(bulbContainer.find(".bulb"), {
-      boxShadow: `0 0 20px 0px ${config.color}`,
-    });
-
-  return tl;
-}
-
 function createImageHoverTl(container) {
   const tl = gsap
     .timeline({

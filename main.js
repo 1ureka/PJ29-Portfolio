@@ -31,10 +31,12 @@ $(document).ready(async function () {
 
   //
   // 創建header右方燈泡
-  const headerBulb = new HeaderBulb(
-    { width: 30, height: 30, intensity: 1 },
-    { main: "#ea81af", nature: "#8ce197", props: "#ffff7a", scene: "#92e9ff" }
-  );
+  const headerBulb = new HeaderBulb({
+    main: "#ea81af",
+    nature: "#8ce197",
+    props: "#ffff7a",
+    scene: "#92e9ff",
+  });
   headerBulb.appendTo("#header");
 
   //

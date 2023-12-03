@@ -133,43 +133,6 @@ function createOutline(element, config) {
 }
 
 /**
- * 創建一個燈泡元素。
- * @param {Object} config - 用於配置燈泡的物件。
- * @param {number} config.width - 燈泡的寬度。
- * @param {number} config.height - 燈泡的高度。
- * @returns {jQuery} - 包含燈泡的jQuery物件。
- */
-function createBulb(config) {
-  // 預設配置
-  const defaultConfig = {
-    width: 40,
-    height: 40,
-  };
-
-  // 合併預設配置和用戶提供的配置
-  config = { ...defaultConfig, ...config };
-
-  const container = $("<div>")
-    .addClass("bulb-container")
-    .css({
-      width: `${config.width + 20}px`,
-      height: `${config.height + 20}px`,
-    });
-
-  const bulb = $("<div>")
-    .addClass("bulb")
-    .css({ width: `${config.width}px`, height: `${config.height}px` });
-  const bulbFilter = $("<div>")
-    .addClass("bulb-filter")
-    .css({ width: `${config.width}px`, height: `${config.height}px` })
-    .appendTo(bulb);
-
-  container.append(bulb);
-
-  return container;
-}
-
-/**
  * 創建一個開關元素
  * @returns {jQuery} - 包含開關的jQuery物件。
  */
@@ -824,6 +787,11 @@ class SortSelect extends component {
     this.isClosed = true;
     this.isShow = true;
 
+    this.icons = {
+      name: new NameIcon(),
+      date: new DateIcon(),
+      size: new SizeIcon(),
+    };
     this.element = this._createSortSelect();
     this._createTimelines();
   }
@@ -861,10 +829,14 @@ class SortSelect extends component {
     return select;
   }
 
+  /**
+   * 創建主按鈕，包含排序圖示，並綁定相應的動畫效果。
+   * @private @returns {jQuery} 主按鈕的容器。
+   */
   _createMainButton() {
     const button = $("<button>").addClass("sort-button");
 
-    const icons = Icon.type("sort");
+    const icons = new SortIcon();
 
     icons.element.forEach((icon) => {
       icon.appendTo(button);
@@ -885,6 +857,10 @@ class SortSelect extends component {
     return button;
   }
 
+  /**
+   * 創建反轉按鈕，包含標籤和切換器，並綁定相應的動畫效果。
+   * @private @returns {jQuery} 反轉按鈕的容器。
+   */
   _createReverseToggler() {
     const container = $("<button>")
       .addClass("reverse-container")
@@ -912,8 +888,15 @@ class SortSelect extends component {
     return container;
   }
 
+  /**
+   * 創建選項按鈕，包含指定類型的圖示和標籤，並綁定相應的動畫效果。
+   * @private
+   * @param {string} type - 圖示的類型。
+   * @param {string} name - 按鈕的標籤名稱。
+   * @returns {jQuery} 選項按鈕的容器。
+   */
   _createOptionButton(type, name) {
-    const icons = Icon.type(type);
+    const icons = this.icons[type];
 
     const button = $("<button>").addClass("sort-button");
 
@@ -939,6 +922,13 @@ class SortSelect extends component {
     return button;
   }
 
+  /**
+   * 綁定按鈕的動畫效果。
+   * @private
+   * @param {jQuery} button - 要綁定動畫的按鈕。
+   * @param {TimelineMax[]} hover - 進入時的動畫效果。
+   * @param {TimelineMax} click - 點擊時的動畫效果。
+   */
   _bindTimeline(button, hover, click) {
     button.on("mouseenter", () => {
       hover.forEach((tl) => {
@@ -1123,28 +1113,11 @@ class SettingSelect extends component {
 class HeaderBulb extends component {
   /**
    * 建構一個新的 `HeaderBulb` 實例。
-   * @constructor
-   * @param {Object} config - 用於配置燈泡的物件。
-   * @param {Object} colorMap - 用於配置圖片牆與燈泡顏色對應關係的映射表。
+   * @constructor @param {Object} colorMap - 用於配置圖片牆與燈泡顏色對應關係的映射表。
    */
-  constructor(config, colorMap) {
+  constructor(colorMap) {
     super();
-    // 預設配置
-    const defaultConfig = {
-      width: 40,
-      height: 40,
-      intensity: 1,
-    };
 
-    // 合併預設配置和用戶提供的配置
-    config = { ...defaultConfig, ...config };
-
-    /** 燈泡的寬度。 * @type {number} */
-    this.width = config.width;
-    /** 燈泡的高度。 @type {number} */
-    this.height = config.height;
-    /** 燈泡的強度。 @type {number} */
-    this.intensity = config.intensity;
     /** 燈泡目前的色彩。 @type {string | "off"} */
     this.currentColor = "off";
 
@@ -1161,7 +1134,9 @@ class HeaderBulb extends component {
    * @returns {jQuery} - 燈泡元素的 jQuery 物件。
    */
   _createBulb() {
-    return createBulb({ width: this.width, height: this.height });
+    this.bulb = new Bulb(30, 30);
+
+    return this.bulb.element;
   }
 
   /**
@@ -1184,16 +1159,9 @@ class HeaderBulb extends component {
    * @param {string} gallery
    */
   switchLight(gallery) {
-    this._killTimeline();
+    this.currentColor = this._colorMap[gallery];
 
-    const color = this._colorMap[gallery];
-
-    this._timelines[color] = createBulbLightT2(this.element, {
-      color: color,
-      intensity: this.intensity,
-    }).play();
-
-    this.currentColor = color;
+    this.flickerLight();
 
     return this;
   }
@@ -1203,10 +1171,9 @@ class HeaderBulb extends component {
    */
   flickerLight() {
     this._killTimeline();
-    this._timelines[this.currentColor] = createBulbLightT2(this.element, {
-      color: this.currentColor,
-      intensity: this.intensity,
-    }).play();
+    this._timelines[this.currentColor] = this.bulb
+      .createTimeline(this.currentColor)
+      .play();
 
     return this;
   }
@@ -1235,7 +1202,6 @@ class FolderBoxes extends component {
   /**
    * 創建文件夾框的容器元素。
    * @private
-   * @param {Object[]} configs - 用於配置文件夾框的物件。
    * @returns {jQuery} - 文件夾框容器元素的 jQuery 物件。
    */
   _createFolderBoxes(configs) {
@@ -1251,7 +1217,6 @@ class FolderBoxes extends component {
   /**
    * 創建文件夾框元素。
    * @private
-   * @param {Object} config - 用於配置文件夾框的物件。
    * @returns {jQuery} - 文件夾框元素的 jQuery 物件。
    */
   _createFolderBox(config) {
@@ -1263,10 +1228,10 @@ class FolderBoxes extends component {
 
     const folderIcon = new FolderIcon("hsl(225, 10%, 23%)");
     const separator = createVerticalSeparator();
-    const bulb = createBulb({ width: 20, height: 20 });
+    const bulb = new Bulb(20, 20);
     const label = $("<label>").addClass("folder-box-label").text(config.label);
 
-    box.append(folderIcon.element[0], separator, label, bulb);
+    box.append(folderIcon.element[0], separator, label, bulb.element);
 
     const img = $("<img>")
       .attr("src", config.img.src)
@@ -1276,6 +1241,28 @@ class FolderBoxes extends component {
 
     container.append(img, box);
 
+    const boxTl = this._createFolderBoxTl(box, img);
+    const bulbTl = bulb.createTimeline(config.bulbColor, config.bulbIntensity);
+
+    const hoverTls = [
+      folderIcon.timeline[0],
+      bulbTl,
+      boxTl.minWidthTl,
+      boxTl.openTl,
+    ];
+
+    const clickTl = createScaleYoyoTl(box, 0.9);
+
+    this._bindTimeline(container, hoverTls, clickTl, boxTl.openTl);
+
+    return container;
+  }
+
+  /**
+   * 製作box的時間軸動畫效果。
+   * @private
+   */
+  _createFolderBoxTl(box, img) {
     const minWidthTl = gsap
       .timeline({
         defaults: { duration: 0.2, ease: "set1" },
@@ -1293,28 +1280,7 @@ class FolderBoxes extends component {
         autoAlpha: 0,
       });
 
-    const hoverTls = [
-      folderIcon.timeline[0],
-      createBulbLightTl(bulb, {
-        color: config.bulbColor,
-        intensity: config.bulbIntensity,
-      }),
-      minWidthTl,
-      openTl,
-    ];
-
-    const clickTls = [
-      createBulbLightTl(bulb, {
-        color: config.bulbColor,
-        intensity: config.bulbIntensity * 1.5,
-        yoyo: true,
-      }),
-      createScaleYoyoTl(box, 0.9),
-    ];
-
-    this._bindTimeline(container, hoverTls, clickTls, openTl);
-
-    return container;
+    return { minWidthTl, openTl };
   }
 
   /**
@@ -1333,9 +1299,7 @@ class FolderBoxes extends component {
       });
     });
     element.on("click", () => {
-      click.forEach((tl) => {
-        tl.restart();
-      });
+      click.restart();
       click2.reverse();
     });
   }

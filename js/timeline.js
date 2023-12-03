@@ -110,36 +110,6 @@ function createFolderButtonClickTl(button) {
   return buttonTimeline;
 }
 
-function createSortImgHoverTl(container) {
-  const hover1 = gsap
-    .timeline({ defaults: { duration: 0.35, ease: "set1" }, paused: true })
-    .to(container.children().slice(4), { y: "-=40", delay: 0.1 });
-
-  const hover2 = gsap
-    .timeline({ defaults: { duration: 0.35 }, paused: true })
-    .to(container.children().slice(0, 4), {
-      scale: 0.25,
-      rotate: 15,
-      stagger: { each: -0.1, yoyo: true, repeat: 1 },
-      ease: "back.in(4)",
-    });
-
-  const hover3 = gsap
-    .timeline({ defaults: { duration: 0.2, ease: "set1" }, paused: true })
-    .to(container, { scale: 1.25 });
-
-  return [hover1, hover2, hover3];
-}
-
-function createSortIconHoverTl(container) {
-  const tl = gsap
-    .timeline({ defaults: { duration: 0.2, ease: "set1" }, paused: true })
-    .to(container.find(".sort-img-container").eq(0), { autoAlpha: 0 })
-    .to(container.find(".sort-img-container").eq(1), { autoAlpha: 1 }, "<");
-
-  return tl;
-}
-
 function createFullscreenIconHoverTl(container) {
   const img1 = container.find("img").slice(0, 4);
   const img2 = container.find("img").slice(4);

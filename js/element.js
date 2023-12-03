@@ -27,6 +27,90 @@ class IconInterface {
 }
 
 /**
+ * 排序圖示
+ */
+class SortIcon extends IconInterface {
+  constructor() {
+    super();
+  }
+
+  _createIcon() {
+    const container = $("<div>").addClass("sort-icon-container");
+
+    const themes = ["white", "dark"];
+
+    const createImg = (theme) => {
+      const container = $("<div>").addClass("sort-img-container");
+
+      const lines = Array.from({ length: 4 }, (_, index) =>
+        $("<img>")
+          .attr("src", `images/icons/sort (line${index + 1}) (${theme}).png`)
+          .css("transformOrigin", `${30 - index * 3}px ${8 + index * 8}px`)
+          .addClass("sort-img-line")
+      );
+
+      const arrows = Array.from({ length: 2 }, () =>
+        $("<img>")
+          .attr("src", `images/icons/sort (arrow) (${theme}).png`)
+          .addClass("sort-img-arrow")
+      );
+
+      const arrow2 = arrows[1];
+      gsap.set(arrow2, { y: 40 });
+
+      return container.append(...lines, ...arrows);
+    };
+
+    const imgs = themes.map((theme) => createImg(theme));
+
+    return [container.append(imgs)];
+  }
+
+  _createTimeline() {
+    const container = this.element[0];
+    const icons = container.find(".sort-img-container");
+    const whiteIcon = icons.eq(0);
+    const darkIcon = icons.eq(1);
+
+    gsap.set(darkIcon, { autoAlpha: 0 });
+
+    const timelines = [];
+
+    const t1 = gsap
+      .timeline({ defaults: { duration: 0.35, ease: "set1" }, paused: true })
+      .to(icons.find(".sort-img-arrow"), { y: "-=40", delay: 0.1 });
+
+    const t2 = gsap
+      .timeline({ defaults: { duration: 0.35 }, paused: true })
+      .to(whiteIcon.find(".sort-img-line"), {
+        scale: 0.25,
+        rotate: 15,
+        stagger: { each: -0.1, yoyo: true, repeat: 1 },
+        ease: "back.in(4)",
+      });
+
+    const t3 = gsap
+      .timeline({ defaults: { duration: 0.35 }, paused: true })
+      .to(darkIcon.find(".sort-img-line"), {
+        scale: 0.25,
+        rotate: 15,
+        stagger: { each: -0.1, yoyo: true, repeat: 1 },
+        ease: "back.in(4)",
+      });
+
+    const t4 = gsap
+      .timeline({ defaults: { duration: 0.2, ease: "set1" }, paused: true })
+      .to(icons, { scale: 1.25 })
+      .to(whiteIcon, { autoAlpha: 0 }, "<")
+      .to(darkIcon, { autoAlpha: 1 }, "<");
+
+    timelines.push(t1, t2, t3, t4);
+
+    return timelines;
+  }
+}
+
+/**
  * 名稱圖示
  */
 class NameIcon extends IconInterface {
@@ -144,6 +228,7 @@ class IconFac {
      * @type {Object.<string, Function>}
      */
     this.map = {
+      sort: () => new SortIcon(),
       name: () => new NameIcon(),
       date: () => new DateIcon(),
       size: () => new SizeIcon(),

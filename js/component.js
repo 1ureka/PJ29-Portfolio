@@ -101,52 +101,6 @@ function createFolderIcon(config) {
 }
 
 /**
- * 創建包含排序圖示圖片的容器。
- * @param {boolean} darkTheme 是否是深色主題
- * @returns {jQuery} 排序圖示圖片的容器。
- */
-function createSortImg(darkTheme = false) {
-  const container = $("<div>").addClass("sort-img-container");
-
-  const lines = Array.from({ length: 4 }, (_, index) =>
-    $("<img>")
-      .attr(
-        "src",
-        `images/icons/sort (line${index + 1})${darkTheme ? " (dark)" : ""}.png`
-      )
-      .css("transformOrigin", `${30 - index * 3}px ${8 + index * 8}px`)
-  );
-
-  const arrows = Array.from({ length: 2 }, () =>
-    $("<img>").attr(
-      "src",
-      `images/icons/sort (arrow)${darkTheme ? " (dark)" : ""}.png`
-    )
-  );
-
-  container.append(...lines, ...arrows);
-  gsap.set(container.children().slice(5), { y: 40 });
-
-  return container;
-}
-
-/**
- * 創建包含排序圖示的容器。
- * @returns {jQuery} 排序圖示的容器。
- */
-function createSortIcon() {
-  const container = $("<div>").addClass("sort-icon-container");
-
-  const whiteIcon = createSortImg(false);
-  const darkIcon = createSortImg(true);
-  gsap.set(darkIcon, { autoAlpha: 0 });
-
-  container.append(whiteIcon, darkIcon);
-
-  return container;
-}
-
-/**
  * 創建包含全螢幕圖示的容器。
  * @returns {jQuery} 排序全螢幕的容器。
  */
@@ -1040,16 +994,14 @@ class SortSelect extends component {
   _createMainButton() {
     const button = $("<button>").addClass("sort-button");
 
-    const iconContainer = createSortIcon();
-    const wIcon = iconContainer.children().eq(0);
-    const dIcon = iconContainer.children().eq(1);
+    const icons = Icon.type("sort");
 
-    iconContainer.appendTo(button);
+    icons.element.forEach((icon) => {
+      icon.appendTo(button);
+    });
 
     const hoverTls = [
-      ...createSortImgHoverTl(wIcon),
-      ...createSortImgHoverTl(dIcon),
-      createSortIconHoverTl(iconContainer),
+      ...icons.timeline,
       createScaleHoverTl(button, 1, 1.05),
       createColorHoverTl(button, "#ea81af"),
       createTranslateHoverTl(button, 0, -5),
@@ -1116,7 +1068,6 @@ class SortSelect extends component {
       const separator = createVerticalSeparator(config.separator);
       const label = $("<label>").addClass("sort-button-label").text(name);
 
-      console.log(icons.element[index]);
       layer.append(icons.element[index], separator, label).appendTo(button);
     });
 

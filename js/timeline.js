@@ -1,21 +1,9 @@
 //
-// 交互效果
+// 自定義型
 //
-function createFolderIconHoverTl(container) {
-  const front = container.find(".folder-icon-front");
-
-  const frontTimeline = gsap
-    .timeline({ defaults: { duration: 0.2, ease: "set1" }, paused: true })
-    .to(front, {
-      rotateY: -30,
-      rotateX: 30,
-      width: 38,
-    });
-
-  return frontTimeline;
-}
-
 function createFolderButtonHoverTl(button) {
+  gsap.set(button.find(".folder-button-layer2 > *"), { y: -40 });
+
   const buttonTimeline = gsap
     .timeline({ defaults: { duration: 0.2, ease: "set1" }, paused: true })
     .to(button, { x: 10, backgroundColor: "#ea81af" })
@@ -30,17 +18,6 @@ function createFolderButtonHoverTl(button) {
       { y: 0, stagger: 0.2 / 3 },
       "<"
     );
-
-  return buttonTimeline;
-}
-
-function createFolderButtonClickTl(button) {
-  const buttonTimeline = gsap
-    .timeline({
-      defaults: { duration: 0.1, ease: "set1" },
-      paused: true,
-    })
-    .to(button, { scale: 0.9, yoyo: true, repeat: 1 });
 
   return buttonTimeline;
 }
@@ -134,43 +111,6 @@ function createBulbLightT2(bulbContainer, config) {
     )
     .to(bulbContainer.find(".bulb"), {
       boxShadow: `0 0 20px 0px ${config.color}`,
-    });
-
-  return tl;
-}
-
-function createFolderBoxHoverTl(box) {
-  const tl = gsap
-    .timeline({
-      defaults: { duration: 0.2, ease: "set1" },
-      paused: true,
-    })
-    .fromTo(box, { minWidth: "100%" }, { minWidth: "105%" });
-
-  return tl;
-}
-
-function createFolderBoxClickTl(box) {
-  const tl = gsap
-    .timeline({
-      defaults: { duration: 0.1, ease: "set1" },
-      paused: true,
-    })
-    .to(box, { scale: 0.9, repeat: 1, yoyo: true });
-
-  return tl;
-}
-
-function createFolderBoxContainerHoverTl(container) {
-  const tl = gsap
-    .timeline({
-      defaults: { duration: 0.2, ease: "set1" },
-      paused: true,
-    })
-    .from(container.find(".folder-box-img"), {
-      y: 0,
-      autoAlpha: 0,
-      stagger: 0.1,
     });
 
   return tl;

@@ -168,6 +168,66 @@ class EraserIcon extends IconInterface {
 }
 
 /**
+ * 資料夾圖示
+ */
+class FolderIcon extends IconInterface {
+  constructor(borderColor) {
+    super();
+
+    this.borderColor = borderColor;
+
+    this.element = this._createIcon();
+
+    this.timeline = this._createTimeline();
+  }
+
+  _createIcon() {
+    const themes = ["white", "dark"];
+
+    const createImg = (theme) => {
+      const container = $("<div>").addClass("folder-icon-container");
+
+      const img = $("<img>")
+        .addClass("folder-icon-img")
+        .attr("src", `images/icons/folder (${theme}).png`);
+
+      const front = $("<div>")
+        .addClass("folder-icon-front")
+        .css("backgroundColor", theme === "white" ? "white" : this.borderColor)
+        .css("borderColor", theme === "white" ? this.borderColor : "#ea81af");
+
+      container.append(img, front);
+
+      return container;
+    };
+
+    const icons = themes.map((theme) => createImg(theme));
+
+    return icons;
+  }
+
+  _createTimeline() {
+    const timelines = [];
+
+    this.element.forEach((container) => {
+      const front = container.find(".folder-icon-front");
+
+      const frontTimeline = gsap
+        .timeline({ defaults: { duration: 0.2, ease: "set1" }, paused: true })
+        .to(front, {
+          rotateY: -30,
+          rotateX: 30,
+          width: 38,
+        });
+
+      timelines.push(frontTimeline);
+    });
+
+    return timelines;
+  }
+}
+
+/**
  * 排序圖示
  */
 class SortIcon extends IconInterface {

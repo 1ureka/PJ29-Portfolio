@@ -2,40 +2,6 @@
 // 基礎 (icon, input ...)
 //
 /**
- * 創建資料夾圖示，包含圖片和前景元素。
- * @param {Object} config - 用於設定資料夾圖示的配置物件。
- * @param {string} config.imgColor - 圖片顏色。
- * @param {string} config.backgroundColor - 前景元素的背景顏色。
- * @param {string} config.borderColor - 前景元素的邊框顏色。
- * @returns {jQuery} 資料夾圖示的容器。
- */
-function createFolderIcon(config) {
-  // 預設配置
-  const defaultConfig = {
-    imgColor: "white",
-    backgroundColor: "white",
-    borderColor: "hsl(240, 5%, 10%)",
-  };
-
-  // 合併預設配置和用戶提供的配置
-  config = { ...defaultConfig, ...config };
-
-  const container = $("<div>").addClass("folder-icon-container");
-
-  const img = $("<img>")
-    .addClass("folder-icon-img")
-    .attr("src", `images/icons/folder (${config.imgColor}).png`);
-  const front = $("<div>")
-    .addClass("folder-icon-front")
-    .css("backgroundColor", config.backgroundColor)
-    .css("borderColor", config.borderColor);
-
-  container.append(img, front);
-
-  return container;
-}
-
-/**
  * 創建包含全螢幕圖示的容器。
  * @returns {jQuery} 排序全螢幕的容器。
  */
@@ -110,36 +76,6 @@ function createHorizontalSeparator(config) {
     });
 
   return separator;
-}
-
-/**
- * 創建文字輸入框。
- * @param {Object} config - 用於設定文字輸入框的配置物件。
- * @returns {jQuery} 文字輸入框的容器。
- */
-function createTextInput(config) {
-  // 預設配置
-  const defaultConfig = {
-    placeholder: "文字輸入",
-    width: 410,
-    height: 40,
-  };
-
-  // 合併預設配置和用戶提供的配置
-  config = { ...defaultConfig, ...config };
-
-  const container = $("<div>")
-    .css({ width: config.width, height: config.height })
-    .addClass("text-input-container");
-  const input = $("<input>")
-    .attr("type", "text")
-    .attr("placeholder", config.placeholder)
-    .css({ width: config.width, height: config.height })
-    .addClass("text-input");
-
-  container.append(input);
-
-  return container;
 }
 
 /**
@@ -723,56 +659,95 @@ class FolderSelect extends component {
    * @returns {jQuery} 資料夾按鈕。
    */
   _createFolderButton(name, category) {
+    const icons = new FolderIcon("hsl(240, 5%, 10%)");
+
     const button = $("<button>")
       .addClass("folder-button")
       .data("category", category);
 
     const configs = [
-      {
-        separator: {
-          margin: 8,
-        },
-        iconContainer: {},
-      },
-      {
-        separator: {
-          margin: 8,
-          backgroundColor: "hsl(240, 5%, 10%)",
-        },
-        iconContainer: {
-          imgColor: "black",
-          backgroundColor: "hsl(240, 5%, 10%)",
-          borderColor: "#ea81af",
-        },
-      },
+      { separator: { margin: 8 } },
+      { separator: { margin: 8, backgroundColor: "hsl(240, 5%, 10%)" } },
     ];
 
     configs.forEach((config, index) => {
       const layer = $("<div>").addClass(`folder-button-layer${index + 1}`);
       const separator = createVerticalSeparator(config.separator);
-      const iconContainer = createFolderIcon(config.iconContainer);
       const label = $("<label>").addClass("folder-button-label").text(name);
-      layer.append(iconContainer, separator, label).appendTo(button);
+
+      layer.append(icons.element[index], separator, label).appendTo(button);
     });
 
-    const t1 = createFolderIconHoverTl(button.find(".folder-icon-container"));
+    const hoverTls = [createFolderButtonHoverTl(button), ...icons.timeline];
 
-    gsap.set(button.find(".folder-button-layer2 > *"), { y: -40 });
+    const clickTl = createScaleYoyoTl(button, 0.9);
 
-    const t2 = createFolderButtonHoverTl(button);
-    const t3 = createFolderButtonClickTl(button);
-
-    button.on("mouseenter", () => {
-      t1.play();
-      t2.play();
-    });
-    button.on("mouseleave", () => {
-      t1.reverse();
-      t2.reverse();
-    });
-    button.on("click", () => t3.restart());
+    this._bindTimeline(button, hoverTls, clickTl);
 
     return button;
+  }
+
+  /**
+   * 將時間軸綁定到按鈕的不同事件。
+   * @param {jQuery} button - 要綁定的按鈕元素。
+   * @param {TimelineMax[]} hover - 滑鼠進入時觸發的時間軸陣列。
+   * @param {TimelineMax} click - 按鈕點擊時觸發的時間軸。
+   */
+  _bindTimeline(button, hover, click) {
+    button.on("mouseenter", () => {
+      hover.forEach((tl) => {
+        tl.play();
+      });
+    });
+    button.on("mouseleave", () => {
+      hover.forEach((tl) => {
+        tl.reverse();
+      });
+    });
+    button.on("click", () => click.restart());
+  }
+
+  /**
+   * 創建並初始化選單的時間軸效果。
+   * @private
+   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
+   */
+  _createTimelines() {
+    this._timelines.hide = gsap
+      .timeline({ defaults: { ease: "set1" }, paused: true })
+      .to(this.element, { autoAlpha: 0, x: -100 });
+
+    return this;
+  }
+
+  /**
+   * 顯示選單。
+   */
+  show() {
+    if (this.isShow) return this;
+
+    this.isShow = true;
+    this._timelines.hide.reverse();
+
+    return this;
+  }
+
+  /**
+   * 隱藏選單。
+   */
+  async hide() {
+    if (!this.isShow) return this;
+
+    this.isShow = false;
+    this._timelines.hide.play();
+
+    this._timelines.hide.eventCallback("onComplete", null);
+
+    await new Promise((resolve) => {
+      this._timelines.hide.eventCallback("onComplete", resolve);
+    });
+
+    return this;
   }
 
   /**
@@ -834,49 +809,6 @@ class FolderSelect extends component {
     if (this._onSelectHandler) {
       this.element.on("click", ".folder-button", this._onSelectHandler);
     }
-    return this;
-  }
-
-  /**
-   * 創建並初始化選單的時間軸效果。
-   * @private
-   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
-   */
-  _createTimelines() {
-    this._timelines.hide = gsap
-      .timeline({ defaults: { ease: "set1" }, paused: true })
-      .to(this.element, { autoAlpha: 0, x: -100 });
-
-    return this;
-  }
-
-  /**
-   * 顯示選單。
-   */
-  show() {
-    if (this.isShow) return this;
-
-    this.isShow = true;
-    this._timelines.hide.reverse();
-
-    return this;
-  }
-
-  /**
-   * 隱藏選單。
-   */
-  async hide() {
-    if (!this.isShow) return this;
-
-    this.isShow = false;
-    this._timelines.hide.play();
-
-    this._timelines.hide.eventCallback("onComplete", null);
-
-    await new Promise((resolve) => {
-      this._timelines.hide.eventCallback("onComplete", resolve);
-    });
-
     return this;
   }
 }
@@ -946,20 +878,9 @@ class SortSelect extends component {
       createZIndexTl(button, 5, 6),
     ];
 
-    button.on("mouseenter", () => {
-      hoverTls.forEach((tl) => {
-        tl.play();
-      });
-    });
-    button.on("mouseleave", () => {
-      hoverTls.forEach((tl) => {
-        tl.reverse();
-      });
-    });
+    const clickTl = createScaleYoyoTl(button, 0.8);
 
-    const clickTl = createFolderButtonClickTl(button);
-
-    button.on("click", () => clickTl.restart());
+    this._bindTimeline(button, hoverTls, clickTl);
 
     return button;
   }
@@ -1013,12 +934,12 @@ class SortSelect extends component {
 
     const clickTl = createScaleYoyoTl(button, 0.9);
 
-    this._bindOptionTimeline(button, hoverTls, clickTl);
+    this._bindTimeline(button, hoverTls, clickTl);
 
     return button;
   }
 
-  _bindOptionTimeline(button, hover, click) {
+  _bindTimeline(button, hover, click) {
     button.on("mouseenter", () => {
       hover.forEach((tl) => {
         tl.play();
@@ -1029,7 +950,6 @@ class SortSelect extends component {
         tl.reverse();
       });
     });
-
     button.on("click", () => click.restart());
   }
 
@@ -1113,25 +1033,15 @@ class SettingSelect extends component {
     this.isShow = true;
   }
 
-  _createMainButton() {
-    const button = $("<button>").addClass("setting-button");
-
-    this._bindTimeline(button);
-
-    return button;
-  }
-
   _createSelect() {
     const container = $("<div>").addClass("setting-select");
 
     return container;
   }
 
-  /**
-   * 綁定按鈕的時間軸效果。
-   * @private @param {jQuery} button - 按鈕元素的 jQuery 物件。
-   */
-  _bindTimeline(button) {
+  _createMainButton() {
+    const button = $("<button>").addClass("setting-button");
+
     const hoverTls = [
       createScaleTl(button, 1, 1.05),
       createBackgroundColorTl(button, "#ea81af"),
@@ -1139,20 +1049,28 @@ class SettingSelect extends component {
       createZIndexTl(button, 5, 6),
     ];
 
+    const clickTl = createScaleYoyoTl(button, 0.8);
+
+    this._bindTimeline(button, hoverTls, clickTl);
+
+    return button;
+  }
+
+  /**
+   * 綁定按鈕的時間軸效果。
+   */
+  _bindTimeline(button, hover, click) {
     button.on("mouseenter", () => {
-      hoverTls.forEach((tl) => {
+      hover.forEach((tl) => {
         tl.play();
       });
     });
     button.on("mouseleave", () => {
-      hoverTls.forEach((tl) => {
+      hover.forEach((tl) => {
         tl.reverse();
       });
     });
-
-    const clickTl = createScaleYoyoTl(button, 0.9);
-
-    button.on("click", () => clickTl.restart());
+    button.on("click", () => click.restart());
   }
 
   /**
@@ -1306,7 +1224,7 @@ class FolderBoxes extends component {
   constructor(configs) {
     super();
 
-    this.timelines = {};
+    this._timelines = {};
 
     this.isShow = false;
 
@@ -1323,31 +1241,9 @@ class FolderBoxes extends component {
   _createFolderBoxes(configs) {
     const container = $("<div>").addClass("folder-boxes-container");
 
-    configs.forEach((config) => {
-      const element = this._createFolderBoxContainer(config);
-      this._bindTimeline(element, config).appendTo(container);
-    });
-
-    return container;
-  }
-
-  /**
-   * 創建文件夾框容器元素。
-   * @private
-   * @param {Object} config - 用於配置文件夾框的物件。
-   * @returns {jQuery} - 文件夾框容器元素的 jQuery 物件。
-   */
-  _createFolderBoxContainer(config) {
-    const container = $("<div>").addClass("folder-box-container");
-
-    const box = this._createFolderBox(config);
-    const img = $("<img>")
-      .attr("src", config.img.src)
-      .addClass("folder-box-img")
-      .css("width", "97.5%");
-    gsap.set(img, { y: 25 });
-
-    container.append(img, box);
+    configs.forEach((config) =>
+      this._createFolderBox(config).appendTo(container)
+    );
 
     return container;
   }
@@ -1359,66 +1255,89 @@ class FolderBoxes extends component {
    * @returns {jQuery} - 文件夾框元素的 jQuery 物件。
    */
   _createFolderBox(config) {
+    const container = $("<div>").addClass("folder-box-container");
+
     const box = $("<div>")
       .addClass("folder-box")
       .data("category", config.category);
-    const boxColor = "hsl(225, 10%, 23%)";
 
-    const folderIcon = createFolderIcon({ borderColor: boxColor });
+    const folderIcon = new FolderIcon("hsl(225, 10%, 23%)");
     const separator = createVerticalSeparator();
     const bulb = createBulb({ width: 20, height: 20 });
     const label = $("<label>").addClass("folder-box-label").text(config.label);
 
-    box.append(folderIcon, separator, label, bulb);
+    box.append(folderIcon.element[0], separator, label, bulb);
 
-    return box;
+    const img = $("<img>")
+      .attr("src", config.img.src)
+      .addClass("folder-box-img")
+      .css("width", "97.5%");
+    gsap.set(img, { y: 25 });
+
+    container.append(img, box);
+
+    const minWidthTl = gsap
+      .timeline({
+        defaults: { duration: 0.2, ease: "set1" },
+        paused: true,
+      })
+      .fromTo(box, { minWidth: "100%" }, { minWidth: "105%" });
+
+    const openTl = gsap
+      .timeline({
+        defaults: { duration: 0.2, ease: "set1" },
+        paused: true,
+      })
+      .from(img, {
+        y: 0,
+        autoAlpha: 0,
+      });
+
+    const hoverTls = [
+      folderIcon.timeline[0],
+      createBulbLightTl(bulb, {
+        color: config.bulbColor,
+        intensity: config.bulbIntensity,
+      }),
+      minWidthTl,
+      openTl,
+    ];
+
+    const clickTls = [
+      createBulbLightTl(bulb, {
+        color: config.bulbColor,
+        intensity: config.bulbIntensity * 1.5,
+        yoyo: true,
+      }),
+      createScaleYoyoTl(box, 0.9),
+    ];
+
+    this._bindTimeline(container, hoverTls, clickTls, openTl);
+
+    return container;
   }
 
   /**
    * 綁定時間軸動畫效果。
    * @private
-   * @param {jQuery} boxContainer - 文件夾框容器元素的 jQuery 物件。
-   * @param {Object} config - 用於配置文件夾框的物件。
-   * @returns {jQuery} - 文件夾框容器元素的 jQuery 物件。
    */
-  _bindTimeline(boxContainer, config) {
-    const box = boxContainer.find(".folder-box");
-    const bulb = boxContainer.find(".bulb-container");
-    const folderIcon = boxContainer.find(".folder-icon-container");
-
-    const t1 = createBulbLightTl(bulb, {
-      color: config.bulbColor,
-      intensity: config.bulbIntensity,
+  _bindTimeline(element, hover, click, click2) {
+    element.on("mouseenter", () => {
+      hover.forEach((tl) => {
+        tl.play();
+      });
     });
-    const t2 = createBulbLightTl(bulb, {
-      color: config.bulbColor,
-      intensity: config.bulbIntensity * 1.5,
-      yoyo: true,
+    element.on("mouseleave", () => {
+      hover.forEach((tl) => {
+        tl.reverse();
+      });
     });
-    const t3 = createFolderIconHoverTl(folderIcon);
-    const t4 = createFolderBoxClickTl(box);
-    const t5 = createFolderBoxHoverTl(box);
-    const t6 = createFolderBoxContainerHoverTl(boxContainer);
-
-    boxContainer.on("mouseenter", ".folder-box", () => {
-      t1.play();
-      t3.play();
-      t5.play();
-      t6.play();
+    element.on("click", () => {
+      click.forEach((tl) => {
+        tl.restart();
+      });
+      click2.reverse();
     });
-    boxContainer.on("mouseleave", ".folder-box", () => {
-      t1.reverse();
-      t3.reverse();
-      t5.reverse();
-      t6.reverse();
-    });
-    boxContainer.on("click", ".folder-box", () => {
-      t2.restart();
-      t4.restart();
-      t6.reverse();
-    });
-
-    return boxContainer;
   }
 
   /**
@@ -1427,7 +1346,7 @@ class FolderBoxes extends component {
    * @returns {FolderBoxes} - 回傳 `FolderBoxes` 實例，以便進行方法鏈結。
    */
   _createTimelines() {
-    this.timelines.show = gsap
+    this._timelines.show = gsap
       .timeline({
         defaults: { ease: "back.out(4)", duration: 0.35 },
         paused: true,
@@ -1450,7 +1369,7 @@ class FolderBoxes extends component {
     if (this.isShow) return this;
 
     this.isShow = true;
-    this.timelines.show.play();
+    this._timelines.show.play();
 
     return this;
   }
@@ -1462,12 +1381,12 @@ class FolderBoxes extends component {
     if (!this.isShow) return this;
 
     this.isShow = false;
-    this.timelines.show.reverse();
+    this._timelines.show.reverse();
 
-    this.timelines.show.eventCallback("onReverseComplete", null);
+    this._timelines.show.eventCallback("onReverseComplete", null);
 
     await new Promise((resolve) => {
-      this.timelines.show.eventCallback("onReverseComplete", resolve);
+      this._timelines.show.eventCallback("onReverseComplete", resolve);
     });
 
     return this;

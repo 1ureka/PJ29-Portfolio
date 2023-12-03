@@ -3,7 +3,7 @@
  */
 class IconInterface {
   constructor() {
-    /** 用於存儲圖示元素的陣列。 @type {JQuery[]} */
+    /** 用於存儲圖示元素的陣列。 @type {JQuery[] | JQuery} */
     this.element = this._createIcon();
     /** 於存儲時間軸的陣列。 @type {TimelineMax[]} */
     this.timeline = this._createTimeline();
@@ -62,6 +62,108 @@ class ScrollIcon extends IconInterface {
       .to(container, { scale: 1.2 }, "<");
 
     return [tl];
+  }
+}
+
+/**
+ * 滾動圖示
+ */
+class SearchIcon extends IconInterface {
+  constructor() {
+    super();
+  }
+
+  _createIcon() {
+    const container = $("<div>").addClass("search-icon-container");
+
+    const lens = $("<div>").addClass("search-icon-lens");
+    const inner1 = $("<div>").addClass("search-icon-inner");
+    const inner2 = $("<div>").addClass("search-icon-inner");
+    gsap.set(inner1.add(inner2), { rotate: 5 });
+    gsap.set(inner2, { x: -10 });
+    lens.append(inner1, inner2);
+
+    const img = $("<img>")
+      .addClass("search-icon-img")
+      .attr("src", `images/icons/search.png`);
+
+    container.append(lens, img);
+
+    return container;
+  }
+
+  _createTimeline() {
+    const container = this.element;
+
+    const timelines = [];
+
+    const t1 = gsap
+      .timeline({ defaults: { ease: "set1", duration: 0.6 }, paused: true })
+      .to(container.find(".search-icon-inner"), {
+        x: "+=40",
+        rotate: 20,
+      });
+    const t2 = gsap
+      .timeline({ defaults: { ease: "set1", duration: 0.3 }, paused: true })
+      .to(container, {
+        scale: 1.1,
+        rotate: "+=15",
+        transformOrigin: "16.5px 17px",
+      });
+
+    timelines.push(t1, t2);
+
+    return timelines;
+  }
+}
+
+/**
+ * 橡皮擦圖示
+ */
+class EraserIcon extends IconInterface {
+  constructor() {
+    super();
+  }
+
+  _createIcon() {
+    const container = $("<div>").addClass("eraser-icon-container").hide();
+
+    const img1 = $("<img>").attr("src", `images/icons/erase (line).png`);
+    const img2 = $("<img>").attr("src", `images/icons/erase.png`);
+    gsap.set(img2, { x: 10 });
+
+    container.append(img1, img2);
+
+    return container;
+  }
+
+  _createTimeline() {
+    const container = this.element;
+
+    const hoverTl = gsap
+      .timeline({
+        defaults: { duration: 0.2, ease: "set1" },
+        paused: true,
+      })
+      .to(container.find("img").eq(1), { x: -5 });
+
+    const clickTl = gsap
+      .timeline({
+        defaults: { duration: 0.1, ease: "set1" },
+        paused: true,
+      })
+      .to(container, {
+        scale: 0.7,
+        yoyo: true,
+        repeat: 1,
+        onComplete: () => container.hide(350),
+      });
+
+    container.on("mouseenter", () => hoverTl.play());
+    container.on("mouseleave", () => hoverTl.reverse());
+    container.on("click", () => clickTl.restart());
+
+    return [];
   }
 }
 
@@ -268,6 +370,7 @@ class IconFac {
      */
     this.map = {
       scroll: () => new ScrollIcon(),
+      search: () => new SearchIcon(),
       sort: () => new SortIcon(),
       name: () => new NameIcon(),
       date: () => new DateIcon(),

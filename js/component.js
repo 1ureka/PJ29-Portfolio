@@ -2,52 +2,6 @@
 // 基礎 (icon, input ...)
 //
 /**
- * 創建包含搜尋圖示的容器。
- * @returns {jQuery} 搜尋圖示的容器。
- */
-function createSearchIcon() {
-  const container = $("<div>").addClass("search-icon-container");
-
-  const lens = $("<div>").addClass("search-icon-lens");
-  const inner1 = $("<div>").addClass("search-icon-inner");
-  const inner2 = $("<div>").addClass("search-icon-inner");
-  gsap.set(inner1.add(inner2), { rotate: 5 });
-  gsap.set(inner2, { x: -10 });
-  lens.append(inner1, inner2);
-
-  const img = $("<img>")
-    .addClass("search-icon-img")
-    .attr("src", `images/icons/search.png`);
-
-  container.append(lens, img);
-
-  return container;
-}
-
-/**
- * 創建包含橡皮擦圖示的容器。
- * @returns {jQuery} 橡皮擦圖示的容器。
- */
-function createEraserIcon() {
-  const container = $("<div>").addClass("eraser-icon-container").hide();
-
-  const img1 = $("<img>").attr("src", `images/icons/erase (line).png`);
-  const img2 = $("<img>").attr("src", `images/icons/erase.png`);
-  gsap.set(img2, { x: 10 });
-
-  container.append(img1, img2);
-
-  const t1 = createEraserIconHoverTl(container);
-  const t2 = createEraserIconClickTl(container);
-
-  container.on("mouseenter", () => t1.play());
-  container.on("mouseleave", () => t1.reverse());
-  container.on("click", () => t2.restart());
-
-  return container;
-}
-
-/**
  * 創建資料夾圖示，包含圖片和前景元素。
  * @param {Object} config - 用於設定資料夾圖示的配置物件。
  * @param {string} config.imgColor - 圖片顏色。
@@ -328,7 +282,7 @@ class ScrollButtons extends component {
   constructor() {
     super();
     this._timelines = {};
-    this.handlers = {};
+    this._handlers = {};
 
     this.isShow = false;
 
@@ -341,8 +295,6 @@ class ScrollButtons extends component {
       .append(this._createScrollButton("up"), this._createScrollButton("down"));
 
     this.element = container;
-    /** @type {HTMLElement} */
-    this._scrollElement;
 
     this._createTimelines();
   }
@@ -355,7 +307,7 @@ class ScrollButtons extends component {
    */
   _createScrollButton(type) {
     const button = $("<button>").addClass("scroll-button").addClass(type);
-    const icon = Icon.type("scroll");
+    const icon = new ScrollIcon();
     if (type === "down") gsap.set(icon.element, { rotate: 180 });
 
     button.append(icon.element);
@@ -419,8 +371,19 @@ class ScrollButtons extends component {
    * @param {jQuery} element - 欲添加滾動按鈕的 jQuery 元素。
    */
   set scrollElement(element) {
+    /** @type {HTMLElement} */
     this._scrollElement = element[0];
-    this._onUp(() => this._up())._onDown(() => this._down());
+
+    if (this._handlers.up) this.element.off("click", ".up", this._handlers.up);
+
+    this._handlers.up = () => this._up();
+    this.element.on("click", ".up", this._handlers.up);
+
+    if (this._handlers.down)
+      this.element.off("click", ".down", this._handlers.down);
+
+    this._handlers.down = () => this._down();
+    this.element.on("click", ".down", this._handlers.down);
   }
 
   /**
@@ -449,43 +412,14 @@ class ScrollButtons extends component {
   }
 
   /**
-   * 註冊上滾動按鈕的點擊事件處理程序。
-   * @private @param {Function} handler - 點擊事件的處理程序。
-   * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
-   */
-  _onUp(handler) {
-    if (this.handlers.up) this.element.off("click", ".up", this.handlers.up);
-
-    this.handlers.up = handler;
-    this.element.on("click", ".up", this.handlers.up);
-
-    return this;
-  }
-
-  /**
-   * 註冊下滾動按鈕的點擊事件處理程序。
-   * @private @param {Function} handler - 點擊事件的處理程序。
-   * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
-   */
-  _onDown(handler) {
-    if (this.handlers.down)
-      this.element.off("click", ".down", this.handlers.down);
-
-    this.handlers.down = handler;
-    this.element.on("click", ".down", this.handlers.down);
-
-    return this;
-  }
-
-  /**
    * 解除所有事件處理程序的註冊。
    * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
    */
   off() {
-    this.element.off("click", ".up", this.handlers.up);
-    this.handlers.up = null;
-    this.element.off("click", ".down", this.handlers.down);
-    this.handlers.down = null;
+    this.element.off("click", ".up", this._handlers.up);
+    this._handlers.up = null;
+    this.element.off("click", ".down", this._handlers.down);
+    this._handlers.down = null;
 
     return this;
   }
@@ -531,12 +465,12 @@ class SearchBar extends component {
   constructor() {
     super();
     this._timelines = {};
-    this.handlers = {};
+    this._handlers = {};
     this.isShow = true;
 
     /** 包含搜尋列的 jQuery 物件。 @type {jQuery} */
     this.element = this._createSearchBar();
-    this._createTimelines()._bindTimeline();
+    this._createTimelines();
   }
 
   /**
@@ -547,18 +481,73 @@ class SearchBar extends component {
   _createSearchBar() {
     const container = $("<div>").addClass("search-bar");
 
-    const searchIcon = createSearchIcon();
-    const eraserIcon = createEraserIcon();
-    const inputContainer = createTextInput({
-      placeholder: "搜尋",
-      class: "search",
-      width: 410,
-      height: 40,
-    });
+    const searchIcon = new SearchIcon();
+    const eraserIcon = new EraserIcon();
 
-    container.append(searchIcon, inputContainer, eraserIcon);
+    const inputContainer = $("<div>")
+      .css({ width: 410, height: 40 })
+      .addClass("text-input-container");
+    const input = $("<input>")
+      .attr("type", "text")
+      .attr("placeholder", "搜尋")
+      .css({ width: 410, height: 40 })
+      .addClass("text-input")
+      .appendTo(inputContainer);
+
+    container.append(searchIcon.element, inputContainer, eraserIcon.element);
+
+    const hoverTls = [createOutlineTl(input), ...searchIcon.timeline];
+
+    this._bindTimeline(container, hoverTls);
+    this._bindEvents(container, eraserIcon.element);
 
     return container;
+  }
+
+  /**
+   * 綁定搜尋列的時間軸動畫。
+   * @private
+   */
+  _bindTimeline(container, hover) {
+    const input = container.find("input");
+
+    container.on("mouseenter", () => {
+      hover.forEach((tl) => {
+        tl.play();
+      });
+    });
+    container.on("mouseleave", () => {
+      hover.forEach((tl) => {
+        if (!input.is(":focus")) tl.reverse();
+      });
+    });
+    container.on("focus", "input", () => {
+      hover.forEach((tl) => {
+        tl.play();
+      });
+    });
+    container.on("blur", "input", () => {
+      hover.forEach((tl) => {
+        tl.reverse();
+      });
+    });
+  }
+
+  /**
+   * 綁定搜尋列的邏輯事件。
+   * @private
+   */
+  _bindEvents(container, eraser) {
+    container.on("click", ".eraser-icon-container", () => {
+      this.input = "";
+    });
+    container.on("keyup", "input", () => {
+      if (this.input) {
+        eraser.show(350);
+        return;
+      }
+      eraser.hide(350);
+    });
   }
 
   /**
@@ -567,64 +556,9 @@ class SearchBar extends component {
    * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
    */
   _createTimelines() {
-    const input = this.element.find("input");
-    const searchIcon = this.element.find(".search-icon-container");
-
-    this._timelines.outline = createOutlineTl(input);
-    const { t1, t2 } = createSearchIconHoverTl(searchIcon);
-    this._timelines.hover1 = t1;
-    this._timelines.hover2 = t2;
-
-    this._timelines.play = () => {
-      this._timelines.outline.play();
-      this._timelines.hover1.play();
-      this._timelines.hover2.play();
-    };
-
-    this._timelines.reverse = () => {
-      this._timelines.outline.reverse();
-      this._timelines.hover1.reverse();
-      this._timelines.hover2.reverse();
-    };
-
     this._timelines.hide = gsap
       .timeline({ defaults: { ease: "set1" }, paused: true })
       .to(this.element, { autoAlpha: 0, y: -100 });
-
-    return this;
-  }
-
-  /**
-   * 綁定搜尋列的時間軸動畫。
-   * @private
-   * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
-   */
-  _bindTimeline() {
-    const input = this.element.find("input");
-    const eraserIcon = this.element.find(".eraser-icon-container");
-
-    this.element.on("mouseenter", () => {
-      this._timelines.play();
-    });
-    this.element.on("mouseleave", () => {
-      if (!input.is(":focus")) this._timelines.reverse();
-    });
-    this.element.on("focus", "input", () => {
-      this._timelines.play();
-    });
-    this.element.on("blur", "input", () => {
-      this._timelines.reverse();
-    });
-    this.element.on("keyup", "input", () => {
-      if (this.input) {
-        eraserIcon.show(350);
-        return;
-      }
-      eraserIcon.hide(350);
-    });
-    this.element.on("click", ".eraser-icon-container", () => {
-      this.input = "";
-    });
 
     return this;
   }
@@ -665,13 +599,13 @@ class SearchBar extends component {
    * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
    */
   onInput(handler) {
-    if (this.handlers.input) console.error("已經註冊過onInput");
+    if (this._handlers.input) console.error("已經註冊過onInput");
 
-    this.handlers.input = () => {
+    this._handlers.input = () => {
       if (this.input) handler();
     };
 
-    this.element.on("keyup", "input", this.handlers.input);
+    this.element.on("keyup", "input", this._handlers.input);
 
     return this;
   }
@@ -682,12 +616,12 @@ class SearchBar extends component {
    * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
    */
   onClear(handler) {
-    if (this.handlers.clear) console.error("已經註冊過onClear");
+    if (this._handlers.clear) console.error("已經註冊過onClear");
 
-    this.handlers.clear = handler;
+    this._handlers.clear = handler;
 
     this.element.on("keyup", "input", () => {
-      if (!this.input) this.handlers.clear();
+      if (!this.input) this._handlers.clear();
     });
 
     return this;
@@ -711,10 +645,10 @@ class SearchBar extends component {
   set input(value) {
     this.element.find("input").val(value);
 
-    if (value !== "" && this.handlers.input) {
-      this.handlers.input();
-    } else if (this.handlers.clear) {
-      this.handlers.clear();
+    if (value !== "" && this._handlers.input) {
+      this._handlers.input();
+    } else if (this._handlers.clear) {
+      this._handlers.clear();
     }
 
     return this;
@@ -1008,8 +942,8 @@ class SortSelect extends component {
       ...icons.timeline,
       createScaleTl(button, 1, 1.05),
       createBackgroundColorTl(button, "#ea81af"),
-      createTranslateHoverTl(button, 0, -5),
-      createZIndexHoverTl(button, 5, 6),
+      createTranslateTl(button, 0, -5),
+      createZIndexTl(button, 5, 6),
     ];
 
     button.on("mouseenter", () => {
@@ -1201,8 +1135,8 @@ class SettingSelect extends component {
     const hoverTls = [
       createScaleTl(button, 1, 1.05),
       createBackgroundColorTl(button, "#ea81af"),
-      createTranslateHoverTl(button, 0, -5),
-      createZIndexHoverTl(button, 5, 6),
+      createTranslateTl(button, 0, -5),
+      createZIndexTl(button, 5, 6),
     ];
 
     button.on("mouseenter", () => {

@@ -146,48 +146,6 @@ function createSortIcon() {
   return container;
 }
 
-function createNameIcon() {
-  const icons = ["white", "dark"].map((theme) => {
-    const container = $("<div>").addClass("name-icon-container");
-
-    const img = $("<img>").attr("src", "");
-
-    container.append(img);
-
-    return container;
-  });
-
-  return icons;
-}
-
-function createDateIcon() {
-  const icons = ["white", "dark"].map((theme) => {
-    const container = $("<div>").addClass("date-icon-container");
-
-    const img = $("<img>").attr("src", "");
-
-    container.append(img);
-
-    return container;
-  });
-
-  return icons;
-}
-
-function createSizeIcon() {
-  const icons = ["white", "dark"].map((theme) => {
-    const container = $("<div>").addClass("size-icon-container");
-
-    const img = $("<img>").attr("src", "");
-
-    container.append(img);
-
-    return container;
-  });
-
-  return icons;
-}
-
 /**
  * 創建包含全螢幕圖示的容器。
  * @returns {jQuery} 排序全螢幕的容器。
@@ -1053,20 +1011,18 @@ class SortSelect extends component {
   _createSortSelect() {
     const select = $("<div>").addClass("sort-select");
 
-    const main = this._createSortButton(createSortIcon(), "");
+    const main = this._createMainButton();
     const hr = createHorizontalSeparator({ margin: 8 });
     const toggler = this._createReverseToggler();
+
     select.append(main, hr, toggler);
 
-    const sortButtonsConfigs = [
-      { icons: createNameIcon(), label: "依名稱排序" },
-      { icons: createDateIcon(), label: "依日期排序" },
-      { icons: createSizeIcon(), label: "依大小排序" },
+    const options = [
+      this._createOptionButton("name", "依名稱排序"),
+      this._createOptionButton("date", "依日期排序"),
+      this._createOptionButton("size", "依大小排序"),
     ];
-    sortButtonsConfigs.forEach((config) => {
-      const button = this._createSortButton(config.icons, config.label);
-      select.append(button);
-    });
+    options.forEach((button) => select.append(button));
 
     this._timelines.open = createSelectOpenTl(select);
 
@@ -1081,42 +1037,43 @@ class SortSelect extends component {
     return select;
   }
 
-  /**
-   * 創建排序按鈕的元素。
-   * @private @returns {jQuery} 排序按鈕的元素。
-   */
-  _createSortButton(icon, name) {
+  _createMainButton() {
     const button = $("<button>").addClass("sort-button");
 
-    if (name === "") {
-      icon.appendTo(button);
-      this._bindMainButtonTimeline(button);
+    const iconContainer = createSortIcon();
+    const wIcon = iconContainer.children().eq(0);
+    const dIcon = iconContainer.children().eq(1);
 
-      return button;
-    }
+    iconContainer.appendTo(button);
 
-    const configs = [
-      { separator: { margin: 8 } },
-      { separator: { margin: 8, backgroundColor: "hsl(240, 5%, 10%)" } },
+    const hoverTls = [
+      ...createSortImgHoverTl(wIcon),
+      ...createSortImgHoverTl(dIcon),
+      createSortIconHoverTl(iconContainer),
+      createScaleHoverTl(button, 1, 1.05),
+      createColorHoverTl(button, "#ea81af"),
+      createTranslateHoverTl(button, 0, -5),
+      createZIndexHoverTl(button, 5, 6),
     ];
 
-    configs.forEach((config, index) => {
-      const layer = $("<div>").addClass(`sort-button-layer${index + 1}`);
-      const separator = createVerticalSeparator(config.separator);
-      const label = $("<label>").addClass("sort-button-label").text(name);
-
-      layer.append(icon[index], separator, label).appendTo(button);
+    button.on("mouseenter", () => {
+      hoverTls.forEach((tl) => {
+        tl.play();
+      });
+    });
+    button.on("mouseleave", () => {
+      hoverTls.forEach((tl) => {
+        tl.reverse();
+      });
     });
 
-    this._bindSortButtonTimeline(button);
+    const clickTl = createFolderButtonClickTl(button);
+
+    button.on("click", () => clickTl.restart());
 
     return button;
   }
 
-  /**
-   * 創建反轉排序開關的容器
-   * @private @returns {jQuery} 反轉排序開關的容器元素。
-   */
   _createReverseToggler() {
     const container = $("<button>")
       .addClass("reverse-container")
@@ -1144,60 +1101,47 @@ class SortSelect extends component {
     return container;
   }
 
-  /**
-   * 綁定排序按鈕的時間軸效果。
-   * @private @param {jQuery} button - 排序按鈕的元素。
-   */
-  _bindMainButtonTimeline(button) {
-    const iconContainer = button.find(".sort-icon-container");
-    const wIcon = iconContainer.children().eq(0);
-    const dIcon = iconContainer.children().eq(1);
+  _createOptionButton(type, name) {
+    const icons = Icon.type(type);
 
-    const hoverTls = [
-      ...createSortImgHoverTl(wIcon),
-      ...createSortImgHoverTl(dIcon),
-      createSortIconHoverTl(iconContainer),
-      createScaleHoverTl(button, 1, 1.05),
-      createColorHoverTl(button, "#ea81af"),
-      createTranslateHoverTl(button, 0, -5),
-      createZIndexHoverTl(button, 5, 6),
+    const button = $("<button>").addClass("sort-button");
+
+    const configs = [
+      { separator: { margin: 8 } },
+      { separator: { margin: 8, backgroundColor: "hsl(240, 5%, 10%)" } },
     ];
 
-    button.on("mouseenter", () => {
-      hoverTls.forEach((tl) => {
-        tl.play();
-      });
-    });
-    button.on("mouseleave", () => {
-      hoverTls.forEach((tl) => {
-        tl.reverse();
-      });
+    configs.forEach((config, index) => {
+      const layer = $("<div>").addClass(`sort-button-layer${index + 1}`);
+      const separator = createVerticalSeparator(config.separator);
+      const label = $("<label>").addClass("sort-button-label").text(name);
+
+      console.log(icons.element[index]);
+      layer.append(icons.element[index], separator, label).appendTo(button);
     });
 
-    const clickTl = createFolderButtonClickTl(button);
+    const hoverTls = [createSortButtonHoverTl(button), ...icons.timeline];
 
-    button.on("click", () => clickTl.restart());
+    const clickTl = createScaleClickTl(button, 0.9);
+
+    this._bindOptionTimeline(button, hoverTls, clickTl);
+
+    return button;
   }
 
-  _bindSortButtonTimeline(button) {
-    const iconContainer = button.find(".sort-icon-container");
-
-    const hoverTls = [createSortButtonHoverTl(button)];
-
+  _bindOptionTimeline(button, hover, click) {
     button.on("mouseenter", () => {
-      hoverTls.forEach((tl) => {
+      hover.forEach((tl) => {
         tl.play();
       });
     });
     button.on("mouseleave", () => {
-      hoverTls.forEach((tl) => {
+      hover.forEach((tl) => {
         tl.reverse();
       });
     });
 
-    const clickTl = createFolderButtonClickTl(button);
-
-    button.on("click", () => clickTl.restart());
+    button.on("click", () => click.restart());
   }
 
   /**

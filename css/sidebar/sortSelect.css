@@ -54,6 +54,7 @@
 
 /* createSortIcon */
 .sort-icon-container,
+.sort-img-container,
 .name-icon-container,
 .date-icon-container,
 .size-icon-container {
@@ -67,13 +68,9 @@
 }
 .sort-img-container {
   position: absolute;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  clip-path: none;
 }
-.sort-img-container img {
+.sort-button img {
   position: absolute;
   width: 40px;
   height: 40px;

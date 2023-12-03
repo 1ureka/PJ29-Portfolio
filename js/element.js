@@ -457,6 +457,37 @@ class FullscreenIcon extends IconInterface {
 }
 
 /**
+ * 垂直分割線元素
+ */
+class VerticalSeparator {
+  constructor(config) {
+    this.element = this._createSeparator(config);
+  }
+
+  _createSeparator(config) {
+    // 預設配置
+    const defaultConfig = {
+      margin: 5, // 預設邊距
+      width: 2, // 預設粗細
+      backgroundColor: "white", // 預設背景顏色
+    };
+
+    // 合併預設配置和用戶提供的配置
+    config = { ...defaultConfig, ...config };
+
+    const separator = $("<div>")
+      .addClass("v-separator")
+      .css({
+        margin: `0 ${config.margin}px`,
+        width: `${config.width}px`,
+        backgroundColor: config.backgroundColor,
+      });
+
+    return separator;
+  }
+}
+
+/**
  * 燈泡元素
  */
 class Bulb {

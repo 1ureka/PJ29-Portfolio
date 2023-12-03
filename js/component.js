@@ -2,36 +2,6 @@
 // 基礎 (icon, input ...)
 //
 /**
- * 創建垂直分隔線。
- * @param {Object} config - 用於設定分隔線的配置物件。
- * @param {number} config.margin - 分隔線的邊距。
- * @param {number} config.width - 分隔線的寬度。
- * @param {string} config.backgroundColor - 分隔線的背景顏色。
- * @returns {jQuery} 垂直分隔線。
- */
-function createVerticalSeparator(config) {
-  // 預設配置
-  const defaultConfig = {
-    margin: 5, // 預設邊距
-    width: 2, // 預設粗細
-    backgroundColor: "white", // 預設背景顏色
-  };
-
-  // 合併預設配置和用戶提供的配置
-  config = { ...defaultConfig, ...config };
-
-  const separator = $("<div>")
-    .addClass("v-separator")
-    .css({
-      margin: `0 ${config.margin}px`,
-      width: `${config.width}px`,
-      backgroundColor: config.backgroundColor,
-    });
-
-  return separator;
-}
-
-/**
  * 創建水平分隔線。
  * @param {Object} config - 用於設定分隔線的配置物件。
  * @param {number} config.margin - 分隔線的邊距。
@@ -59,60 +29,6 @@ function createHorizontalSeparator(config) {
     });
 
   return separator;
-}
-
-/**
- * 創建元素的輪廓效果。
- * @param {jQuery} element - 要添加輪廓的元素。
- * @param {Object} config - 用於設定輪廓效果的配置物件。
- * @returns {{
- *   container: jQuery,
- *   outline1: jQuery,
- *   outline2: jQuery
- * }} 包含輪廓元素的物件。
- */
-function createOutline(element, config) {
-  // 預設配置
-  const defaultConfig = {
-    outlineColor: "white",
-    outlineWidth: 2,
-    duration: 0.2,
-  };
-
-  // 合併預設配置和用戶提供的配置
-  config = { ...defaultConfig, ...config };
-
-  const elementContainer = element.closest("div");
-  const container = $("<div>")
-    .css({
-      position: "absolute",
-      width: elementContainer.width(),
-      height: elementContainer.height(),
-      clipPath: `inset(-${config.outlineWidth}px round 10px)`,
-    })
-    .appendTo(elementContainer);
-  const outline1 = $("<div>")
-    .css({
-      position: "absolute",
-      backgroundColor: config.outlineColor,
-      borderRadius: "10px",
-      bottom: -1 * config.outlineWidth,
-      left: -1 * config.outlineWidth,
-    })
-    .appendTo(container);
-  const outline2 = $("<div>")
-    .css({
-      position: "absolute",
-      backgroundColor: config.outlineColor,
-      borderRadius: "10px",
-      top: -1 * config.outlineWidth,
-      right: -1 * config.outlineWidth,
-    })
-    .appendTo(container);
-
-  element.before(container);
-
-  return { container, outline1, outline2 };
 }
 
 /**
@@ -618,10 +534,10 @@ class FolderSelect extends component {
 
     configs.forEach((config, index) => {
       const layer = $("<div>").addClass(`folder-button-layer${index + 1}`);
-      const separator = createVerticalSeparator(config.separator);
+      const vs = new VerticalSeparator(config.separator);
       const label = $("<label>").addClass("folder-button-label").text(name);
 
-      layer.append(icons.element[index], separator, label).appendTo(button);
+      layer.append(icons.element[index], vs.element, label).appendTo(button);
     });
 
     const hoverTls = [createFolderButtonHoverTl(button), ...icons.timeline];
@@ -890,10 +806,10 @@ class SortSelect extends component {
 
     configs.forEach((config, index) => {
       const layer = $("<div>").addClass(`sort-button-layer${index + 1}`);
-      const separator = createVerticalSeparator(config.separator);
+      const vs = new VerticalSeparator(config.separator);
       const label = $("<label>").addClass("sort-button-label").text(name);
 
-      layer.append(icons.element[index], separator, label).appendTo(button);
+      layer.append(icons.element[index], vs.element, label).appendTo(button);
     });
 
     const hoverTls = [createSortButtonHoverTl(button), ...icons.timeline];
@@ -1210,11 +1126,11 @@ class FolderBoxes extends component {
       .data("category", config.category);
 
     const folderIcon = new FolderIcon("hsl(225, 10%, 23%)");
-    const separator = createVerticalSeparator();
+    const vs = new VerticalSeparator();
     const bulb = new Bulb(20, 20);
     const label = $("<label>").addClass("folder-box-label").text(config.label);
 
-    box.append(folderIcon.element[0], separator, label, bulb.element);
+    box.append(folderIcon.element[0], vs.element, label, bulb.element);
 
     const img = $("<img>")
       .attr("src", config.img.src)

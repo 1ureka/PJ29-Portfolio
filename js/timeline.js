@@ -117,6 +117,50 @@ function createZIndexTl(element, fromZ, toZ) {
   return tl;
 }
 
+function createOutline(element, config) {
+  // 預設配置
+  const defaultConfig = {
+    outlineColor: "white",
+    outlineWidth: 2,
+    duration: 0.2,
+  };
+
+  // 合併預設配置和用戶提供的配置
+  config = { ...defaultConfig, ...config };
+
+  const elementContainer = element.closest("div");
+  const container = $("<div>")
+    .css({
+      position: "absolute",
+      width: elementContainer.width(),
+      height: elementContainer.height(),
+      clipPath: `inset(-${config.outlineWidth}px round 10px)`,
+    })
+    .appendTo(elementContainer);
+  const outline1 = $("<div>")
+    .css({
+      position: "absolute",
+      backgroundColor: config.outlineColor,
+      borderRadius: "10px",
+      bottom: -1 * config.outlineWidth,
+      left: -1 * config.outlineWidth,
+    })
+    .appendTo(container);
+  const outline2 = $("<div>")
+    .css({
+      position: "absolute",
+      backgroundColor: config.outlineColor,
+      borderRadius: "10px",
+      top: -1 * config.outlineWidth,
+      right: -1 * config.outlineWidth,
+    })
+    .appendTo(container);
+
+  element.before(container);
+
+  return { container, outline1, outline2 };
+}
+
 function createOutlineTl(element, config) {
   // 預設配置
   const defaultConfig = {

@@ -1,31 +1,6 @@
 //
 // 交互效果
 //
-function createScrollButtonHoverTl(button) {
-  const tl = gsap
-    .timeline({
-      defaults: { duration: 0.2, ease: "set1" },
-      paused: true,
-    })
-    .to(button.find("img")[0], { y: -40 })
-    .to(button.find("img")[1], { y: 0 }, "<")
-    .to(button, { backgroundColor: "#ea81af" }, "<")
-    .to(button.find(".scroll-icon-container"), { scale: 1.2 }, "<");
-
-  return tl;
-}
-
-function createScrollButtonClickTl(button) {
-  const tl = gsap
-    .timeline({
-      defaults: { duration: 0.1, ease: "set1" },
-      paused: true,
-    })
-    .to(button, { scale: 0.6, yoyo: true, repeat: 1 });
-
-  return tl;
-}
-
 function createEraserIconHoverTl(iconContainer) {
   return gsap
     .timeline({
@@ -309,18 +284,7 @@ function createImageClickTl(container) {
 //
 // 通用型
 //
-function createScaleClickTl(element, toScale) {
-  const tl = gsap
-    .timeline({
-      defaults: { duration: 0.1, ease: "set1" },
-      paused: true,
-    })
-    .to(element, { scale: toScale, repeat: 1, yoyo: true });
-
-  return tl;
-}
-
-function createScaleHoverTl(element, fromScale, toScale) {
+function createScaleTl(element, fromScale, toScale) {
   const tl = gsap
     .timeline({
       defaults: { duration: 0.2, ease: "set1" },
@@ -331,7 +295,18 @@ function createScaleHoverTl(element, fromScale, toScale) {
   return tl;
 }
 
-function createColorHoverTl(element, toColor, duration = 0.2) {
+function createScaleYoyoTl(element, toScale) {
+  const tl = gsap
+    .timeline({
+      defaults: { duration: 0.1, ease: "set1" },
+      paused: true,
+    })
+    .to(element, { scale: toScale, repeat: 1, yoyo: true });
+
+  return tl;
+}
+
+function createBackgroundColorTl(element, toColor, duration = 0.2) {
   const tl = gsap
     .timeline({
       defaults: { duration: duration, ease: "set1" },

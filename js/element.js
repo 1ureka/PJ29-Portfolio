@@ -11,7 +11,7 @@ class IconInterface {
 
   /**
    * 創建圖示元素的方法，應該由子類實現。
-   * @private @abstract @returns {JQuery[]} 一個包含圖示元素的陣列。
+   * @private @abstract @returns {JQuery[] | JQuery} 一個包含圖示元素的陣列。
    */
   _createIcon() {
     return [];
@@ -23,6 +23,45 @@ class IconInterface {
    */
   _createTimeline() {
     return [];
+  }
+}
+
+/**
+ * 滾動圖示
+ */
+class ScrollIcon extends IconInterface {
+  constructor() {
+    super();
+  }
+
+  _createIcon() {
+    const container = $("<div>").addClass("scroll-icon-container");
+
+    const img1 = $("<img>")
+      .addClass("scroll-icon-img")
+      .attr("src", `images/icons/up (white).png`);
+    const img2 = $("<img>")
+      .addClass("scroll-icon-img")
+      .attr("src", `images/icons/up (dark).png`);
+    gsap.set(img2, { y: 40 });
+
+    container.append(img1, img2);
+    return container;
+  }
+
+  _createTimeline() {
+    const container = this.element;
+
+    const tl = gsap
+      .timeline({
+        defaults: { duration: 0.2, ease: "set1" },
+        paused: true,
+      })
+      .to(container.find("img")[0], { y: -40 })
+      .to(container.find("img")[1], { y: 0 }, "<")
+      .to(container, { scale: 1.2 }, "<");
+
+    return [tl];
   }
 }
 
@@ -228,6 +267,7 @@ class IconFac {
      * @type {Object.<string, Function>}
      */
     this.map = {
+      scroll: () => new ScrollIcon(),
       sort: () => new SortIcon(),
       name: () => new NameIcon(),
       date: () => new DateIcon(),

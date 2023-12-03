@@ -2,25 +2,6 @@
 // 基礎 (icon, input ...)
 //
 /**
- * 創建包含上/下圖示的容器。
- * @returns {jQuery} 滾動圖示的容器。
- */
-function createScrollIcon() {
-  const container = $("<div>").addClass("scroll-icon-container");
-
-  const img1 = $("<img>")
-    .addClass("scroll-icon-img")
-    .attr("src", `images/icons/up (white).png`);
-  const img2 = $("<img>")
-    .addClass("scroll-icon-img")
-    .attr("src", `images/icons/up (dark).png`);
-  gsap.set(img2, { y: 40 });
-
-  container.append(img1, img2);
-  return container;
-}
-
-/**
  * 創建包含搜尋圖示的容器。
  * @returns {jQuery} 搜尋圖示的容器。
  */
@@ -374,19 +355,42 @@ class ScrollButtons extends component {
    */
   _createScrollButton(type) {
     const button = $("<button>").addClass("scroll-button").addClass(type);
-    const icon = createScrollIcon();
-    if (type === "down") gsap.set(icon, { rotate: 180 });
+    const icon = Icon.type("scroll");
+    if (type === "down") gsap.set(icon.element, { rotate: 180 });
 
-    button.append(icon);
+    button.append(icon.element);
 
-    const t1 = createScrollButtonHoverTl(button);
-    const t2 = createScrollButtonClickTl(button);
+    const hoverTls = [
+      ...icon.timeline,
+      createBackgroundColorTl(button, "#ea81af"),
+    ];
 
-    button.on("mouseenter", () => t1.play());
-    button.on("mouseleave", () => t1.reverse());
-    button.on("click", () => t2.restart());
+    const clickTl = createScaleYoyoTl(button, 0.6);
+
+    this._bindTimeline(button, hoverTls, clickTl);
 
     return button;
+  }
+
+  /**
+   * 將時間軸綁定到按鈕的不同事件。
+   * @param {jQuery} button - 要綁定的按鈕元素。
+   * @param {TimelineMax[]} hover - 滑鼠進入時觸發的時間軸陣列。
+   * @param {TimelineMax} click - 按鈕點擊時觸發的時間軸。
+   */
+  _bindTimeline(button, hover, click) {
+    button.on("mouseenter", () => {
+      hover.forEach((tl) => {
+        tl.play();
+      });
+    });
+    button.on("mouseleave", () => {
+      hover.forEach((tl) => {
+        tl.reverse();
+      });
+    });
+
+    button.on("click", () => click.restart());
   }
 
   /**
@@ -1002,8 +1006,8 @@ class SortSelect extends component {
 
     const hoverTls = [
       ...icons.timeline,
-      createScaleHoverTl(button, 1, 1.05),
-      createColorHoverTl(button, "#ea81af"),
+      createScaleTl(button, 1, 1.05),
+      createBackgroundColorTl(button, "#ea81af"),
       createTranslateHoverTl(button, 0, -5),
       createZIndexHoverTl(button, 5, 6),
     ];
@@ -1073,7 +1077,7 @@ class SortSelect extends component {
 
     const hoverTls = [createSortButtonHoverTl(button), ...icons.timeline];
 
-    const clickTl = createScaleClickTl(button, 0.9);
+    const clickTl = createScaleYoyoTl(button, 0.9);
 
     this._bindOptionTimeline(button, hoverTls, clickTl);
 
@@ -1195,8 +1199,8 @@ class SettingSelect extends component {
    */
   _bindTimeline(button) {
     const hoverTls = [
-      createScaleHoverTl(button, 1, 1.05),
-      createColorHoverTl(button, "#ea81af"),
+      createScaleTl(button, 1, 1.05),
+      createBackgroundColorTl(button, "#ea81af"),
       createTranslateHoverTl(button, 0, -5),
       createZIndexHoverTl(button, 5, 6),
     ];
@@ -1212,7 +1216,7 @@ class SettingSelect extends component {
       });
     });
 
-    const clickTl = createScaleClickTl(button, 0.9);
+    const clickTl = createScaleYoyoTl(button, 0.9);
 
     button.on("click", () => clickTl.restart());
   }
@@ -1933,9 +1937,9 @@ class PreviewButtons extends component {
    * @private @param {jQuery} button - 按鈕元素的 jQuery 物件。
    */
   _bindTimeline(button) {
-    const hoverT1 = createScaleHoverTl(button, 1, 1.1);
-    const hoverT2 = createColorHoverTl(button, "#ea81af");
-    const clickTl = createScaleClickTl(button, 0.75);
+    const hoverT1 = createScaleTl(button, 1, 1.1);
+    const hoverT2 = createBackgroundColorTl(button, "#ea81af");
+    const clickTl = createScaleYoyoTl(button, 0.75);
 
     const hoverPlay = () => {
       hoverT1.play();
@@ -2045,8 +2049,8 @@ class ImageName extends component {
   _bindTimeline(container) {
     const button = container.find(".extend-button");
 
-    const t1 = createScaleHoverTl(button, 1, 1.1);
-    const t2 = createColorHoverTl(button, "#ea81af", 0.2);
+    const t1 = createScaleTl(button, 1, 1.1);
+    const t2 = createBackgroundColorTl(button, "#ea81af", 0.2);
     const t3 = gsap
       .timeline({ defaults: { ease: "set1", duration: 0.2 }, paused: true })
       .to(button.find("label"), {
@@ -2054,7 +2058,7 @@ class ImageName extends component {
         fontWeight: "bold",
       });
 
-    const t4 = createScaleClickTl(button, 0.8);
+    const t4 = createScaleYoyoTl(button, 0.8);
 
     button.on("mouseenter", () => {
       t1.play();

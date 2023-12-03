@@ -1,54 +1,3 @@
-//
-// 基礎 (icon, input ...)
-//
-/**
- * 創建水平分隔線。
- * @param {Object} config - 用於設定分隔線的配置物件。
- * @param {number} config.margin - 分隔線的邊距。
- * @param {number} config.height - 分隔線的高度。
- * @param {string} config.backgroundColor - 分隔線的背景顏色。
- * @returns {jQuery} 水平分隔線。
- */
-function createHorizontalSeparator(config) {
-  // 預設配置
-  const defaultConfig = {
-    margin: 5, // 預設邊距
-    height: 2, // 預設粗細
-    backgroundColor: "white", // 預設背景顏色
-  };
-
-  // 合併預設配置和用戶提供的配置
-  config = { ...defaultConfig, ...config };
-
-  const separator = $("<div>")
-    .addClass("h-separator")
-    .css({
-      margin: `${config.margin}px 0`,
-      height: `${config.height}px`,
-      backgroundColor: config.backgroundColor,
-    });
-
-  return separator;
-}
-
-/**
- * 創建一個開關元素
- * @returns {jQuery} - 包含開關的jQuery物件。
- */
-function createToggler() {
-  const container = $("<div>").addClass("toggler-container");
-
-  const inner = $("<div>").addClass("toggler-inner");
-  const dot = $("<div>").addClass("toggler-dot");
-
-  container.append(inner, dot);
-
-  return container;
-}
-
-//
-// 複雜
-//
 /**
  * 組件的預設空白類
  */
@@ -493,8 +442,8 @@ class FolderSelect extends component {
       configs[0].label,
       configs[0].category
     );
-    const hr = createHorizontalSeparator({ margin: 8 });
-    select.append(main, hr);
+    const hr = new HorizontalSeparator({ margin: 8 });
+    select.append(main, hr.element);
 
     configs.slice(1).forEach((config) => {
       this._createFolderButton(config.label, config.category).appendTo(select);
@@ -703,10 +652,10 @@ class SortSelect extends component {
     const select = $("<div>").addClass("sort-select");
 
     const main = this._createMainButton();
-    const hr = createHorizontalSeparator({ margin: 8 });
+    const hr = new HorizontalSeparator({ margin: 8 });
     const toggler = this._createReverseToggler();
 
-    select.append(main, hr, toggler);
+    select.append(main, hr.element, toggler);
 
     const options = [
       this._createOptionButton("name", "依名稱排序"),
@@ -766,23 +715,10 @@ class SortSelect extends component {
       .css("cursor", "default");
 
     const label = $("<label>").addClass("sort-button-label").text("反轉排序");
-    const toggler = createToggler();
-    gsap.set(toggler, { scale: 0.8 });
+    const toggler = new ToggleButton();
+    gsap.set(toggler.element, { scale: 0.8 });
 
-    container.append(label, toggler);
-
-    const t1 = createToggleTl(toggler);
-    const t2 = createTogglerHoverTl(toggler);
-
-    container.on("click", ".toggler-container", () => {
-      if (t1.progress() === 0 || t1.reversed()) {
-        t1.play();
-      } else {
-        t1.reverse();
-      }
-    });
-    container.on("mouseenter", ".toggler-container", () => t2.play());
-    container.on("mouseleave", ".toggler-container", () => t2.reverse());
+    container.append(label, toggler.element);
 
     return container;
   }

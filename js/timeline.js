@@ -199,29 +199,6 @@ function createOutlineTl(element, config) {
     );
 }
 
-function createToggleTl(toggler) {
-  const inner = toggler.find(".toggler-inner");
-  const dot = toggler.find(".toggler-dot");
-
-  const tl = gsap
-    .timeline({ defaults: { duration: 0.2, ease: "set1" }, paused: true })
-    .to(dot, { x: 25, backgroundColor: "hsl(210, 0%, 25%)" })
-    .to(inner, { backgroundColor: "#ea81af" }, "<");
-
-  return tl;
-}
-
-function createTogglerHoverTl(toggler) {
-  const dot = toggler.find(".toggler-dot");
-
-  const tl = gsap
-    .timeline({ defaults: { duration: 0.2, ease: "set1" }, paused: true })
-    .fromTo(toggler, { filter: "brightness(1)" }, { filter: "brightness(1.5)" })
-    .to(dot, { scale: 1.1 }, "<");
-
-  return tl;
-}
-
 function createSelectOpenTl(select) {
   const main = select.find("button").eq(0);
   const pages = select.find("button").not(main);

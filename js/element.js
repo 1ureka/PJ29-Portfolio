@@ -467,12 +467,11 @@ class VerticalSeparator {
   _createSeparator(config) {
     // 預設配置
     const defaultConfig = {
-      margin: 5, // 預設邊距
-      width: 2, // 預設粗細
-      backgroundColor: "white", // 預設背景顏色
+      margin: 5,
+      width: 2,
+      backgroundColor: "white",
     };
 
-    // 合併預設配置和用戶提供的配置
     config = { ...defaultConfig, ...config };
 
     const separator = $("<div>")
@@ -480,6 +479,36 @@ class VerticalSeparator {
       .css({
         margin: `0 ${config.margin}px`,
         width: `${config.width}px`,
+        backgroundColor: config.backgroundColor,
+      });
+
+    return separator;
+  }
+}
+
+/**
+ * 水平分割線元素
+ */
+class HorizontalSeparator {
+  constructor(config) {
+    this.element = this._createSeparator(config);
+  }
+
+  _createSeparator(config) {
+    // 預設配置
+    const defaultConfig = {
+      margin: 5,
+      height: 2,
+      backgroundColor: "white",
+    };
+
+    config = { ...defaultConfig, ...config };
+
+    const separator = $("<div>")
+      .addClass("h-separator")
+      .css({
+        margin: `${config.margin}px 0`,
+        height: `${config.height}px`,
         backgroundColor: config.backgroundColor,
       });
 
@@ -535,5 +564,59 @@ class Bulb {
       .to(bulb, { boxShadow: `0 0 20px 0px ${c}` });
 
     return tl;
+  }
+}
+
+/**
+ * 開關按鈕元素
+ */
+class ToggleButton {
+  constructor() {
+    this.element = this._createSeparator();
+
+    this._createTimeline();
+  }
+
+  _createSeparator() {
+    const container = $("<div>").addClass("toggler-container");
+
+    const inner = $("<div>").addClass("toggler-inner");
+    const dot = $("<div>").addClass("toggler-dot");
+
+    container.append(inner, dot);
+
+    return container;
+  }
+
+  _createTimeline() {
+    const toggler = this.element;
+    const inner = toggler.find(".toggler-inner");
+    const dot = toggler.find(".toggler-dot");
+
+    const turnOnTl = gsap
+      .timeline({ defaults: { duration: 0.2, ease: "set1" }, paused: true })
+      .to(dot, { x: 25, backgroundColor: "hsl(210, 0%, 25%)" })
+      .to(inner, { backgroundColor: "#ea81af" }, "<");
+
+    const hoverTl = gsap
+      .timeline({ defaults: { duration: 0.2, ease: "set1" }, paused: true })
+      .fromTo(
+        toggler,
+        { filter: "brightness(1)" },
+        { filter: "brightness(1.5)" }
+      )
+      .to(dot, { scale: 1.1 }, "<");
+
+    const clickHandler = () => {
+      if (turnOnTl.progress() === 0 || turnOnTl.reversed()) {
+        turnOnTl.play();
+      } else {
+        turnOnTl.reverse();
+      }
+    };
+
+    toggler.on("mouseenter", () => hoverTl.play());
+    toggler.on("mouseleave", () => hoverTl.reverse());
+    toggler.on("click", clickHandler);
   }
 }

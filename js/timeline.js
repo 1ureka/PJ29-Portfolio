@@ -22,21 +22,6 @@ function createFolderButtonHoverTl(button) {
   return buttonTimeline;
 }
 
-function createFullscreenIconHoverTl(container) {
-  const img1 = container.find("img").slice(0, 4);
-  const img2 = container.find("img").slice(4);
-  gsap.set(img2, { autoAlpha: 0, scale: 0.5 });
-  const tl = gsap
-    .timeline({
-      defaults: { duration: 0.15, ease: "back.out(4)", stagger: 0.05 },
-      paused: true,
-    })
-    .to(img1, { autoAlpha: 0, scale: 0.5, ease: "back.in(3)" })
-    .to(img2, { autoAlpha: 1, scale: 1 });
-
-  return tl;
-}
-
 function createSortButtonHoverTl(button) {
   gsap.set(button.find(".sort-button-layer2 > *"), { y: -40 });
 

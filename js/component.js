@@ -2,23 +2,6 @@
 // 基礎 (icon, input ...)
 //
 /**
- * 創建包含全螢幕圖示的容器。
- * @returns {jQuery} 排序全螢幕的容器。
- */
-function createFullscreenIcon() {
-  const container = $("<div>").addClass("fullscreen-icon-container");
-
-  for (let n = 1; n < 9; n++) {
-    const img = $("<img>")
-      .attr("src", `images/icons/fullscreen ${n}.png`)
-      .appendTo(container);
-    if (n >= 5) gsap.set(img, { autoAlpha: 0 });
-  }
-
-  return container;
-}
-
-/**
  * 創建垂直分隔線。
  * @param {Object} config - 用於設定分隔線的配置物件。
  * @param {number} config.margin - 分隔線的邊距。
@@ -1738,11 +1721,12 @@ class PreviewButtons extends component {
   _createFullscreenButton() {
     const button = $("<button>").addClass("fullscreen-button");
 
-    const img = createFullscreenIcon().appendTo(button);
+    const icon = new FullscreenIcon();
 
-    const t1 = createFullscreenIconHoverTl(img);
-    button.on("mouseenter", () => t1.play());
-    button.on("mouseleave", () => t1.reverse());
+    button.append(icon.element);
+
+    button.on("mouseenter", () => icon.timeline.play());
+    button.on("mouseleave", () => icon.timeline.reverse());
 
     this._bindTimeline(button);
 

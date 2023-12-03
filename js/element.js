@@ -5,7 +5,7 @@ class IconInterface {
   constructor() {
     /** 用於存儲圖示元素的陣列。 @type {JQuery[] | JQuery} */
     this.element = this._createIcon();
-    /** 於存儲時間軸的陣列。 @type {TimelineMax[]} */
+    /** 於存儲時間軸的陣列。 @type {TimelineMax[] | TimelineMax} */
     this.timeline = this._createTimeline();
   }
 
@@ -19,7 +19,7 @@ class IconInterface {
 
   /**
    * 創建時間軸的方法，應該由子類實現。
-   * @private @abstract @returns {TimelineMax[]} 一個包含時間軸的陣列。
+   * @private @abstract @returns {TimelineMax[] | TimelineMax} 一個包含時間軸的陣列。
    */
   _createTimeline() {
     return [];
@@ -416,6 +416,43 @@ class SizeIcon extends IconInterface {
     const timelines = [gsap.timeline()];
 
     return timelines;
+  }
+}
+
+/**
+ * 全螢幕圖示
+ */
+class FullscreenIcon extends IconInterface {
+  constructor() {
+    super();
+  }
+
+  _createIcon() {
+    const container = $("<div>").addClass("fullscreen-icon-container");
+
+    for (let n = 1; n < 9; n++) {
+      const img = $("<img>")
+        .attr("src", `images/icons/fullscreen ${n}.png`)
+        .appendTo(container);
+      if (n >= 5) gsap.set(img, { autoAlpha: 0 });
+    }
+
+    return container;
+  }
+
+  _createTimeline() {
+    const img1 = this.element.find("img").slice(0, 4);
+    const img2 = this.element.find("img").slice(4);
+
+    gsap.set(img2, { autoAlpha: 0, scale: 0.5 });
+
+    return gsap
+      .timeline({
+        defaults: { duration: 0.15, ease: "back.out(4)", stagger: 0.05 },
+        paused: true,
+      })
+      .to(img1, { autoAlpha: 0, scale: 0.5, ease: "back.in(3)" })
+      .to(img2, { autoAlpha: 1, scale: 1 });
   }
 }
 

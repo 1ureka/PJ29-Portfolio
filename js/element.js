@@ -142,7 +142,7 @@ class EraserIcon extends IconInterface {
 
     const hoverTl = gsap
       .timeline({
-        defaults: { duration: 0.2, ease: "set1" },
+        defaults: { duration: 0.2, ease: "back.out(3)" },
         paused: true,
       })
       .to(container.find("img").eq(1), { x: -5 });

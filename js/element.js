@@ -489,6 +489,63 @@ class SizeIcon extends IconInterface {
 }
 
 /**
+ * 設定圖示(內部)
+ */
+class SettingIcon extends IconInterface {
+  constructor() {
+    super();
+  }
+
+  _createIcon() {
+    const themes = ["white", "dark"];
+
+    const createImg = (theme) => {
+      const container = $("<div>").addClass("setting-icon-container");
+
+      return container.append(
+        $("<img>").attr("src", `images/icons/setting (inner) (${theme}).png`)
+      );
+    };
+
+    const icons = themes.map((theme) => createImg(theme));
+
+    return icons;
+  }
+
+  _createTimeline() {
+    const whiteIcon = this.element[0];
+    const darkIcon = this.element[1];
+
+    const whiteImg = whiteIcon.find("img");
+    const darkImg = darkIcon.find("img");
+
+    gsap.set(darkImg, { autoAlpha: 0, scale: 0.2 });
+
+    const timelines = [];
+
+    const t1 = gsap
+      .timeline({
+        defaults: { duration: 0.35, ease: "back.out(3)" },
+        paused: true,
+      })
+      .to(whiteImg, { autoAlpha: 0, scale: 0.2, ease: "back.in(3)" })
+      .to(darkImg, { autoAlpha: 1, scale: 1 });
+
+    const t2 = gsap
+      .timeline({
+        defaults: { duration: 0.35, ease: "back.out(4)" },
+        paused: true,
+      })
+      .to(whiteIcon, { scale: 1.2 })
+      .to(darkIcon, { scale: 1.2 });
+
+    timelines.push(t1, t2);
+
+    return timelines;
+  }
+}
+
+/**
  * 全螢幕圖示
  */
 class FullscreenIcon extends IconInterface {

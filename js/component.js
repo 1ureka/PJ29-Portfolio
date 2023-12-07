@@ -867,11 +867,47 @@ class SettingSelect extends component {
   _createMainButton() {
     const button = $("<button>").addClass("setting-button");
 
+    const iconContainer = $("<div>")
+      .addClass("setting-icon-container")
+      .appendTo(button);
+
+    const settingIcon = new SettingIcon();
+    settingIcon.element.forEach((e) => e.appendTo(button));
+
+    const makeImg = () => {
+      return $("<img>")
+        .attr("src", "images/icons/setting.png")
+        .addClass("setting-img")
+        .appendTo(iconContainer);
+    };
+    const makeGif = () => {
+      const timestamp = $.now();
+      return $("<img>")
+        .attr("src", `images/icons/setting.gif?timestamp=${timestamp}`)
+        .addClass("setting-gif")
+        .appendTo(iconContainer);
+    };
+
+    makeImg();
+
+    button.on("mouseenter", () => {
+      const imgs = button.find(".setting-img");
+      imgs.remove();
+      makeGif().show();
+    });
+    button.on("mouseleave", () => {
+      const gifs = button.find(".setting-gif");
+      gifs.hide(500, () => gifs.remove());
+      makeImg().hide().show(500);
+    });
+
     const hoverTls = [
+      createScaleTl(iconContainer, 1, 1.2),
       createScaleTl(button, 1, 1.05),
       createBackgroundColorTl(button, "#ea81af"),
       createTranslateTl(button, 0, -5),
       createZIndexTl(button, 5, 6),
+      ...settingIcon.timeline,
     ];
 
     const clickTl = createScaleYoyoTl(button, 0.8);

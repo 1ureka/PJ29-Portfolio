@@ -23,19 +23,21 @@ function createFolderButtonHoverTl(button) {
 }
 
 function createSortButtonHoverTl(button) {
-  gsap.set(button.find(".sort-button-layer2 > *"), { y: -40 });
+  gsap.set(button.find(".sort-button-layer2 > *").not(".sort-icon-container"), {
+    y: -40,
+  });
 
   const tl = gsap
     .timeline({ defaults: { duration: 0.2, ease: "set1" }, paused: true })
     .to(button, { x: 10, backgroundColor: "#ea81af" })
     .fromTo(button, { scale: 1 }, { scale: 1.05 }, "<")
     .to(
-      button.find(".sort-button-layer1 > *"),
+      button.find(".sort-button-layer1 > *").not(".sort-icon-container"),
       { y: 40, stagger: 0.2 / 3 },
       "<"
     )
     .to(
-      button.find(".sort-button-layer2 > *"),
+      button.find(".sort-button-layer2 > *").not(".sort-icon-container"),
       { y: 0, stagger: 0.2 / 3 },
       "<"
     );

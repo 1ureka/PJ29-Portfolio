@@ -323,12 +323,12 @@ class NameIcon extends IconInterface {
     const themes = ["white", "dark"];
 
     const createImg = (theme) => {
-      const container = $("<div>").addClass("name-icon-container");
+      const container = $("<div>").addClass("sort-icon-container");
 
       return container.append(
-        $("<img>").attr("src", `images/icons/name (frame) (${theme}).png`),
-        $("<img>").attr("src", `images/icons/name (inner1) (${theme}).png`),
-        $("<img>").attr("src", `images/icons/name (inner2) (${theme}).png`)
+        $("<img>").attr("src", `images/icons/sort (arrow2) (${theme}).png`),
+        $("<img>").attr("src", `images/icons/sort (A) (${theme}).png`),
+        $("<img>").attr("src", `images/icons/sort (Z) (${theme}).png`)
       );
     };
 
@@ -338,24 +338,33 @@ class NameIcon extends IconInterface {
   }
 
   _createTimeline() {
+    const whiteIcon = this.element[0];
+    const darkIcon = this.element[1];
+
+    const whiteArrow = whiteIcon.find("img").eq(0);
+    const whiteSymbols = whiteIcon.find("img").not(whiteArrow);
+    const darkArrow = darkIcon.find("img").eq(0);
+    const darkSymbols = darkIcon.find("img").not(darkArrow);
+
+    gsap.set(darkArrow, { y: 40 });
+    gsap.set(darkSymbols, { autoAlpha: 0, scale: 0.5 });
+
     const timelines = [];
 
-    this.element.forEach((container) => {
-      const t1 = gsap
-        .timeline({ defaults: { duration: 0.35 }, paused: true })
-        .to(container.children().slice(1), {
-          scale: 0.25,
-          rotate: -15,
-          stagger: { each: 0.1, yoyo: true, repeat: 1 },
-          ease: "back.in(4)",
-        });
+    const t1 = gsap
+      .timeline({ defaults: { duration: 0.35, ease: "set1" }, paused: true })
+      .to(whiteArrow, { y: -40, delay: 0.1 })
+      .to(darkArrow, { y: 0 }, "<");
 
-      const t2 = gsap
-        .timeline({ defaults: { duration: 0.2, ease: "set1" }, paused: true })
-        .to(container, { scale: 1.25 });
+    const t2 = gsap
+      .timeline({
+        defaults: { duration: 0.2, ease: "back.out(4)", stagger: 0.1 },
+        paused: true,
+      })
+      .to(whiteSymbols, { autoAlpha: 0, scale: 0.5, ease: "back.in(3)" })
+      .to(darkSymbols, { autoAlpha: 1, scale: 1 });
 
-      timelines.push(t1, t2);
-    });
+    timelines.push(t1, t2);
 
     return timelines;
   }

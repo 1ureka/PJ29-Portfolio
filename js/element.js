@@ -382,9 +382,13 @@ class DateIcon extends IconInterface {
     const themes = ["white", "dark"];
 
     const createImg = (theme) => {
-      const container = $("<div>").addClass("date-icon-container");
+      const container = $("<div>").addClass("sort-icon-container");
 
-      return container.append($("<img>").attr("src", ``));
+      return container.append(
+        $("<img>").attr("src", `images/icons/sort (arrow2) (${theme}).png`),
+        $("<img>").attr("src", `images/icons/sort (9) (${theme}).png`),
+        $("<img>").attr("src", `images/icons/sort (1) (${theme}).png`)
+      );
     };
 
     const icons = themes.map((theme) => createImg(theme));
@@ -393,7 +397,33 @@ class DateIcon extends IconInterface {
   }
 
   _createTimeline() {
-    const timelines = [gsap.timeline()];
+    const whiteIcon = this.element[0];
+    const darkIcon = this.element[1];
+
+    const whiteArrow = whiteIcon.find("img").eq(0);
+    const whiteSymbols = whiteIcon.find("img").not(whiteArrow);
+    const darkArrow = darkIcon.find("img").eq(0);
+    const darkSymbols = darkIcon.find("img").not(darkArrow);
+
+    gsap.set(darkArrow, { y: 40 });
+    gsap.set(darkSymbols, { autoAlpha: 0, scale: 0.5 });
+
+    const timelines = [];
+
+    const t1 = gsap
+      .timeline({ defaults: { duration: 0.35, ease: "set1" }, paused: true })
+      .to(whiteArrow, { y: -40, delay: 0.1 })
+      .to(darkArrow, { y: 0 }, "<");
+
+    const t2 = gsap
+      .timeline({
+        defaults: { duration: 0.2, ease: "back.out(4)", stagger: 0.1 },
+        paused: true,
+      })
+      .to(whiteSymbols, { autoAlpha: 0, scale: 0.5, ease: "back.in(3)" })
+      .to(darkSymbols, { autoAlpha: 1, scale: 1 });
+
+    timelines.push(t1, t2);
 
     return timelines;
   }
@@ -411,9 +441,13 @@ class SizeIcon extends IconInterface {
     const themes = ["white", "dark"];
 
     const createImg = (theme) => {
-      const container = $("<div>").addClass("size-icon-container");
+      const container = $("<div>").addClass("sort-icon-container");
 
-      return container.append($("<img>").attr("src", ``));
+      return container.append(
+        $("<img>").attr("src", `images/icons/sort (arrow2) (${theme}).png`),
+        $("<img>").attr("src", `images/icons/sort (large) (${theme}).png`),
+        $("<img>").attr("src", `images/icons/sort (small) (${theme}).png`)
+      );
     };
 
     const icons = themes.map((theme) => createImg(theme));
@@ -422,7 +456,33 @@ class SizeIcon extends IconInterface {
   }
 
   _createTimeline() {
-    const timelines = [gsap.timeline()];
+    const whiteIcon = this.element[0];
+    const darkIcon = this.element[1];
+
+    const whiteArrow = whiteIcon.find("img").eq(0);
+    const whiteSymbols = whiteIcon.find("img").not(whiteArrow);
+    const darkArrow = darkIcon.find("img").eq(0);
+    const darkSymbols = darkIcon.find("img").not(darkArrow);
+
+    gsap.set(darkArrow, { y: 40 });
+    gsap.set(darkSymbols, { autoAlpha: 0, scale: 0.5 });
+
+    const timelines = [];
+
+    const t1 = gsap
+      .timeline({ defaults: { duration: 0.35, ease: "set1" }, paused: true })
+      .to(whiteArrow, { y: -40, delay: 0.1 })
+      .to(darkArrow, { y: 0 }, "<");
+
+    const t2 = gsap
+      .timeline({
+        defaults: { duration: 0.2, ease: "back.out(4)", stagger: 0.1 },
+        paused: true,
+      })
+      .to(whiteSymbols, { autoAlpha: 0, scale: 0.5, ease: "back.in(3)" })
+      .to(darkSymbols, { autoAlpha: 1, scale: 1 });
+
+    timelines.push(t1, t2);
 
     return timelines;
   }

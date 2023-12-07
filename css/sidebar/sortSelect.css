@@ -54,10 +54,7 @@
 
 /* createSortIcon */
 .sort-icon-container,
-.sort-img-container,
-.name-icon-container,
-.date-icon-container,
-.size-icon-container {
+.sort-img-container {
   position: relative;
   width: 40px;
   height: 40px;

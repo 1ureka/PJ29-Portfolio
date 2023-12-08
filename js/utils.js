@@ -192,3 +192,21 @@ async function decode(image) {
 function findImageName(url) {
   return url.match(/[^/\\]+$/)[0].replace(/\.jpg/, "");
 }
+
+/**
+ * 獲取以給定索引為中心，上下共五個元素的陣列片段，考慮環狀狀態。
+ * @param {number} index - 陣列中的索引，用作片段的中心。
+ * @param {Array} list - 目標陣列。
+ * @returns {Array} - 以給定索引為中心的五個元素的陣列片段。
+ */
+function getArraySegment(index, list) {
+  const length = list.length;
+  const result = [];
+
+  for (let i = index - 2; i <= index + 2; i++) {
+    const nIndex = (i + length) % length;
+    result.push(list[nIndex]);
+  }
+
+  return result;
+}

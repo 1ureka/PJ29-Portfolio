@@ -132,12 +132,13 @@ $(document).ready(async function () {
 
     gallery[category].onSelect(async (e) => {
       const url = e.attr("src");
+      const index = e.parent().index();
 
       await delay(50);
       await gallery[category].hide();
       await enterPreviewMenu();
 
-      lightBox.show(5, gallery[category].urls);
+      lightBox.show(index, gallery[category].urls);
       previewImage.show(url, category);
       imageName.show(findImageName(url));
     });

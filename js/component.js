@@ -1725,7 +1725,7 @@ class LightBox extends component {
 
     container.append(buttons.prevButton);
 
-    const urls = list.slice(index - 2, index + 3);
+    const urls = getArraySegment(index, list);
     const imgs = await Promise.all(urls.map((url) => this._createImage(url)));
 
     imgs.forEach((img) => img.appendTo(container));

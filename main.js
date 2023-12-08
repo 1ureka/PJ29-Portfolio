@@ -137,6 +137,7 @@ $(document).ready(async function () {
       await gallery[category].hide();
       await enterPreviewMenu();
 
+      lightBox.show(5, gallery[category].urls);
       previewImage.show(url, category);
       imageName.show(findImageName(url));
     });
@@ -165,6 +166,10 @@ $(document).ready(async function () {
 
   //
   // 創建內容
+  const lightBox = new LightBox();
+
+  //
+  // 創建內容
   const imageName = new ImageName();
   imageName.appendTo("#header");
 
@@ -189,7 +194,11 @@ $(document).ready(async function () {
     previewButtons.show();
   };
   const leavePreviewMenu = async () => {
-    await Promise.all([previewButtons.hide(), imageName.hide()]);
+    await Promise.all([
+      previewButtons.hide(),
+      imageName.hide(),
+      lightBox.hide(),
+    ]);
     scrollButtons.show();
     settingSelect.show();
     folderSelect.show();

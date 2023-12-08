@@ -1708,6 +1708,183 @@ class PreviewButtons extends component {
 }
 
 /**
+ * 這個類別用於創建和管理投影片選單組件。
+ */
+class LightBox extends component {
+  constructor() {
+    super();
+
+    this.isShow = false;
+    this._timelines = {};
+  }
+
+  async _createLightBox(index, list) {
+    const container = $("<div>").addClass("light-box-container");
+
+    const buttons = this._createButtons();
+
+    container.append(buttons.prevButton);
+
+    const urls = list.slice(index - 2, index + 3);
+    const imgs = await Promise.all(urls.map((url) => this._createImage(url)));
+
+    imgs.forEach((img) => img.appendTo(container));
+
+    container.append(buttons.nextButton);
+
+    return container;
+  }
+
+  /**
+   * 創建單個圖片元素。
+   * @private @param {string} url - 圖片的 URL。
+   * @returns {Promise<jQuery>} - 創建的圖片容器元素。
+   */
+  async _createImage(url) {
+    const container = $("<div>").addClass("image-container");
+
+    const image = $("<img>").attr("src", url).attr("decoding", "async");
+    const reflexContainer = $("<div>").addClass("reflex-container");
+    $("<div>").addClass("reflex-plane").appendTo(reflexContainer);
+
+    container.append(reflexContainer, image);
+
+    await decode(image[0]);
+
+    this._bindImageTimeline(container);
+
+    return container;
+  }
+
+  /**
+   * 綁定圖片元素的時間軸。
+   * @private
+   * @param {jQuery} imageContainer - 圖片容器的jQuery對象。
+   */
+  _bindImageTimeline(imageContainer) {
+    const image = imageContainer.find("img");
+    const element = image.add(imageContainer.find(".reflex-plane"));
+    const t1 = createImageHoverTl(imageContainer);
+    const t2 = createScaleYoyoTl(imageContainer, 0.9);
+    const mousemoveHandler = this._createMousemoveHandler(element);
+
+    image.on("mouseenter", () => {
+      t1.play();
+
+      image.on("mousemove", mousemoveHandler);
+    });
+    image.on("mouseleave", () => {
+      t1.reverse();
+
+      image.off("mousemove", mousemoveHandler);
+
+      gsap.to(element, {
+        overwrite: "auto",
+        ease: "set1",
+        duration: 0.5,
+        rotateX: 0,
+        rotateY: 0,
+      });
+    });
+    image.on("click", () => t2.restart());
+  }
+
+  /**
+   * 創建滑鼠移動事件處理器。
+   * @private
+   * @param {jQuery} element - 被處理的元素。
+   * @returns {Function} - 滑鼠移動事件處理器函式。
+   */
+  _createMousemoveHandler(element) {
+    return (e) => {
+      const centerX = element.offset().left + element.width() / 2;
+      const centerY = element.offset().top + element.height() / 2;
+      const offsetX = e.pageX - centerX;
+      const offsetY = e.pageY - centerY;
+
+      gsap.to(element, {
+        overwrite: "auto",
+        ease: "back.out(10)",
+        duration: 0.5,
+        rotateX: -offsetY / 3,
+        rotateY: offsetX / 6,
+      });
+    };
+  }
+
+  /**
+   * 創建上下按鈕。
+   * @private
+   */
+  _createButtons() {
+    const prevButton = $("<button>").addClass("prev-button");
+    const nextButton = $("<button>").addClass("next-button");
+
+    return { prevButton, nextButton };
+  }
+
+  /**
+   * 創建並初始化圖片庫的時間軸效果。
+   * @private
+   */
+  _createTimelines() {
+    const elements = this.element.children();
+    this._timelines.show = gsap
+      .timeline({ defaults: { ease: "set1" }, paused: true })
+      .from(this.element, { autoAlpha: 0, duration: 0.05 })
+      .from(
+        elements,
+        {
+          autoAlpha: 0,
+          scale: 0.5,
+          ease: "back.out(2)",
+          stagger: { from: "random", amount: 0.35 },
+        },
+        "<"
+      );
+
+    return this;
+  }
+
+  /**
+   * 顯示圖片庫。
+   */
+  async show(index, list) {
+    if (this.isShow) return this;
+
+    this.element = await this._createLightBox(index, list);
+    this._createTimelines().appendTo("#sidebar");
+
+    this.isShow = true;
+    this._timelines.show.play();
+
+    return this;
+  }
+
+  /**
+   * 隱藏圖片庫。
+   */
+  async hide() {
+    if (!this.isShow) return this;
+
+    this.isShow = false;
+    this._timelines.show.reverse();
+
+    this._timelines.show.eventCallback("onReverseComplete", null);
+
+    await new Promise((resolve) => {
+      this._timelines.show.eventCallback("onReverseComplete", resolve);
+    });
+
+    this.element.remove();
+    this.element = null;
+    this._isAppendTo = false;
+
+    return this;
+  }
+}
+
+/**
  * 這個類別用於創建和管理預覽圖片檔名組件。
  */
 class ImageName extends component {

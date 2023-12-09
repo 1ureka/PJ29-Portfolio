@@ -1,5 +1,5 @@
 /* LightBox */
-.light-box-container {
+.light-boxes-container {
   position: absolute;
   top: 110px;
   width: 240px;
@@ -16,45 +16,37 @@
   min-height: 40px;
   margin: 10px;
 }
-.light-box-container > .image-container {
-  position: relative;
-  width: 180px;
-  max-height: calc((100% - 220px) / 5);
-  margin: 10px;
+.light-box-container {
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 180px;
+  height: calc((100% - 220px) / 5);
+  margin: 10px;
+}
+.light-boxes-container .image-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
   transform-style: preserve-3d;
 }
-.light-box-container > .image-container img {
+.light-boxes-container .image-container img {
   position: relative;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 10px;
-  cursor: pointer;
-  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px, rgb(51, 51, 51) 0px 0px 0px 3px;
 }
-.light-box-container .reflex-container {
+.light-boxes-container .reflex-container {
   position: absolute;
   width: 100%;
   height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  pointer-events: none;
   transform: translateZ(-15px);
 }
-.light-box-container .reflex-plane {
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.15);
-  background: radial-gradient(
-    circle at center,
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0.15),
-    rgba(255, 255, 255, 0.3)
-  );
-  border-radius: 10px;
+.image-filter {
+  position: absolute;
+  width: 110%;
+  height: 135%;
+  opacity: 0.5;
+  filter: blur(10px);
+  border-radius: 25px;
 }

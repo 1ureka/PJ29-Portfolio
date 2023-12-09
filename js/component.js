@@ -1719,7 +1719,7 @@ class LightBox extends component {
   }
 
   async _createLightBox(index, list) {
-    const container = $("<div>").addClass("light-box-container");
+    const container = $("<div>").addClass("light-boxes-container");
 
     const buttons = this._createButtons();
 
@@ -1741,17 +1741,27 @@ class LightBox extends component {
    * @returns {Promise<jQuery>} - 創建的圖片容器元素。
    */
   async _createImage(url) {
-    const container = $("<div>").addClass("image-container");
+    const container = $("<div>").addClass("light-box-container");
 
-    const image = $("<img>").attr("src", url).attr("decoding", "async");
+    const imageContainer = $("<div>").addClass("image-container");
+    const image = $("<img>")
+      .attr("src", url)
+      .attr("decoding", "async")
+      .addClass("light-box-image");
+
     const reflexContainer = $("<div>").addClass("reflex-container");
     $("<div>").addClass("reflex-plane").appendTo(reflexContainer);
 
-    container.append(reflexContainer, image);
+    imageContainer.append(reflexContainer, image);
 
     await decode(image[0]);
 
-    this._bindImageTimeline(container);
+    this._bindImageTimeline(imageContainer);
+
+    const filter = $("<img>").addClass("image-filter").attr("src", url);
+    container.append(filter, imageContainer);
+
+    this._bindFilterTimeline(container);
 
     return container;
   }
@@ -1787,6 +1797,22 @@ class LightBox extends component {
       });
     });
     image.on("click", () => t2.restart());
+  }
+
+  /**
+   * 綁定背景濾鏡元素的時間軸。
+   * @private
+   * @param {jQuery} container - 整個容器的jQuery對象。
+   */
+  _bindFilterTimeline(container) {
+    const filter = container.find(".image-filter");
+
+    const tl = gsap
+      .timeline({ defaults: { ease: "set1" }, paused: true })
+      .from(filter, { autoAlpha: 0, duration: 0.2 });
+
+    container.on("mouseenter", ".light-box-image", () => tl.play());
+    container.on("mouseleave", ".light-box-image", () => tl.reverse());
   }
 
   /**

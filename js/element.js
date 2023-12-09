@@ -528,7 +528,7 @@ class SettingIcon extends IconInterface {
         defaults: { duration: 0.35, ease: "back.out(3)" },
         paused: true,
       })
-      .to(whiteImg, { autoAlpha: 0, scale: 0.2, ease: "back.in(3)" })
+      .to(whiteImg, { autoAlpha: 0, scale: 0.2, ease: "set1" })
       .to(darkImg, { autoAlpha: 1, scale: 1 });
 
     const t2 = gsap

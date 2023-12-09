@@ -1846,6 +1846,29 @@ class LightBox extends component {
     const prevButton = $("<button>").addClass("prev-button");
     const nextButton = $("<button>").addClass("next-button");
 
+    const buttons = [prevButton, nextButton];
+
+    buttons.forEach((button) => {
+      const hoverTls = [
+        createBackgroundColorTl(button, "#ea81af"),
+        createScaleTl(button, 1, 1.05),
+      ];
+
+      const clickTl = createScaleYoyoTl(button, 0.9);
+
+      button.on("mouseenter", () => {
+        hoverTls.forEach((tl) => {
+          tl.play();
+        });
+      });
+      button.on("mouseleave", () => {
+        hoverTls.forEach((tl) => {
+          tl.reverse();
+        });
+      });
+      button.on("click", () => clickTl.restart());
+    });
+
     return { prevButton, nextButton };
   }
 

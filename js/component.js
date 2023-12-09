@@ -1718,6 +1718,12 @@ class LightBox extends component {
     this._timelines = {};
   }
 
+  /**
+   * 非同步方式創建投影片。
+   * @private @param {number} index - 目前投影片的索引。
+   * @param {string[]} list - 包含所有圖片URL的列表。
+   * @returns {Promise<jQuery>} - 包含創建的投影片內容的jQuery對象。
+   */
   async _createLightBox(index, list) {
     const container = $("<div>").addClass("light-boxes-container");
 
@@ -1840,7 +1846,7 @@ class LightBox extends component {
 
   /**
    * 創建上下按鈕。
-   * @private
+   * @private @returns {{prevButton: jQuery, nextButton: jQuery}}
    */
   _createButtons() {
     const prevButton = $("<button>").addClass("prev-button");
@@ -1848,7 +1854,8 @@ class LightBox extends component {
 
     const buttons = [prevButton, nextButton];
 
-    buttons.forEach((button) => {
+    buttons.forEach((button, index) => {
+      // 普通時間軸
       const hoverTls = [
         createBackgroundColorTl(button, "#ea81af"),
         createScaleTl(button, 1, 1.05),
@@ -1867,6 +1874,39 @@ class LightBox extends component {
         });
       });
       button.on("click", () => clickTl.restart());
+
+      // GIF動畫
+      const iconContainer = $("<div>").addClass("animated-up-icon-container");
+
+      if (index === 1) gsap.set(iconContainer, { rotate: 180 });
+
+      const makeImg = () => {
+        return $("<img>")
+          .attr("src", "images/icons/up (white).png")
+          .addClass("up-img")
+          .appendTo(iconContainer);
+      };
+      const makeGif = () => {
+        const timestamp = $.now();
+        return $("<img>")
+          .attr("src", `images/icons/top (animated).gif?timestamp=${timestamp}`)
+          .addClass("animated-up-gif")
+          .appendTo(iconContainer);
+      };
+
+      button.append(iconContainer);
+      makeImg();
+
+      button.on("mouseenter", () => {
+        const imgs = button.find(".up-img");
+        imgs.remove();
+        makeGif().show();
+      });
+      button.on("mouseleave", () => {
+        const gifs = button.find(".animated-up-gif");
+        gifs.hide(500, () => gifs.remove());
+        makeImg().hide().show(500);
+      });
     });
 
     return { prevButton, nextButton };

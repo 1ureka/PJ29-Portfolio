@@ -9,12 +9,24 @@
   justify-content: flex-start;
   align-items: center;
 }
+.animated-up-icon-container,
+.animated-up-icon-container > img {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .prev-button,
 .next-button {
   position: relative;
   width: 180px;
   min-height: 40px;
   margin: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .light-box-container {
   display: flex;
@@ -22,6 +34,7 @@
   align-items: center;
   width: 180px;
   height: calc((100% - 220px) / 5);
+  max-height: calc((9 / 16) * 180px);
   margin: 10px;
 }
 .light-boxes-container .image-container {

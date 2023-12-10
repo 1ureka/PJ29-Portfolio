@@ -28,7 +28,7 @@ jobs:
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
-          
+
           # 檢查是否有更改
           if [[ $(git status --porcelain) ]]; then
             git add imagesUrls.json
@@ -37,6 +37,17 @@ jobs:
           else
             echo "No changes to commit."
           fi
+
+  report-urls-json:
+    needs: update-images-urls
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Report URLs JSON
+        run: cat imagesUrls.json
 
   push-to-deploy:
     needs: update-images-urls

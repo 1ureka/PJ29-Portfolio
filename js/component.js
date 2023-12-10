@@ -1490,12 +1490,20 @@ class PreviewImage extends component {
     return container;
   }
 
+  /**
+   * 創建關閉按鈕元素。
+   * @private @returns {jQuery} - 關閉按鈕元素的 jQuery 物件。
+   */
   _createCloseButton() {
     const closeBtn = $("<button>").addClass("close-button");
 
     return closeBtn;
   }
 
+  /**
+   * 設置關閉事件處理程序。
+   * @param {Function} handler - 關閉事件的處理函數。
+   */
   onClose(handler) {
     const closeBtn = this.element.find("button");
 
@@ -1510,6 +1518,9 @@ class PreviewImage extends component {
     return this;
   }
 
+  /**
+   * 切換可操作模式。
+   */
   switchMode() {
     const image = this.element.find("img");
 
@@ -1554,6 +1565,9 @@ class PreviewImage extends component {
       });
   }
 
+  /**
+   * 顯示關閉按鈕。
+   */
   async showCloseButton() {
     this._timelines.showClose.play();
 
@@ -1566,6 +1580,9 @@ class PreviewImage extends component {
     return this;
   }
 
+  /**
+   * 隱藏關閉按鈕。
+   */
   async hideCloseButton() {
     this._timelines.showClose.reverse();
 

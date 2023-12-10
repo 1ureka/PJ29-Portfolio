@@ -148,6 +148,8 @@ $(document).ready(async function () {
   // 創建內容
   const previewImage = new PreviewImage();
   previewImage.appendTo("#content").onClose(async () => {
+    previewImage.switchMode();
+
     await previewImage.hideCloseButton();
 
     showFullContentsTl.reverse();
@@ -175,7 +177,7 @@ $(document).ready(async function () {
         showFullContentsTl.eventCallback("onComplete", resolve);
       });
 
-      previewImage.showCloseButton();
+      previewImage.switchMode().showCloseButton();
     }
   });
 

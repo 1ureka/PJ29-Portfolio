@@ -1459,7 +1459,15 @@ class PreviewImage extends component {
     this.category = "";
     this.url = "";
     this._timelines = {};
+
+    this.isFullscreen = false;
     this._handlers = {};
+    this._handlers.mousemove = (e) => {
+      console.log(e.type);
+    };
+    this._handlers.scroll = (e) => {
+      console.log(e.type);
+    };
 
     this.element = this._createImageContainer();
     this._createTimelines();
@@ -1498,6 +1506,24 @@ class PreviewImage extends component {
 
     this._handlers.close = handler;
     closeBtn.on("click", this._handlers.close);
+
+    return this;
+  }
+
+  switchMode() {
+    const image = this.element.find("img");
+
+    if (this.isFullscreen === false) {
+      image.on("mousemove", this._handlers.mousemove);
+      image.on("mousewheel", this._handlers.scroll);
+
+      this.isFullscreen = true;
+    } else {
+      image.off("mousemove", this._handlers.mousemove);
+      image.off("mousewheel", this._handlers.scroll);
+
+      this.isFullscreen = false;
+    }
 
     return this;
   }

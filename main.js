@@ -3,6 +3,8 @@ gsap.registerPlugin(CustomEase);
 CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
 
 $(document).ready(async function () {
+  let inTransition = true;
+
   const loadManager = new LoadManager();
   loadManager.onProgress((log) => {
     $("#loading-message").text(log.name);
@@ -48,7 +50,12 @@ $(document).ready(async function () {
     { label: "場景", category: "scene" },
   ]);
   folderSelect.appendTo("#sidebar").onSelect(async (category) => {
-    folderSelect.off();
+    if (inTransition) {
+      console.log("停止執行了folderSelect.onSelect");
+      return;
+    }
+
+    inTransition = true;
 
     if (category === "main") {
       await switchGallery("main");
@@ -57,7 +64,8 @@ $(document).ready(async function () {
       folderBoxes.show();
 
       scrollButtons.scrollElement = folderBoxes.element;
-      folderSelect.on();
+
+      inTransition = false;
       return;
     }
 
@@ -67,7 +75,8 @@ $(document).ready(async function () {
     headerBulb.switchLight(category);
 
     scrollButtons.scrollElement = gallery[category].element;
-    folderSelect.on();
+
+    inTransition = false;
   });
 
   //
@@ -106,7 +115,12 @@ $(document).ready(async function () {
     },
   ]);
   folderBoxes.appendTo("#content").onSelect(async (category) => {
-    folderSelect.off();
+    if (inTransition) {
+      console.log("停止執行了folderBoxes.onSelect");
+      return;
+    }
+
+    inTransition = true;
 
     await folderBoxes.hide();
     await switchGallery(category);
@@ -114,7 +128,9 @@ $(document).ready(async function () {
     headerBulb.switchLight(category);
 
     scrollButtons.scrollElement = gallery[category].element;
-    folderSelect.open().on();
+    folderSelect.open();
+
+    inTransition = false;
   });
 
   //
@@ -131,6 +147,13 @@ $(document).ready(async function () {
     gallery[category] = new Gallery(urlArray);
 
     gallery[category].onSelect(async (e) => {
+      if (inTransition) {
+        console.log("停止執行了gallery.onSelect");
+        return;
+      }
+
+      inTransition = true;
+
       const url = e.attr("src");
       const index = e.parent().index();
 
@@ -141,6 +164,8 @@ $(document).ready(async function () {
       lightBox.show(index, gallery[category].urls);
       previewImage.show(url, category);
       imageName.show(findImageName(url));
+
+      inTransition = false;
     });
   });
 
@@ -148,19 +173,33 @@ $(document).ready(async function () {
   // 創建內容
   const previewImage = new PreviewImage();
   previewImage.appendTo("#content").onClose(async () => {
+    if (inTransition) {
+      console.log("停止執行了previewImage.onClose");
+      return;
+    }
+    inTransition = true;
+
     await delay(100);
 
     previewImage.switchMode();
-
     await previewImage.hideCloseButton();
 
     showFullContentsTl.reverse();
+
+    inTransition = false;
   });
 
   //
   // 創建預覽時的選單按鈕
   const previewButtons = new PreviewButtons();
   previewButtons.appendTo("#sidebar").onSelect(async (e) => {
+    if (inTransition) {
+      console.log("停止執行了previewButtons.onSelect");
+      return;
+    }
+
+    inTransition = true;
+
     const targetClass = $(e.target).attr("class");
     const category = previewImage.category;
 
@@ -168,7 +207,7 @@ $(document).ready(async function () {
       await previewImage.hide();
       await gallery[category].show();
 
-      leavePreviewMenu();
+      await leavePreviewMenu();
       scrollButtons.scrollElement = gallery[category].element;
     }
 
@@ -181,6 +220,8 @@ $(document).ready(async function () {
 
       previewImage.switchMode().showCloseButton();
     }
+
+    inTransition = false;
   });
 
   //
@@ -253,6 +294,8 @@ $(document).ready(async function () {
     onComplete: () => {
       $("#loading-container").remove();
       headerBulb.switchLight("main");
+
+      inTransition = false;
     },
     delay: 1,
     paused: true,

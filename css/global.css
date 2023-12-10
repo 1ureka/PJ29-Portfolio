@@ -41,6 +41,9 @@ button {
     rgba(255, 255, 255, 0.1) 2px 5px 10px -3px inset;
   cursor: pointer;
 }
+img {
+  user-select: none;
+}
 
 /* createVerticalSeparator */
 .v-separator {

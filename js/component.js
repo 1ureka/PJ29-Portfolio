@@ -942,7 +942,7 @@ class SettingSelect extends component {
   _createTimelines() {
     this._timelines.hide = gsap
       .timeline({ defaults: { ease: "set1" }, paused: true })
-      .to(this.element, { autoAlpha: 0, x: -100 });
+      .fromTo(this.element, { autoAlpha: 1, x: 0 }, { autoAlpha: 0, x: -100 });
 
     return this;
   }

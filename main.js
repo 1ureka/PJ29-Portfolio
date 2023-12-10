@@ -147,7 +147,11 @@ $(document).ready(async function () {
   //
   // 創建內容
   const previewImage = new PreviewImage();
-  previewImage.appendTo("#content");
+  previewImage.appendTo("#content").onClose(async () => {
+    await previewImage.hideCloseButton();
+
+    showFullContentsTl.reverse();
+  });
 
   //
   // 創建預覽時的選單按鈕
@@ -162,6 +166,16 @@ $(document).ready(async function () {
 
       leavePreviewMenu();
       scrollButtons.scrollElement = gallery[category].element;
+    }
+
+    if (targetClass === "fullscreen-button") {
+      showFullContentsTl.play();
+      showFullContentsTl.eventCallback("onComplete", null);
+      await new Promise((resolve) => {
+        showFullContentsTl.eventCallback("onComplete", resolve);
+      });
+
+      previewImage.showCloseButton();
     }
   });
 
@@ -208,18 +222,25 @@ $(document).ready(async function () {
   };
 
   //
-  // 開場動畫
-  const t1 = gsap
+  // 全局動畫
+  const showFullContentsTl = gsap
+    .timeline({ defaults: { ease: "set1", duration: 0.75 }, paused: true })
+    .to("#content", { top: 0, left: 0 })
+    .to("#header", { y: -110 }, "<")
+    .to("#sidebar", { x: -300 }, "<")
+    .to("#version-display", { y: 60 }, "<");
+
+  const hideLoadingTl = gsap
     .timeline({ defaults: { ease: "power2.out", duration: 0.4 } })
     .to("#loading-container", { scale: 0.5, ease: "back.in(6)" })
     .to("#loading-container", { autoAlpha: 0, duration: 0.6 }, "<")
     .to("#progress-bar", { autoAlpha: 0, y: 5, duration: 0.6 }, "<");
 
-  const t2 = gsap
+  const showMenuTl = gsap
     .timeline({ defaults: { ease: "power2.out", duration: 0.6 } })
     .to("#header, #sidebar, #version-display", { x: 0, y: 0, stagger: 0.35 });
 
-  const t3 = gsap
+  const showDefaultsComponentsTl = gsap
     .timeline({ defaults: { ease: "power2.out", duration: 0.6 } })
     .to("body", { onStart: () => folderBoxes.show(), duration: 0.65 })
     .to("body", { onStart: () => scrollButtons.show(), duration: 0.65 }, "<");
@@ -233,5 +254,9 @@ $(document).ready(async function () {
     paused: true,
   });
 
-  opening.add(t1).add(t2).add(t3, "<0.6").play();
+  opening
+    .add(hideLoadingTl)
+    .add(showMenuTl)
+    .add(showDefaultsComponentsTl, "<0.6")
+    .play();
 });

@@ -1459,6 +1459,7 @@ class PreviewImage extends component {
     this.category = "";
     this.url = "";
     this._timelines = {};
+    this._handlers = {};
 
     this.element = this._createImageContainer();
     this._createTimelines();
@@ -1474,7 +1475,31 @@ class PreviewImage extends component {
 
     image.appendTo(container);
 
+    const closeBtn = this._createCloseButton();
+
+    closeBtn.appendTo(container);
+
     return container;
+  }
+
+  _createCloseButton() {
+    const closeBtn = $("<button>").addClass("close-button");
+
+    return closeBtn;
+  }
+
+  onClose(handler) {
+    const closeBtn = this.element.find("button");
+
+    if (this._handlers.close) {
+      closeBtn.off("click", this._handlers.close);
+      this._handlers.close = null;
+    }
+
+    this._handlers.close = handler;
+    closeBtn.on("click", this._handlers.close);
+
+    return this;
   }
 
   /**
@@ -1482,7 +1507,7 @@ class PreviewImage extends component {
    * @private
    */
   _createTimelines() {
-    const image = this.element.children();
+    const image = this.element.find("img");
     this._timelines.show = gsap
       .timeline({ defaults: { ease: "set1", duration: 0.35 }, paused: true })
       .from(this.element, { autoAlpha: 0, duration: 0.05 })
@@ -1492,6 +1517,39 @@ class PreviewImage extends component {
         y: -100,
         ease: "back.out(2)",
       });
+
+    const closeBtn = this.element.find("button");
+    this._timelines.showClose = gsap
+      .timeline({ defaults: { ease: "set1", duration: 0.35 }, paused: true })
+      .from(closeBtn, {
+        autoAlpha: 0,
+        scale: 0.5,
+        ease: "back.out(4)",
+      });
+  }
+
+  async showCloseButton() {
+    this._timelines.showClose.play();
+
+    this._timelines.showClose.eventCallback("onComplete", null);
+
+    await new Promise((resolve) => {
+      this._timelines.showClose.eventCallback("onComplete", resolve);
+    });
+
+    return this;
+  }
+
+  async hideCloseButton() {
+    this._timelines.showClose.reverse();
+
+    this._timelines.showClose.eventCallback("onReverseComplete", null);
+
+    await new Promise((resolve) => {
+      this._timelines.showClose.eventCallback("onReverseComplete", resolve);
+    });
+
+    return this;
   }
 
   /**

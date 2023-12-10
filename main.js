@@ -148,6 +148,8 @@ $(document).ready(async function () {
   // 創建內容
   const previewImage = new PreviewImage();
   previewImage.appendTo("#content").onClose(async () => {
+    await delay(100);
+
     previewImage.switchMode();
 
     await previewImage.hideCloseButton();

@@ -1497,6 +1497,56 @@ class PreviewImage extends component {
   _createCloseButton() {
     const closeBtn = $("<button>").addClass("close-button");
 
+    const hoverTls = [
+      createBackgroundColorTl(closeBtn, "#ea81af"),
+      createScaleTl(closeBtn, 1, 1.05),
+    ];
+
+    const clickTl = createScaleYoyoTl(closeBtn, 0.75);
+
+    closeBtn.on("mouseenter", () => {
+      hoverTls.forEach((tl) => {
+        tl.play();
+      });
+    });
+    closeBtn.on("mouseleave", () => {
+      hoverTls.forEach((tl) => {
+        tl.reverse();
+      });
+    });
+    closeBtn.on("click", () => clickTl.restart());
+
+    // GIF動畫
+    const iconContainer = $("<div>").addClass("close-icon-container");
+
+    const makeImg = () => {
+      return $("<img>")
+        .attr("src", "images/icons/close.png")
+        .addClass("close-img")
+        .appendTo(iconContainer);
+    };
+    const makeGif = () => {
+      const timestamp = $.now();
+      return $("<img>")
+        .attr("src", `images/icons/close.gif?timestamp=${timestamp}`)
+        .addClass("close-gif")
+        .appendTo(iconContainer);
+    };
+
+    closeBtn.append(iconContainer);
+    makeImg();
+
+    closeBtn.on("mouseenter", () => {
+      const imgs = closeBtn.find(".close-img");
+      imgs.remove();
+      makeGif().show();
+    });
+    closeBtn.on("mouseleave", () => {
+      const gifs = closeBtn.find(".close-gif");
+      gifs.hide(500, () => gifs.remove());
+      makeImg().hide().show(500);
+    });
+
     return closeBtn;
   }
 
@@ -1505,7 +1555,7 @@ class PreviewImage extends component {
    * @param {Function} handler - 關閉事件的處理函數。
    */
   onClose(handler) {
-    const closeBtn = this.element.find("button");
+    const closeBtn = this.element.children("button");
 
     if (this._handlers.close) {
       closeBtn.off("click", this._handlers.close);
@@ -1522,7 +1572,7 @@ class PreviewImage extends component {
    * 切換可操作模式。
    */
   switchMode() {
-    const image = this.element.find("img");
+    const image = this.element.children("img");
 
     if (this.isFullscreen === false) {
       image.on("mousemove", this._handlers.mousemove);
@@ -1544,7 +1594,7 @@ class PreviewImage extends component {
    * @private
    */
   _createTimelines() {
-    const image = this.element.find("img");
+    const image = this.element.children("img");
     this._timelines.show = gsap
       .timeline({ defaults: { ease: "set1", duration: 0.35 }, paused: true })
       .from(this.element, { autoAlpha: 0, duration: 0.05 })
@@ -1555,7 +1605,7 @@ class PreviewImage extends component {
         ease: "back.out(2)",
       });
 
-    const closeBtn = this.element.find("button");
+    const closeBtn = this.element.children("button");
     this._timelines.showClose = gsap
       .timeline({ defaults: { ease: "set1", duration: 0.35 }, paused: true })
       .from(closeBtn, {
@@ -1604,7 +1654,7 @@ class PreviewImage extends component {
   show(url, category) {
     this.url = url;
     this.category = category;
-    this.element.find("img").attr("src", url);
+    this.element.children("img").attr("src", url);
 
     this._timelines.show.restart();
 

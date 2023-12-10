@@ -1,0 +1,23 @@
+/* ImageName */
+.file-name-container {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.file-name {
+  margin: 0;
+  margin-right: 10px;
+  font-size: 30px;
+  padding: 5px;
+}
+.extend-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30px;
+  padding: 0 10px 5px 10px;
+}
+.extend-button label {
+  pointer-events: none;
+}

@@ -1,0 +1,65 @@
+/* LightBox */
+.light-boxes-container {
+  position: absolute;
+  top: 110px;
+  width: 240px;
+  height: calc(100vh - 250px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+.animated-up-icon-container,
+.animated-up-icon-container > img {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.prev-button,
+.next-button {
+  position: relative;
+  width: 180px;
+  min-height: 40px;
+  margin: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.light-box-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 180px;
+  height: calc((100% - 220px) / 5);
+  max-height: calc((9 / 16) * 180px);
+  margin: 10px;
+}
+.light-boxes-container .image-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+.light-boxes-container .image-container img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.light-boxes-container .reflex-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform: translateZ(-15px);
+}
+.image-filter {
+  position: absolute;
+  width: 110%;
+  height: 135%;
+  opacity: 0.5;
+  filter: blur(10px);
+  border-radius: 25px;
+}

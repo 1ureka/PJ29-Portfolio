@@ -1,0 +1,74 @@
+/* createSortSelect */
+.sort-select {
+  position: relative;
+  width: 240px;
+  height: auto;
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+/* createSortButton */
+.sort-button,
+.reverse-container {
+  width: 240px;
+  height: 45px;
+  margin: 5px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.sort-button:first-child {
+  position: relative;
+  width: 115px;
+  left: -60px;
+  z-index: 6;
+}
+.sort-button-layer1,
+.sort-button-layer2 {
+  position: absolute;
+  width: 240px;
+  height: 40px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 5px;
+  clip-path: inset(0);
+  pointer-events: none;
+}
+.sort-button-label {
+  position: relative;
+  width: 172px;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.sort-button-layer2 > .sort-button-label {
+  color: hsl(240, 5%, 10%);
+  font-weight: bolder;
+}
+
+/* createSortIcon */
+.sort-icon-container,
+.sort-img-container {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  clip-path: inset(-1px);
+}
+.sort-img-container {
+  position: absolute;
+  clip-path: none;
+}
+.sort-button img {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+}

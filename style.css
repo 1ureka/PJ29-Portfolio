@@ -1,7 +1,7 @@
 /* all_styles.css */
 @import url("css/global.css");
 @import url("css/color.css");
-@import url("css/header.css");
-@import url("css/sidebar.css");
-@import url("css/content.css");
+@import url("css/header/header.css");
+@import url("css/sidebar/sidebar.css");
+@import url("css/content/content.css");
 @import url("css/aside.css");

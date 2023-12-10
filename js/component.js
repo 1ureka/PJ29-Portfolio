@@ -1,352 +1,3 @@
-//
-// 基礎 (icon, input ...)
-//
-/**
- * 創建包含上/下圖示的容器。
- * @returns {jQuery} 滾動圖示的容器。
- */
-function createScrollIcon() {
-  const container = $("<div>").addClass("scroll-icon-container");
-
-  const img1 = $("<img>")
-    .addClass("scroll-icon-img")
-    .attr("src", `icons/up (white).png`);
-  const img2 = $("<img>")
-    .addClass("scroll-icon-img")
-    .attr("src", `icons/up (dark).png`);
-  gsap.set(img2, { y: 40 });
-
-  container.append(img1, img2);
-  return container;
-}
-
-/**
- * 創建包含搜尋圖示的容器。
- * @returns {jQuery} 搜尋圖示的容器。
- */
-function createSearchIcon() {
-  const container = $("<div>").addClass("search-icon-container");
-
-  const lens = $("<div>").addClass("search-icon-lens");
-  const inner1 = $("<div>").addClass("search-icon-inner");
-  const inner2 = $("<div>").addClass("search-icon-inner");
-  gsap.set(inner1.add(inner2), { rotate: 5 });
-  gsap.set(inner2, { x: -10 });
-  lens.append(inner1, inner2);
-
-  const img = $("<img>")
-    .addClass("search-icon-img")
-    .attr("src", `icons/search.png`);
-
-  container.append(lens, img);
-
-  return container;
-}
-
-/**
- * 創建包含橡皮擦圖示的容器。
- * @returns {jQuery} 橡皮擦圖示的容器。
- */
-function createEraserIcon() {
-  const container = $("<div>").addClass("eraser-icon-container").hide();
-
-  const img1 = $("<img>").attr("src", `icons/erase (line).png`);
-  const img2 = $("<img>").attr("src", `icons/erase.png`);
-  gsap.set(img2, { x: 10 });
-
-  container.append(img1, img2);
-
-  const t1 = createEraserIconHoverTl(container);
-  const t2 = createEraserIconClickTl(container);
-
-  container.on("mouseenter", () => t1.play());
-  container.on("mouseleave", () => t1.reverse());
-  container.on("click", () => t2.restart());
-
-  return container;
-}
-
-/**
- * 創建資料夾圖示，包含圖片和前景元素。
- * @param {Object} config - 用於設定資料夾圖示的配置物件。
- * @param {string} config.imgColor - 圖片顏色。
- * @param {string} config.backgroundColor - 前景元素的背景顏色。
- * @param {string} config.borderColor - 前景元素的邊框顏色。
- * @returns {jQuery} 資料夾圖示的容器。
- */
-function createFolderIcon(config) {
-  // 預設配置
-  const defaultConfig = {
-    imgColor: "white",
-    backgroundColor: "white",
-    borderColor: "hsl(240, 5%, 10%)",
-  };
-
-  // 合併預設配置和用戶提供的配置
-  config = { ...defaultConfig, ...config };
-
-  const container = $("<div>").addClass("folder-icon-container");
-
-  const img = $("<img>")
-    .addClass("folder-icon-img")
-    .attr("src", `icons/folder (${config.imgColor}).png`);
-  const front = $("<div>")
-    .addClass("folder-icon-front")
-    .css("backgroundColor", config.backgroundColor)
-    .css("borderColor", config.borderColor);
-
-  container.append(img, front);
-
-  return container;
-}
-
-/**
- * 創建包含排序圖示圖片的容器。
- * @param {boolean} darkTheme 是否是深色主題
- * @returns {jQuery} 排序圖示圖片的容器。
- */
-function createSortImg(darkTheme = false) {
-  const container = $("<div>").addClass("sort-img-container");
-
-  const lines = Array.from({ length: 4 }, (_, index) =>
-    $("<img>")
-      .attr(
-        "src",
-        `icons/sort (line${index + 1})${darkTheme ? " (dark)" : ""}.png`
-      )
-      .css("transformOrigin", `${30 - index * 3}px ${8 + index * 8}px`)
-  );
-
-  const arrows = Array.from({ length: 2 }, () =>
-    $("<img>").attr(
-      "src",
-      `icons/sort (arrow)${darkTheme ? " (dark)" : ""}.png`
-    )
-  );
-
-  container.append(...lines, ...arrows);
-  gsap.set(container.children().slice(5), { y: 40 });
-
-  return container;
-}
-
-/**
- * 創建包含排序圖示的容器。
- * @returns {jQuery} 排序圖示的容器。
- */
-function createSortIcon() {
-  const container = $("<div>").addClass("sort-icon-container");
-
-  const whiteIcon = createSortImg(false);
-  const darkIcon = createSortImg(true);
-  gsap.set(darkIcon, { autoAlpha: 0 });
-
-  container.append(whiteIcon, darkIcon);
-
-  return container;
-}
-
-/**
- * 創建包含全螢幕圖示的容器。
- * @returns {jQuery} 排序全螢幕的容器。
- */
-function createFullscreenIcon() {
-  const container = $("<div>").addClass("fullscreen-icon-container");
-
-  for (let n = 1; n < 9; n++) {
-    const img = $("<img>")
-      .attr("src", `icons/fullscreen ${n}.png`)
-      .appendTo(container);
-    if (n >= 5) gsap.set(img, { autoAlpha: 0 });
-  }
-
-  return container;
-}
-
-/**
- * 創建垂直分隔線。
- * @param {Object} config - 用於設定分隔線的配置物件。
- * @param {number} config.margin - 分隔線的邊距。
- * @param {number} config.width - 分隔線的寬度。
- * @param {string} config.backgroundColor - 分隔線的背景顏色。
- * @returns {jQuery} 垂直分隔線。
- */
-function createVerticalSeparator(config) {
-  // 預設配置
-  const defaultConfig = {
-    margin: 5, // 預設邊距
-    width: 2, // 預設粗細
-    backgroundColor: "white", // 預設背景顏色
-  };
-
-  // 合併預設配置和用戶提供的配置
-  config = { ...defaultConfig, ...config };
-
-  const separator = $("<div>")
-    .addClass("v-separator")
-    .css({
-      margin: `0 ${config.margin}px`,
-      width: `${config.width}px`,
-      backgroundColor: config.backgroundColor,
-    });
-
-  return separator;
-}
-
-/**
- * 創建水平分隔線。
- * @param {Object} config - 用於設定分隔線的配置物件。
- * @param {number} config.margin - 分隔線的邊距。
- * @param {number} config.height - 分隔線的高度。
- * @param {string} config.backgroundColor - 分隔線的背景顏色。
- * @returns {jQuery} 水平分隔線。
- */
-function createHorizontalSeparator(config) {
-  // 預設配置
-  const defaultConfig = {
-    margin: 5, // 預設邊距
-    height: 2, // 預設粗細
-    backgroundColor: "white", // 預設背景顏色
-  };
-
-  // 合併預設配置和用戶提供的配置
-  config = { ...defaultConfig, ...config };
-
-  const separator = $("<div>")
-    .addClass("h-separator")
-    .css({
-      margin: `${config.margin}px 0`,
-      height: `${config.height}px`,
-      backgroundColor: config.backgroundColor,
-    });
-
-  return separator;
-}
-
-/**
- * 創建文字輸入框。
- * @param {Object} config - 用於設定文字輸入框的配置物件。
- * @returns {jQuery} 文字輸入框的容器。
- */
-function createTextInput(config) {
-  // 預設配置
-  const defaultConfig = {
-    placeholder: "文字輸入",
-    width: 410,
-    height: 40,
-  };
-
-  // 合併預設配置和用戶提供的配置
-  config = { ...defaultConfig, ...config };
-
-  const container = $("<div>")
-    .css({ width: config.width, height: config.height })
-    .addClass("text-input-container");
-  const input = $("<input>")
-    .attr("type", "text")
-    .attr("placeholder", config.placeholder)
-    .css({ width: config.width, height: config.height })
-    .addClass("text-input");
-
-  container.append(input);
-
-  return container;
-}
-
-/**
- * 創建元素的輪廓效果。
- * @param {jQuery} element - 要添加輪廓的元素。
- * @param {Object} config - 用於設定輪廓效果的配置物件。
- * @returns {{
- *   container: jQuery,
- *   outline1: jQuery,
- *   outline2: jQuery
- * }} 包含輪廓元素的物件。
- */
-function createOutline(element, config) {
-  // 預設配置
-  const defaultConfig = {
-    outlineColor: "white",
-    outlineWidth: 2,
-    duration: 0.2,
-  };
-
-  // 合併預設配置和用戶提供的配置
-  config = { ...defaultConfig, ...config };
-
-  const elementContainer = element.closest("div");
-  const container = $("<div>")
-    .css({
-      position: "absolute",
-      width: elementContainer.width(),
-      height: elementContainer.height(),
-      clipPath: `inset(-${config.outlineWidth}px round 10px)`,
-    })
-    .appendTo(elementContainer);
-  const outline1 = $("<div>")
-    .css({
-      position: "absolute",
-      backgroundColor: config.outlineColor,
-      borderRadius: "10px",
-      bottom: -1 * config.outlineWidth,
-      left: -1 * config.outlineWidth,
-    })
-    .appendTo(container);
-  const outline2 = $("<div>")
-    .css({
-      position: "absolute",
-      backgroundColor: config.outlineColor,
-      borderRadius: "10px",
-      top: -1 * config.outlineWidth,
-      right: -1 * config.outlineWidth,
-    })
-    .appendTo(container);
-
-  element.before(container);
-
-  return { container, outline1, outline2 };
-}
-
-/**
- * 創建一個燈泡元素。
- * @param {Object} config - 用於配置燈泡的物件。
- * @param {number} config.width - 燈泡的寬度。
- * @param {number} config.height - 燈泡的高度。
- * @returns {jQuery} - 包含燈泡的jQuery物件。
- */
-function createBulb(config) {
-  // 預設配置
-  const defaultConfig = {
-    width: 40,
-    height: 40,
-  };
-
-  // 合併預設配置和用戶提供的配置
-  config = { ...defaultConfig, ...config };
-
-  const container = $("<div>")
-    .addClass("bulb-container")
-    .css({
-      width: `${config.width + 20}px`,
-      height: `${config.height + 20}px`,
-    });
-
-  const bulb = $("<div>")
-    .addClass("bulb")
-    .css({ width: `${config.width}px`, height: `${config.height}px` });
-  const bulbFilter = $("<div>")
-    .addClass("bulb-filter")
-    .css({ width: `${config.width}px`, height: `${config.height}px` })
-    .appendTo(bulb);
-
-  container.append(bulb);
-
-  return container;
-}
-
-//
-// 複雜
-//
 /**
  * 組件的預設空白類
  */
@@ -378,7 +29,7 @@ class ScrollButtons extends component {
   constructor() {
     super();
     this._timelines = {};
-    this.handlers = {};
+    this._handlers = {};
 
     this.isShow = false;
 
@@ -391,8 +42,6 @@ class ScrollButtons extends component {
       .append(this._createScrollButton("up"), this._createScrollButton("down"));
 
     this.element = container;
-    /** @type {HTMLElement} */
-    this._scrollElement;
 
     this._createTimelines();
   }
@@ -405,19 +54,42 @@ class ScrollButtons extends component {
    */
   _createScrollButton(type) {
     const button = $("<button>").addClass("scroll-button").addClass(type);
-    const icon = createScrollIcon();
-    if (type === "down") gsap.set(icon, { rotate: 180 });
+    const icon = new ScrollIcon();
+    if (type === "down") gsap.set(icon.element, { rotate: 180 });
 
-    button.append(icon);
+    button.append(icon.element);
 
-    const t1 = createScrollButtonHoverTl(button);
-    const t2 = createScrollButtonClickTl(button);
+    const hoverTls = [
+      ...icon.timeline,
+      createBackgroundColorTl(button, "#ea81af"),
+    ];
 
-    button.on("mouseenter", () => t1.play());
-    button.on("mouseleave", () => t1.reverse());
-    button.on("click", () => t2.restart());
+    const clickTl = createScaleYoyoTl(button, 0.6);
+
+    this._bindTimeline(button, hoverTls, clickTl);
 
     return button;
+  }
+
+  /**
+   * 將時間軸綁定到按鈕的不同事件。
+   * @param {jQuery} button - 要綁定的按鈕元素。
+   * @param {TimelineMax[]} hover - 滑鼠進入時觸發的時間軸陣列。
+   * @param {TimelineMax} click - 按鈕點擊時觸發的時間軸。
+   */
+  _bindTimeline(button, hover, click) {
+    button.on("mouseenter", () => {
+      hover.forEach((tl) => {
+        tl.play();
+      });
+    });
+    button.on("mouseleave", () => {
+      hover.forEach((tl) => {
+        tl.reverse();
+      });
+    });
+
+    button.on("click", () => click.restart());
   }
 
   /**
@@ -446,8 +118,19 @@ class ScrollButtons extends component {
    * @param {jQuery} element - 欲添加滾動按鈕的 jQuery 元素。
    */
   set scrollElement(element) {
+    /** @type {HTMLElement} */
     this._scrollElement = element[0];
-    this._onUp(() => this._up())._onDown(() => this._down());
+
+    if (this._handlers.up) this.element.off("click", ".up", this._handlers.up);
+
+    this._handlers.up = () => this._up();
+    this.element.on("click", ".up", this._handlers.up);
+
+    if (this._handlers.down)
+      this.element.off("click", ".down", this._handlers.down);
+
+    this._handlers.down = () => this._down();
+    this.element.on("click", ".down", this._handlers.down);
   }
 
   /**
@@ -476,43 +159,14 @@ class ScrollButtons extends component {
   }
 
   /**
-   * 註冊上滾動按鈕的點擊事件處理程序。
-   * @private @param {Function} handler - 點擊事件的處理程序。
-   * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
-   */
-  _onUp(handler) {
-    if (this.handlers.up) this.element.off("click", ".up", this.handlers.up);
-
-    this.handlers.up = handler;
-    this.element.on("click", ".up", this.handlers.up);
-
-    return this;
-  }
-
-  /**
-   * 註冊下滾動按鈕的點擊事件處理程序。
-   * @private @param {Function} handler - 點擊事件的處理程序。
-   * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
-   */
-  _onDown(handler) {
-    if (this.handlers.down)
-      this.element.off("click", ".down", this.handlers.down);
-
-    this.handlers.down = handler;
-    this.element.on("click", ".down", this.handlers.down);
-
-    return this;
-  }
-
-  /**
    * 解除所有事件處理程序的註冊。
    * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
    */
   off() {
-    this.element.off("click", ".up", this.handlers.up);
-    this.handlers.up = null;
-    this.element.off("click", ".down", this.handlers.down);
-    this.handlers.down = null;
+    this.element.off("click", ".up", this._handlers.up);
+    this._handlers.up = null;
+    this.element.off("click", ".down", this._handlers.down);
+    this._handlers.down = null;
 
     return this;
   }
@@ -558,12 +212,12 @@ class SearchBar extends component {
   constructor() {
     super();
     this._timelines = {};
-    this.handlers = {};
+    this._handlers = {};
     this.isShow = true;
 
     /** 包含搜尋列的 jQuery 物件。 @type {jQuery} */
     this.element = this._createSearchBar();
-    this._createTimelines()._bindTimeline();
+    this._createTimelines();
   }
 
   /**
@@ -574,18 +228,73 @@ class SearchBar extends component {
   _createSearchBar() {
     const container = $("<div>").addClass("search-bar");
 
-    const searchIcon = createSearchIcon();
-    const eraserIcon = createEraserIcon();
-    const inputContainer = createTextInput({
-      placeholder: "搜尋",
-      class: "search",
-      width: 410,
-      height: 40,
-    });
+    const searchIcon = new SearchIcon();
+    const eraserIcon = new EraserIcon();
 
-    container.append(searchIcon, inputContainer, eraserIcon);
+    const inputContainer = $("<div>")
+      .css({ width: 410, height: 40 })
+      .addClass("text-input-container");
+    const input = $("<input>")
+      .attr("type", "text")
+      .attr("placeholder", "搜尋")
+      .css({ width: 410, height: 40 })
+      .addClass("text-input")
+      .appendTo(inputContainer);
+
+    container.append(searchIcon.element, inputContainer, eraserIcon.element);
+
+    const hoverTls = [createOutlineTl(input), ...searchIcon.timeline];
+
+    this._bindTimeline(container, hoverTls);
+    this._bindEvents(container, eraserIcon.element);
 
     return container;
+  }
+
+  /**
+   * 綁定搜尋列的時間軸動畫。
+   * @private
+   */
+  _bindTimeline(container, hover) {
+    const input = container.find("input");
+
+    container.on("mouseenter", () => {
+      hover.forEach((tl) => {
+        tl.play();
+      });
+    });
+    container.on("mouseleave", () => {
+      hover.forEach((tl) => {
+        if (!input.is(":focus")) tl.reverse();
+      });
+    });
+    container.on("focus", "input", () => {
+      hover.forEach((tl) => {
+        tl.play();
+      });
+    });
+    container.on("blur", "input", () => {
+      hover.forEach((tl) => {
+        tl.reverse();
+      });
+    });
+  }
+
+  /**
+   * 綁定搜尋列的邏輯事件。
+   * @private
+   */
+  _bindEvents(container, eraser) {
+    container.on("click", ".eraser-icon-container", () => {
+      this.input = "";
+    });
+    container.on("keyup", "input", () => {
+      if (this.input) {
+        eraser.show(350);
+        return;
+      }
+      eraser.hide(350);
+    });
   }
 
   /**
@@ -594,64 +303,9 @@ class SearchBar extends component {
    * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
    */
   _createTimelines() {
-    const input = this.element.find("input");
-    const searchIcon = this.element.find(".search-icon-container");
-
-    this._timelines.outline = createOutlineTl(input);
-    const { t1, t2 } = createSearchIconHoverTl(searchIcon);
-    this._timelines.hover1 = t1;
-    this._timelines.hover2 = t2;
-
-    this._timelines.play = () => {
-      this._timelines.outline.play();
-      this._timelines.hover1.play();
-      this._timelines.hover2.play();
-    };
-
-    this._timelines.reverse = () => {
-      this._timelines.outline.reverse();
-      this._timelines.hover1.reverse();
-      this._timelines.hover2.reverse();
-    };
-
     this._timelines.hide = gsap
       .timeline({ defaults: { ease: "set1" }, paused: true })
       .to(this.element, { autoAlpha: 0, y: -100 });
-
-    return this;
-  }
-
-  /**
-   * 綁定搜尋列的時間軸動畫。
-   * @private
-   * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
-   */
-  _bindTimeline() {
-    const input = this.element.find("input");
-    const eraserIcon = this.element.find(".eraser-icon-container");
-
-    this.element.on("mouseenter", () => {
-      this._timelines.play();
-    });
-    this.element.on("mouseleave", () => {
-      if (!input.is(":focus")) this._timelines.reverse();
-    });
-    this.element.on("focus", "input", () => {
-      this._timelines.play();
-    });
-    this.element.on("blur", "input", () => {
-      this._timelines.reverse();
-    });
-    this.element.on("keyup", "input", () => {
-      if (this.input) {
-        eraserIcon.show(350);
-        return;
-      }
-      eraserIcon.hide(350);
-    });
-    this.element.on("click", ".eraser-icon-container", () => {
-      this.input = "";
-    });
 
     return this;
   }
@@ -692,13 +346,13 @@ class SearchBar extends component {
    * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
    */
   onInput(handler) {
-    if (this.handlers.input) console.error("已經註冊過onInput");
+    if (this._handlers.input) console.error("已經註冊過onInput");
 
-    this.handlers.input = () => {
+    this._handlers.input = () => {
       if (this.input) handler();
     };
 
-    this.element.on("keyup", "input", this.handlers.input);
+    this.element.on("keyup", "input", this._handlers.input);
 
     return this;
   }
@@ -709,12 +363,12 @@ class SearchBar extends component {
    * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
    */
   onClear(handler) {
-    if (this.handlers.clear) console.error("已經註冊過onClear");
+    if (this._handlers.clear) console.error("已經註冊過onClear");
 
-    this.handlers.clear = handler;
+    this._handlers.clear = handler;
 
     this.element.on("keyup", "input", () => {
-      if (!this.input) this.handlers.clear();
+      if (!this.input) this._handlers.clear();
     });
 
     return this;
@@ -738,10 +392,10 @@ class SearchBar extends component {
   set input(value) {
     this.element.find("input").val(value);
 
-    if (value !== "" && this.handlers.input) {
-      this.handlers.input();
-    } else if (this.handlers.clear) {
-      this.handlers.clear();
+    if (value !== "" && this._handlers.input) {
+      this._handlers.input();
+    } else if (this._handlers.clear) {
+      this._handlers.clear();
     }
 
     return this;
@@ -788,15 +442,15 @@ class FolderSelect extends component {
       configs[0].label,
       configs[0].category
     );
-    const hr = createHorizontalSeparator({ margin: 8 });
-    select.append(main, hr);
+    const hr = new HorizontalSeparator({ margin: 8 });
+    select.append(main, hr.element);
 
     configs.slice(1).forEach((config) => {
       this._createFolderButton(config.label, config.category).appendTo(select);
     });
 
     // 製作時間軸也包括初始化收起狀態
-    this._timelines.open = createFolderSelectOpenTl(select);
+    this._timelines.open = createSelectOpenTl(select);
 
     main.on("click", () => {
       if (this.isClosed) {
@@ -816,56 +470,95 @@ class FolderSelect extends component {
    * @returns {jQuery} 資料夾按鈕。
    */
   _createFolderButton(name, category) {
+    const icons = new FolderIcon("hsl(240, 5%, 10%)");
+
     const button = $("<button>")
       .addClass("folder-button")
       .data("category", category);
 
     const configs = [
-      {
-        separator: {
-          margin: 8,
-        },
-        iconContainer: {},
-      },
-      {
-        separator: {
-          margin: 8,
-          backgroundColor: "hsl(240, 5%, 10%)",
-        },
-        iconContainer: {
-          imgColor: "black",
-          backgroundColor: "hsl(240, 5%, 10%)",
-          borderColor: "#ea81af",
-        },
-      },
+      { separator: { margin: 8 } },
+      { separator: { margin: 8, backgroundColor: "hsl(240, 5%, 10%)" } },
     ];
 
     configs.forEach((config, index) => {
       const layer = $("<div>").addClass(`folder-button-layer${index + 1}`);
-      const separator = createVerticalSeparator(config.separator);
-      const iconContainer = createFolderIcon(config.iconContainer);
+      const vs = new VerticalSeparator(config.separator);
       const label = $("<label>").addClass("folder-button-label").text(name);
-      layer.append(iconContainer, separator, label).appendTo(button);
+
+      layer.append(icons.element[index], vs.element, label).appendTo(button);
     });
 
-    const t1 = createFolderIconHoverTl(button.find(".folder-icon-container"));
+    const hoverTls = [createFolderButtonHoverTl(button), ...icons.timeline];
 
-    gsap.set(button.find(".folder-button-layer2 > *"), { y: -40 });
+    const clickTl = createScaleYoyoTl(button, 0.9);
 
-    const t2 = createFolderButtonHoverTl(button);
-    const t3 = createFolderButtonClickTl(button);
-
-    button.on("mouseenter", () => {
-      t1.play();
-      t2.play();
-    });
-    button.on("mouseleave", () => {
-      t1.reverse();
-      t2.reverse();
-    });
-    button.on("click", () => t3.restart());
+    this._bindTimeline(button, hoverTls, clickTl);
 
     return button;
+  }
+
+  /**
+   * 將時間軸綁定到按鈕的不同事件。
+   * @param {jQuery} button - 要綁定的按鈕元素。
+   * @param {TimelineMax[]} hover - 滑鼠進入時觸發的時間軸陣列。
+   * @param {TimelineMax} click - 按鈕點擊時觸發的時間軸。
+   */
+  _bindTimeline(button, hover, click) {
+    button.on("mouseenter", () => {
+      hover.forEach((tl) => {
+        tl.play();
+      });
+    });
+    button.on("mouseleave", () => {
+      hover.forEach((tl) => {
+        tl.reverse();
+      });
+    });
+    button.on("click", () => click.restart());
+  }
+
+  /**
+   * 創建並初始化選單的時間軸效果。
+   * @private
+   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
+   */
+  _createTimelines() {
+    this._timelines.hide = gsap
+      .timeline({ defaults: { ease: "set1" }, paused: true })
+      .to(this.element, { autoAlpha: 0, x: -100 });
+
+    return this;
+  }
+
+  /**
+   * 顯示選單。
+   */
+  show() {
+    if (this.isShow) return this;
+
+    this.isShow = true;
+    this._timelines.hide.reverse();
+
+    return this;
+  }
+
+  /**
+   * 隱藏選單。
+   */
+  async hide() {
+    if (!this.isShow) return this;
+
+    this.isShow = false;
+    this._timelines.hide.play();
+
+    this._timelines.hide.eventCallback("onComplete", null);
+
+    await new Promise((resolve) => {
+      this._timelines.hide.eventCallback("onComplete", resolve);
+    });
+
+    return this;
   }
 
   /**
@@ -929,49 +622,6 @@ class FolderSelect extends component {
     }
     return this;
   }
-
-  /**
-   * 創建並初始化選單的時間軸效果。
-   * @private
-   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
-   */
-  _createTimelines() {
-    this._timelines.hide = gsap
-      .timeline({ defaults: { ease: "set1" }, paused: true })
-      .to(this.element, { autoAlpha: 0, x: -100 });
-
-    return this;
-  }
-
-  /**
-   * 顯示選單。
-   */
-  show() {
-    if (this.isShow) return this;
-
-    this.isShow = true;
-    this._timelines.hide.reverse();
-
-    return this;
-  }
-
-  /**
-   * 隱藏選單。
-   */
-  async hide() {
-    if (!this.isShow) return this;
-
-    this.isShow = false;
-    this._timelines.hide.play();
-
-    this._timelines.hide.eventCallback("onComplete", null);
-
-    await new Promise((resolve) => {
-      this._timelines.hide.eventCallback("onComplete", resolve);
-    });
-
-    return this;
-  }
 }
 
 /**
@@ -985,6 +635,11 @@ class SortSelect extends component {
     this.isClosed = true;
     this.isShow = true;
 
+    this.icons = {
+      name: new NameIcon(),
+      date: new DateIcon(),
+      size: new SizeIcon(),
+    };
     this.element = this._createSortSelect();
     this._createTimelines();
   }
@@ -996,11 +651,20 @@ class SortSelect extends component {
   _createSortSelect() {
     const select = $("<div>").addClass("sort-select");
 
-    const main = this._createSortButton();
-    const hr = createHorizontalSeparator({ margin: 8 });
-    select.append(main, hr);
+    const main = this._createMainButton();
+    const hr = new HorizontalSeparator({ margin: 8 });
+    const toggler = this._createReverseToggler();
 
-    this._timelines.open = createFolderSelectOpenTl(select);
+    select.append(main, hr.element, toggler);
+
+    const options = [
+      this._createOptionButton("name", "依名稱排序"),
+      this._createOptionButton("date", "依日期排序"),
+      this._createOptionButton("size", "依大小排序"),
+    ];
+    options.forEach((button) => select.append(button));
+
+    this._timelines.open = createSelectOpenTl(select);
 
     main.on("click", () => {
       if (this.isClosed) {
@@ -1014,49 +678,104 @@ class SortSelect extends component {
   }
 
   /**
-   * 創建排序按鈕的元素。
-   * @private @returns {jQuery} 排序按鈕的元素。
+   * 創建主按鈕，包含排序圖示，並綁定相應的動畫效果。
+   * @private @returns {jQuery} 主按鈕的容器。
    */
-  _createSortButton() {
+  _createMainButton() {
     const button = $("<button>").addClass("sort-button");
-    const iconContainer = createSortIcon();
-    button.append(iconContainer);
 
-    this._bindSortButtonTimeline(button);
+    const icons = new SortIcon();
+
+    icons.element.forEach((icon) => {
+      icon.appendTo(button);
+    });
+
+    const hoverTls = [
+      ...icons.timeline,
+      createScaleTl(button, 1, 1.05),
+      createBackgroundColorTl(button, "#ea81af"),
+      createTranslateTl(button, 0, -5),
+      createZIndexTl(button, 5, 6),
+    ];
+
+    const clickTl = createScaleYoyoTl(button, 0.8);
+
+    this._bindTimeline(button, hoverTls, clickTl);
 
     return button;
   }
 
   /**
-   * 綁定排序按鈕的時間軸效果。
-   * @private @param {jQuery} button - 排序按鈕的元素。
+   * 創建反轉按鈕，包含標籤和切換器，並綁定相應的動畫效果。
+   * @private @returns {jQuery} 反轉按鈕的容器。
    */
-  _bindSortButtonTimeline(button) {
-    const iconContainer = button.find(".sort-icon-container");
-    const wIcon = iconContainer.children().eq(0);
-    const dIcon = iconContainer.children().eq(1);
+  _createReverseToggler() {
+    const container = $("<button>")
+      .addClass("reverse-container")
+      .css("cursor", "default");
 
-    const hoverTls = [
-      ...createSortImgHoverTl(wIcon),
-      ...createSortImgHoverTl(dIcon),
-      createSortIconHoverTl(iconContainer),
-      createSortButtonHoverTl(button),
+    const label = $("<label>").addClass("sort-button-label").text("反轉排序");
+    const toggler = new ToggleButton();
+    gsap.set(toggler.element, { scale: 0.8 });
+
+    container.append(label, toggler.element);
+
+    return container;
+  }
+
+  /**
+   * 創建選項按鈕，包含指定類型的圖示和標籤，並綁定相應的動畫效果。
+   * @private
+   * @param {string} type - 圖示的類型。
+   * @param {string} name - 按鈕的標籤名稱。
+   * @returns {jQuery} 選項按鈕的容器。
+   */
+  _createOptionButton(type, name) {
+    const icons = this.icons[type];
+
+    const button = $("<button>").addClass("sort-button");
+
+    const configs = [
+      { separator: { margin: 8 } },
+      { separator: { margin: 8, backgroundColor: "hsl(240, 5%, 10%)" } },
     ];
 
+    configs.forEach((config, index) => {
+      const layer = $("<div>").addClass(`sort-button-layer${index + 1}`);
+      const vs = new VerticalSeparator(config.separator);
+      const label = $("<label>").addClass("sort-button-label").text(name);
+
+      layer.append(icons.element[index], vs.element, label).appendTo(button);
+    });
+
+    const hoverTls = [createSortButtonHoverTl(button), ...icons.timeline];
+
+    const clickTl = createScaleYoyoTl(button, 0.9);
+
+    this._bindTimeline(button, hoverTls, clickTl);
+
+    return button;
+  }
+
+  /**
+   * 綁定按鈕的動畫效果。
+   * @private
+   * @param {jQuery} button - 要綁定動畫的按鈕。
+   * @param {TimelineMax[]} hover - 進入時的動畫效果。
+   * @param {TimelineMax} click - 點擊時的動畫效果。
+   */
+  _bindTimeline(button, hover, click) {
     button.on("mouseenter", () => {
-      hoverTls.forEach((tl) => {
+      hover.forEach((tl) => {
         tl.play();
       });
     });
     button.on("mouseleave", () => {
-      hoverTls.forEach((tl) => {
+      hover.forEach((tl) => {
         tl.reverse();
       });
     });
-
-    const clickTl = createFolderButtonClickTl(button);
-
-    button.on("click", () => clickTl.restart());
+    button.on("click", () => click.restart());
   }
 
   /**
@@ -1126,33 +845,150 @@ class SortSelect extends component {
 }
 
 /**
+ * 這個類別用於創建和管理sidebar的設定選單元素
+ */
+class SettingSelect extends component {
+  constructor() {
+    super();
+
+    this._timelines = {};
+    this.element = this._createMainButton().add(this._createSelect());
+    this._createTimelines();
+
+    this.isShow = true;
+  }
+
+  _createSelect() {
+    const container = $("<div>").addClass("setting-select");
+
+    return container;
+  }
+
+  _createMainButton() {
+    const button = $("<button>").addClass("setting-button");
+
+    const iconContainer = $("<div>")
+      .addClass("setting-icon-container")
+      .appendTo(button);
+
+    const settingIcon = new SettingIcon();
+    settingIcon.element.forEach((e) => e.appendTo(button));
+
+    const makeImg = () => {
+      return $("<img>")
+        .attr("src", "images/icons/setting.png")
+        .addClass("setting-img")
+        .appendTo(iconContainer);
+    };
+    const makeGif = () => {
+      const timestamp = $.now();
+      return $("<img>")
+        .attr("src", `images/icons/setting.gif?timestamp=${timestamp}`)
+        .addClass("setting-gif")
+        .appendTo(iconContainer);
+    };
+
+    makeImg();
+
+    button.on("mouseenter", () => {
+      const imgs = button.find(".setting-img");
+      imgs.remove();
+      makeGif().show();
+    });
+    button.on("mouseleave", () => {
+      const gifs = button.find(".setting-gif");
+      gifs.hide(500, () => gifs.remove());
+      makeImg().hide().show(500);
+    });
+
+    const hoverTls = [
+      createScaleTl(iconContainer, 1, 1.2),
+      createScaleTl(button, 1, 1.05),
+      createBackgroundColorTl(button, "#ea81af"),
+      createTranslateTl(button, 0, -5),
+      createZIndexTl(button, 5, 6),
+      ...settingIcon.timeline,
+    ];
+
+    const clickTl = createScaleYoyoTl(button, 0.8);
+
+    this._bindTimeline(button, hoverTls, clickTl);
+
+    return button;
+  }
+
+  /**
+   * 綁定按鈕的時間軸效果。
+   */
+  _bindTimeline(button, hover, click) {
+    button.on("mouseenter", () => {
+      hover.forEach((tl) => {
+        tl.play();
+      });
+    });
+    button.on("mouseleave", () => {
+      hover.forEach((tl) => {
+        tl.reverse();
+      });
+    });
+    button.on("click", () => click.restart());
+  }
+
+  /**
+   * 創建並初始化選單的時間軸效果。
+   * @private
+   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
+   */
+  _createTimelines() {
+    this._timelines.hide = gsap
+      .timeline({ defaults: { ease: "set1" }, paused: true })
+      .fromTo(this.element, { autoAlpha: 1, x: 0 }, { autoAlpha: 0, x: -100 });
+
+    return this;
+  }
+
+  /**
+   * 顯示選單。
+   */
+  show() {
+    if (this.isShow) return this;
+
+    this.isShow = true;
+    this._timelines.hide.reverse();
+
+    return this;
+  }
+
+  /**
+   * 隱藏選單。
+   */
+  async hide() {
+    if (!this.isShow) return this;
+
+    this.isShow = false;
+    this._timelines.hide.play();
+
+    this._timelines.hide.eventCallback("onComplete", null);
+
+    await new Promise((resolve) => {
+      this._timelines.hide.eventCallback("onComplete", resolve);
+    });
+
+    return this;
+  }
+}
+
+/**
  * 這個類別用於創建和管理在header的燈泡元素
  */
 class HeaderBulb extends component {
   /**
    * 建構一個新的 `HeaderBulb` 實例。
-   * @constructor
-   * @param {Object} config - 用於配置燈泡的物件。
-   * @param {Object} colorMap - 用於配置圖片牆與燈泡顏色對應關係的映射表。
+   * @constructor @param {Object} colorMap - 用於配置圖片牆與燈泡顏色對應關係的映射表。
    */
-  constructor(config, colorMap) {
+  constructor(colorMap) {
     super();
-    // 預設配置
-    const defaultConfig = {
-      width: 40,
-      height: 40,
-      intensity: 1,
-    };
 
-    // 合併預設配置和用戶提供的配置
-    config = { ...defaultConfig, ...config };
-
-    /** 燈泡的寬度。 * @type {number} */
-    this.width = config.width;
-    /** 燈泡的高度。 @type {number} */
-    this.height = config.height;
-    /** 燈泡的強度。 @type {number} */
-    this.intensity = config.intensity;
     /** 燈泡目前的色彩。 @type {string | "off"} */
     this.currentColor = "off";
 
@@ -1169,7 +1005,9 @@ class HeaderBulb extends component {
    * @returns {jQuery} - 燈泡元素的 jQuery 物件。
    */
   _createBulb() {
-    return createBulb({ width: this.width, height: this.height });
+    this.bulb = new Bulb(30, 30);
+
+    return this.bulb.element;
   }
 
   /**
@@ -1192,16 +1030,9 @@ class HeaderBulb extends component {
    * @param {string} gallery
    */
   switchLight(gallery) {
-    this._killTimeline();
+    this.currentColor = this._colorMap[gallery];
 
-    const color = this._colorMap[gallery];
-
-    this._timelines[color] = createBulbLightT2(this.element, {
-      color: color,
-      intensity: this.intensity,
-    }).play();
-
-    this.currentColor = color;
+    this.flickerLight();
 
     return this;
   }
@@ -1211,10 +1042,9 @@ class HeaderBulb extends component {
    */
   flickerLight() {
     this._killTimeline();
-    this._timelines[this.currentColor] = createBulbLightT2(this.element, {
-      color: this.currentColor,
-      intensity: this.intensity,
-    }).play();
+    this._timelines[this.currentColor] = this.bulb
+      .createTimeline(this.currentColor)
+      .play();
 
     return this;
   }
@@ -1232,7 +1062,7 @@ class FolderBoxes extends component {
   constructor(configs) {
     super();
 
-    this.timelines = {};
+    this._timelines = {};
 
     this.isShow = false;
 
@@ -1243,30 +1073,37 @@ class FolderBoxes extends component {
   /**
    * 創建文件夾框的容器元素。
    * @private
-   * @param {Object[]} configs - 用於配置文件夾框的物件。
    * @returns {jQuery} - 文件夾框容器元素的 jQuery 物件。
    */
   _createFolderBoxes(configs) {
     const container = $("<div>").addClass("folder-boxes-container");
 
-    configs.forEach((config) => {
-      const element = this._createFolderBoxContainer(config);
-      this._bindTimeline(element, config).appendTo(container);
-    });
+    configs.forEach((config) =>
+      this._createFolderBox(config).appendTo(container)
+    );
 
     return container;
   }
 
   /**
-   * 創建文件夾框容器元素。
+   * 創建文件夾框元素。
    * @private
-   * @param {Object} config - 用於配置文件夾框的物件。
-   * @returns {jQuery} - 文件夾框容器元素的 jQuery 物件。
+   * @returns {jQuery} - 文件夾框元素的 jQuery 物件。
    */
-  _createFolderBoxContainer(config) {
+  _createFolderBox(config) {
     const container = $("<div>").addClass("folder-box-container");
 
-    const box = this._createFolderBox(config);
+    const box = $("<div>")
+      .addClass("folder-box")
+      .data("category", config.category);
+
+    const folderIcon = new FolderIcon("hsl(225, 10%, 23%)");
+    const vs = new VerticalSeparator();
+    const bulb = new Bulb(20, 20);
+    const label = $("<label>").addClass("folder-box-label").text(config.label);
+
+    box.append(folderIcon.element[0], vs.element, label, bulb.element);
+
     const img = $("<img>")
       .attr("src", config.img.src)
       .addClass("folder-box-img")
@@ -1275,76 +1112,67 @@ class FolderBoxes extends component {
 
     container.append(img, box);
 
+    const boxTl = this._createFolderBoxTl(box, img);
+    const bulbTl = bulb.createTimeline(config.bulbColor, config.bulbIntensity);
+
+    const hoverTls = [
+      folderIcon.timeline[0],
+      bulbTl,
+      boxTl.minWidthTl,
+      boxTl.openTl,
+    ];
+
+    const clickTl = createScaleYoyoTl(box, 0.9);
+
+    this._bindTimeline(container, hoverTls, clickTl, boxTl.openTl);
+
     return container;
   }
 
   /**
-   * 創建文件夾框元素。
+   * 製作box的時間軸動畫效果。
    * @private
-   * @param {Object} config - 用於配置文件夾框的物件。
-   * @returns {jQuery} - 文件夾框元素的 jQuery 物件。
    */
-  _createFolderBox(config) {
-    const box = $("<div>")
-      .addClass("folder-box")
-      .data("category", config.category);
-    const boxColor = "hsl(225, 10%, 23%)";
+  _createFolderBoxTl(box, img) {
+    const minWidthTl = gsap
+      .timeline({
+        defaults: { duration: 0.2, ease: "set1" },
+        paused: true,
+      })
+      .fromTo(box, { minWidth: "100%" }, { minWidth: "105%" });
 
-    const folderIcon = createFolderIcon({ borderColor: boxColor });
-    const separator = createVerticalSeparator();
-    const bulb = createBulb({ width: 20, height: 20 });
-    const label = $("<label>").addClass("folder-box-label").text(config.label);
+    const openTl = gsap
+      .timeline({
+        defaults: { duration: 0.2, ease: "set1" },
+        paused: true,
+      })
+      .from(img, {
+        y: 0,
+        autoAlpha: 0,
+      });
 
-    box.append(folderIcon, separator, label, bulb);
-
-    return box;
+    return { minWidthTl, openTl };
   }
 
   /**
    * 綁定時間軸動畫效果。
    * @private
-   * @param {jQuery} boxContainer - 文件夾框容器元素的 jQuery 物件。
-   * @param {Object} config - 用於配置文件夾框的物件。
-   * @returns {jQuery} - 文件夾框容器元素的 jQuery 物件。
    */
-  _bindTimeline(boxContainer, config) {
-    const box = boxContainer.find(".folder-box");
-    const bulb = boxContainer.find(".bulb-container");
-    const folderIcon = boxContainer.find(".folder-icon-container");
-
-    const t1 = createBulbLightTl(bulb, {
-      color: config.bulbColor,
-      intensity: config.bulbIntensity,
+  _bindTimeline(element, hover, click, click2) {
+    element.on("mouseenter", () => {
+      hover.forEach((tl) => {
+        tl.play();
+      });
     });
-    const t2 = createBulbLightTl(bulb, {
-      color: config.bulbColor,
-      intensity: config.bulbIntensity * 1.5,
-      yoyo: true,
+    element.on("mouseleave", () => {
+      hover.forEach((tl) => {
+        tl.reverse();
+      });
     });
-    const t3 = createFolderIconHoverTl(folderIcon);
-    const t4 = createFolderBoxClickTl(box);
-    const t5 = createFolderBoxHoverTl(box);
-    const t6 = createFolderBoxContainerHoverTl(boxContainer);
-
-    boxContainer.on("mouseenter", ".folder-box", () => {
-      t1.play();
-      t3.play();
-      t5.play();
-      t6.play();
+    element.on("click", () => {
+      click.restart();
+      click2.reverse();
     });
-    boxContainer.on("mouseleave", ".folder-box", () => {
-      t1.reverse();
-      t3.reverse();
-      t5.reverse();
-      t6.reverse();
-    });
-    boxContainer.on("click", ".folder-box", () => {
-      t2.restart();
-      t4.restart();
-      t6.reverse();
-    });
-
-    return boxContainer;
   }
 
   /**
@@ -1353,7 +1181,7 @@ class FolderBoxes extends component {
    * @returns {FolderBoxes} - 回傳 `FolderBoxes` 實例，以便進行方法鏈結。
    */
   _createTimelines() {
-    this.timelines.show = gsap
+    this._timelines.show = gsap
       .timeline({
         defaults: { ease: "back.out(4)", duration: 0.35 },
         paused: true,
@@ -1376,7 +1204,7 @@ class FolderBoxes extends component {
     if (this.isShow) return this;
 
     this.isShow = true;
-    this.timelines.show.play();
+    this._timelines.show.play();
 
     return this;
   }
@@ -1388,12 +1216,12 @@ class FolderBoxes extends component {
     if (!this.isShow) return this;
 
     this.isShow = false;
-    this.timelines.show.reverse();
+    this._timelines.show.reverse();
 
-    this.timelines.show.eventCallback("onReverseComplete", null);
+    this._timelines.show.eventCallback("onReverseComplete", null);
 
     await new Promise((resolve) => {
-      this.timelines.show.eventCallback("onReverseComplete", resolve);
+      this._timelines.show.eventCallback("onReverseComplete", resolve);
     });
 
     return this;
@@ -1482,7 +1310,7 @@ class Gallery extends component {
     const image = imageContainer.find("img");
     const element = image.add(imageContainer.find(".reflex-plane"));
     const t1 = createImageHoverTl(imageContainer);
-    const t2 = createImageClickTl(imageContainer);
+    const t2 = createScaleYoyoTl(imageContainer, 0.9);
     const mousemoveHandler = this._createMousemoveHandler(element);
 
     image.on("mouseenter", () => {
@@ -1632,6 +1460,15 @@ class PreviewImage extends component {
     this.url = "";
     this._timelines = {};
 
+    this.isFullscreen = false;
+    this._handlers = {};
+    this._handlers.mousemove = (e) => {
+      console.log(e.type);
+    };
+    this._handlers.scroll = (e) => {
+      console.log(e.type);
+    };
+
     this.element = this._createImageContainer();
     this._createTimelines();
   }
@@ -1646,7 +1483,110 @@ class PreviewImage extends component {
 
     image.appendTo(container);
 
+    const closeBtn = this._createCloseButton();
+
+    closeBtn.appendTo(container);
+
     return container;
+  }
+
+  /**
+   * 創建關閉按鈕元素。
+   * @private @returns {jQuery} - 關閉按鈕元素的 jQuery 物件。
+   */
+  _createCloseButton() {
+    const closeBtn = $("<button>").addClass("close-button");
+
+    const hoverTls = [
+      createBackgroundColorTl(closeBtn, "#ea81af"),
+      createScaleTl(closeBtn, 1, 1.05),
+    ];
+
+    const clickTl = createScaleYoyoTl(closeBtn, 0.75);
+
+    closeBtn.on("mouseenter", () => {
+      hoverTls.forEach((tl) => {
+        tl.play();
+      });
+    });
+    closeBtn.on("mouseleave", () => {
+      hoverTls.forEach((tl) => {
+        tl.reverse();
+      });
+    });
+    closeBtn.on("click", () => clickTl.restart());
+
+    // GIF動畫
+    const iconContainer = $("<div>").addClass("close-icon-container");
+
+    const makeImg = () => {
+      return $("<img>")
+        .attr("src", "images/icons/close.png")
+        .addClass("close-img")
+        .appendTo(iconContainer);
+    };
+    const makeGif = () => {
+      const timestamp = $.now();
+      return $("<img>")
+        .attr("src", `images/icons/close.gif?timestamp=${timestamp}`)
+        .addClass("close-gif")
+        .appendTo(iconContainer);
+    };
+
+    closeBtn.append(iconContainer);
+    makeImg();
+
+    closeBtn.on("mouseenter", () => {
+      const imgs = closeBtn.find(".close-img");
+      imgs.remove();
+      makeGif().show();
+    });
+    closeBtn.on("mouseleave", () => {
+      const gifs = closeBtn.find(".close-gif");
+      gifs.hide(500, () => gifs.remove());
+      makeImg().hide().show(500);
+    });
+
+    return closeBtn;
+  }
+
+  /**
+   * 設置關閉事件處理程序。
+   * @param {Function} handler - 關閉事件的處理函數。
+   */
+  onClose(handler) {
+    const closeBtn = this.element.children("button");
+
+    if (this._handlers.close) {
+      closeBtn.off("click", this._handlers.close);
+      this._handlers.close = null;
+    }
+
+    this._handlers.close = handler;
+    closeBtn.on("click", this._handlers.close);
+
+    return this;
+  }
+
+  /**
+   * 切換可操作模式。
+   */
+  switchMode() {
+    const image = this.element.children("img");
+
+    if (this.isFullscreen === false) {
+      image.on("mousemove", this._handlers.mousemove);
+      image.on("mousewheel", this._handlers.scroll);
+
+      this.isFullscreen = true;
+    } else {
+      image.off("mousemove", this._handlers.mousemove);
+      image.off("mousewheel", this._handlers.scroll);
+
+      this.isFullscreen = false;
+    }
+
+    return this;
   }
 
   /**
@@ -1654,7 +1594,7 @@ class PreviewImage extends component {
    * @private
    */
   _createTimelines() {
-    const image = this.element.children();
+    const image = this.element.children("img");
     this._timelines.show = gsap
       .timeline({ defaults: { ease: "set1", duration: 0.35 }, paused: true })
       .from(this.element, { autoAlpha: 0, duration: 0.05 })
@@ -1664,6 +1604,45 @@ class PreviewImage extends component {
         y: -100,
         ease: "back.out(2)",
       });
+
+    const closeBtn = this.element.children("button");
+    this._timelines.showClose = gsap
+      .timeline({ defaults: { ease: "set1", duration: 0.35 }, paused: true })
+      .from(closeBtn, {
+        autoAlpha: 0,
+        scale: 0.5,
+        ease: "back.out(4)",
+      });
+  }
+
+  /**
+   * 顯示關閉按鈕。
+   */
+  async showCloseButton() {
+    this._timelines.showClose.play();
+
+    this._timelines.showClose.eventCallback("onComplete", null);
+
+    await new Promise((resolve) => {
+      this._timelines.showClose.eventCallback("onComplete", resolve);
+    });
+
+    return this;
+  }
+
+  /**
+   * 隱藏關閉按鈕。
+   */
+  async hideCloseButton() {
+    this._timelines.showClose.reverse();
+
+    this._timelines.showClose.eventCallback("onReverseComplete", null);
+
+    await new Promise((resolve) => {
+      this._timelines.showClose.eventCallback("onReverseComplete", resolve);
+    });
+
+    return this;
   }
 
   /**
@@ -1675,7 +1654,7 @@ class PreviewImage extends component {
   show(url, category) {
     this.url = url;
     this.category = category;
-    this.element.find("img").attr("src", url);
+    this.element.children("img").attr("src", url);
 
     this._timelines.show.restart();
 
@@ -1743,14 +1722,14 @@ class PreviewButtons extends component {
 
     const makeImg = () => {
       return $("<img>")
-        .attr("src", "icons/return.png")
+        .attr("src", "images/icons/return.png")
         .addClass("return-img")
         .appendTo(iconContainer);
     };
     const makeGif = () => {
       const timestamp = $.now();
       return $("<img>")
-        .attr("src", `icons/return.gif?timestamp=${timestamp}`)
+        .attr("src", `images/icons/return.gif?timestamp=${timestamp}`)
         .addClass("return-gif")
         .appendTo(iconContainer);
     };
@@ -1781,11 +1760,12 @@ class PreviewButtons extends component {
   _createFullscreenButton() {
     const button = $("<button>").addClass("fullscreen-button");
 
-    const img = createFullscreenIcon().appendTo(button);
+    const icon = new FullscreenIcon();
 
-    const t1 = createFullscreenIconHoverTl(img);
-    button.on("mouseenter", () => t1.play());
-    button.on("mouseleave", () => t1.reverse());
+    button.append(icon.element);
+
+    button.on("mouseenter", () => icon.timeline.play());
+    button.on("mouseleave", () => icon.timeline.reverse());
 
     this._bindTimeline(button);
 
@@ -1797,9 +1777,9 @@ class PreviewButtons extends component {
    * @private @param {jQuery} button - 按鈕元素的 jQuery 物件。
    */
   _bindTimeline(button) {
-    const hoverT1 = createScaleHoverTl(button, 1, 1.1);
-    const hoverT2 = createColorHoverTl(button, "#ea81af");
-    const clickTl = createScaleClickTl(button, 0.75);
+    const hoverT1 = createScaleTl(button, 1, 1.1);
+    const hoverT2 = createBackgroundColorTl(button, "#ea81af");
+    const clickTl = createScaleYoyoTl(button, 0.75);
 
     const hoverPlay = () => {
       hoverT1.play();
@@ -1879,6 +1859,272 @@ class PreviewButtons extends component {
 }
 
 /**
+ * 這個類別用於創建和管理投影片選單組件。
+ */
+class LightBox extends component {
+  constructor() {
+    super();
+
+    this.isShow = false;
+    this._timelines = {};
+  }
+
+  /**
+   * 非同步方式創建投影片。
+   * @private @param {number} index - 目前投影片的索引。
+   * @param {string[]} list - 包含所有圖片URL的列表。
+   * @returns {Promise<jQuery>} - 包含創建的投影片內容的jQuery對象。
+   */
+  async _createLightBox(index, list) {
+    const container = $("<div>").addClass("light-boxes-container");
+
+    const buttons = this._createButtons();
+
+    container.append(buttons.prevButton);
+
+    const urls = getArraySegment(index, list);
+    const imgs = await Promise.all(urls.map((url) => this._createImage(url)));
+
+    imgs.forEach((img) => img.appendTo(container));
+
+    container.append(buttons.nextButton);
+
+    return container;
+  }
+
+  /**
+   * 創建單個圖片元素。
+   * @private @param {string} url - 圖片的 URL。
+   * @returns {Promise<jQuery>} - 創建的圖片容器元素。
+   */
+  async _createImage(url) {
+    const container = $("<div>").addClass("light-box-container");
+
+    const imageContainer = $("<div>").addClass("image-container");
+    const image = $("<img>")
+      .attr("src", url)
+      .attr("decoding", "async")
+      .addClass("light-box-image");
+
+    const reflexContainer = $("<div>").addClass("reflex-container");
+    $("<div>").addClass("reflex-plane").appendTo(reflexContainer);
+
+    imageContainer.append(reflexContainer, image);
+
+    await decode(image[0]);
+
+    this._bindImageTimeline(imageContainer);
+
+    const filter = $("<img>").addClass("image-filter").attr("src", url);
+    container.append(filter, imageContainer);
+
+    this._bindFilterTimeline(container);
+
+    return container;
+  }
+
+  /**
+   * 綁定圖片元素的時間軸。
+   * @private
+   * @param {jQuery} imageContainer - 圖片容器的jQuery對象。
+   */
+  _bindImageTimeline(imageContainer) {
+    const image = imageContainer.find("img");
+    const element = image.add(imageContainer.find(".reflex-plane"));
+    const t1 = createImageHoverTl(imageContainer);
+    const t2 = createScaleYoyoTl(imageContainer, 0.9);
+    const mousemoveHandler = this._createMousemoveHandler(element);
+
+    image.on("mouseenter", () => {
+      t1.play();
+
+      image.on("mousemove", mousemoveHandler);
+    });
+    image.on("mouseleave", () => {
+      t1.reverse();
+
+      image.off("mousemove", mousemoveHandler);
+
+      gsap.to(element, {
+        overwrite: "auto",
+        ease: "set1",
+        duration: 0.5,
+        rotateX: 0,
+        rotateY: 0,
+      });
+    });
+    image.on("click", () => t2.restart());
+  }
+
+  /**
+   * 綁定背景濾鏡元素的時間軸。
+   * @private
+   * @param {jQuery} container - 整個容器的jQuery對象。
+   */
+  _bindFilterTimeline(container) {
+    const filter = container.find(".image-filter");
+
+    const tl = gsap
+      .timeline({ defaults: { ease: "set1" }, paused: true })
+      .from(filter, { autoAlpha: 0, duration: 0.2 });
+
+    container.on("mouseenter", ".light-box-image", () => tl.play());
+    container.on("mouseleave", ".light-box-image", () => tl.reverse());
+  }
+
+  /**
+   * 創建滑鼠移動事件處理器。
+   * @private
+   * @param {jQuery} element - 被處理的元素。
+   * @returns {Function} - 滑鼠移動事件處理器函式。
+   */
+  _createMousemoveHandler(element) {
+    return (e) => {
+      const centerX = element.offset().left + element.width() / 2;
+      const centerY = element.offset().top + element.height() / 2;
+      const offsetX = e.pageX - centerX;
+      const offsetY = e.pageY - centerY;
+
+      gsap.to(element, {
+        overwrite: "auto",
+        ease: "back.out(10)",
+        duration: 0.5,
+        rotateX: -offsetY / 3,
+        rotateY: offsetX / 6,
+      });
+    };
+  }
+
+  /**
+   * 創建上下按鈕。
+   * @private @returns {{prevButton: jQuery, nextButton: jQuery}}
+   */
+  _createButtons() {
+    const prevButton = $("<button>").addClass("prev-button");
+    const nextButton = $("<button>").addClass("next-button");
+
+    const buttons = [prevButton, nextButton];
+
+    buttons.forEach((button, index) => {
+      // 普通時間軸
+      const hoverTls = [
+        createBackgroundColorTl(button, "#ea81af"),
+        createScaleTl(button, 1, 1.05),
+      ];
+
+      const clickTl = createScaleYoyoTl(button, 0.9);
+
+      button.on("mouseenter", () => {
+        hoverTls.forEach((tl) => {
+          tl.play();
+        });
+      });
+      button.on("mouseleave", () => {
+        hoverTls.forEach((tl) => {
+          tl.reverse();
+        });
+      });
+      button.on("click", () => clickTl.restart());
+
+      // GIF動畫
+      const iconContainer = $("<div>").addClass("animated-up-icon-container");
+
+      if (index === 1) gsap.set(iconContainer, { rotate: 180 });
+
+      const makeImg = () => {
+        return $("<img>")
+          .attr("src", "images/icons/up (white).png")
+          .addClass("up-img")
+          .appendTo(iconContainer);
+      };
+      const makeGif = () => {
+        const timestamp = $.now();
+        return $("<img>")
+          .attr("src", `images/icons/top (animated).gif?timestamp=${timestamp}`)
+          .addClass("animated-up-gif")
+          .appendTo(iconContainer);
+      };
+
+      button.append(iconContainer);
+      makeImg();
+
+      button.on("mouseenter", () => {
+        const imgs = button.find(".up-img");
+        imgs.remove();
+        makeGif().show();
+      });
+      button.on("mouseleave", () => {
+        const gifs = button.find(".animated-up-gif");
+        gifs.hide(500, () => gifs.remove());
+        makeImg().hide().show(500);
+      });
+    });
+
+    return { prevButton, nextButton };
+  }
+
+  /**
+   * 創建並初始化圖片庫的時間軸效果。
+   * @private
+   */
+  _createTimelines() {
+    const elements = this.element.children();
+    this._timelines.show = gsap
+      .timeline({ defaults: { ease: "set1" }, paused: true })
+      .from(this.element, { autoAlpha: 0, duration: 0.05 })
+      .from(
+        elements,
+        {
+          autoAlpha: 0,
+          scale: 0.5,
+          ease: "back.out(2)",
+          stagger: { from: "random", amount: 0.35 },
+        },
+        "<"
+      );
+
+    return this;
+  }
+
+  /**
+   * 顯示圖片庫。
+   */
+  async show(index, list) {
+    if (this.isShow) return this;
+
+    this.element = await this._createLightBox(index, list);
+    this._createTimelines().appendTo("#sidebar");
+
+    this.isShow = true;
+    this._timelines.show.play();
+
+    return this;
+  }
+
+  /**
+   * 隱藏圖片庫。
+   */
+  async hide() {
+    if (!this.isShow) return this;
+
+    this.isShow = false;
+    this._timelines.show.reverse();
+
+    this._timelines.show.eventCallback("onReverseComplete", null);
+
+    await new Promise((resolve) => {
+      this._timelines.show.eventCallback("onReverseComplete", resolve);
+    });
+
+    this.element.remove();
+    this.element = null;
+    this._isAppendTo = false;
+
+    return this;
+  }
+}
+
+/**
  * 這個類別用於創建和管理預覽圖片檔名組件。
  */
 class ImageName extends component {
@@ -1909,8 +2155,8 @@ class ImageName extends component {
   _bindTimeline(container) {
     const button = container.find(".extend-button");
 
-    const t1 = createScaleHoverTl(button, 1, 1.1);
-    const t2 = createColorHoverTl(button, "#ea81af", 0.2);
+    const t1 = createScaleTl(button, 1, 1.1);
+    const t2 = createBackgroundColorTl(button, "#ea81af", 0.2);
     const t3 = gsap
       .timeline({ defaults: { ease: "set1", duration: 0.2 }, paused: true })
       .to(button.find("label"), {
@@ -1918,7 +2164,7 @@ class ImageName extends component {
         fontWeight: "bold",
       });
 
-    const t4 = createScaleClickTl(button, 0.8);
+    const t4 = createScaleYoyoTl(button, 0.8);
 
     button.on("mouseenter", () => {
       t1.play();

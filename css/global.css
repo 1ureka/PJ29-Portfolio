@@ -12,10 +12,10 @@ body {
   font-size: 20px;
 }
 
+/* scrollBar */
 ::-webkit-scrollbar {
   width: 10px;
 }
-
 ::-webkit-scrollbar-thumb {
   border-radius: 5px;
 }
@@ -29,13 +29,11 @@ button {
   outline: 0;
   font-size: 20px;
 }
-
 input {
   box-shadow: inset 3px 5px 0px 0px rgba(100, 100, 100, 0.35),
     inset 4px 7px 16px 5px rgba(0, 0, 0, 0.5);
   padding: 5px;
 }
-
 button {
   box-shadow: rgba(0, 0, 0, 0.75) 0px 3px 4px,
     rgba(0, 0, 0, 0.35) 10px 12px 3px -3px,
@@ -43,7 +41,31 @@ button {
     rgba(255, 255, 255, 0.1) 2px 5px 10px -3px inset;
   cursor: pointer;
 }
+img {
+  user-select: none;
+}
 
+/* createVerticalSeparator */
+.v-separator {
+  width: 2px;
+  height: 100%;
+  background-color: white;
+  margin: 0 5px;
+  filter: blur(0.5px);
+  pointer-events: none;
+}
+
+/* createHorizontalSeparator */
+.h-separator {
+  height: 2px;
+  width: 100%;
+  background-color: white;
+  margin: 5px 0;
+  filter: blur(0.5px);
+  pointer-events: none;
+}
+
+/* loadingScreen */
 #loading-container {
   position: absolute;
   display: flex;
@@ -52,12 +74,10 @@ button {
   align-items: center;
   z-index: 15;
 }
-
 #loading-container > img {
   width: 150px;
   height: auto;
 }
-
 #progress-bar {
   position: fixed;
   bottom: 0;
@@ -71,4 +91,63 @@ button {
     rgba(0, 0, 0, 0.45) 0px -5px 0px inset,
     rgba(255, 255, 255, 0.1) 2px 5px 10px -3px inset;
   transition: width 0.35s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+/* createToggleButton */
+.toggler-container {
+  position: relative;
+  width: 60px;
+  height: 35px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 35px;
+  clip-path: inset(0);
+  cursor: pointer;
+}
+.toggler-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 35px;
+  background-color: hsl(210, 0%, 25%);
+  box-shadow: inset 3px 5px 0px 0px rgba(100, 100, 100, 0.35),
+    inset 4px 7px 16px 5px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+.toggler-dot {
+  position: absolute;
+  left: 5px;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background-color: #ea81af;
+  box-shadow: rgba(0, 0, 0, 0.75) 0px 3px 4px,
+    rgba(0, 0, 0, 0.35) 10px 12px 3px -3px,
+    rgba(0, 0, 0, 0.45) 0px -3px 0px inset,
+    rgba(255, 255, 255, 0.1) 2px 5px 10px -3px inset;
+  pointer-events: none;
+}
+
+/* createBulb */
+.bulb-container,
+.bulb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.bulb {
+  background-color: #00000000;
+  box-shadow: 0px 0px 20px #00000000;
+  border-radius: 50%;
+}
+.bulb-filter {
+  background: radial-gradient(
+    circle at 5px 5px,
+    hsla(240, 0%, 0%, 0),
+    hsla(240, 0%, 0%, 0.35),
+    hsla(240, 0%, 0%, 0.9)
+  );
+  filter: blur(0.5px);
+  border-radius: 50%;
 }

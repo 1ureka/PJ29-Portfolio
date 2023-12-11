@@ -162,6 +162,9 @@ class LoadManager {
   }
 }
 
+/**
+ * 用於處理圖片縮放與拖曳的類別。
+ */
 class ImageZoom {
   constructor(image) {
     this._image = image;
@@ -245,14 +248,14 @@ class ImageZoom {
       this._translateY -=
         (this._mouseY - window.innerHeight / 2) / 7 / this._scale;
       this._scale += scaleFac;
-
       this._updateTransform(100, "linear");
+
       this._limitTranslation();
     } else {
-      if (this._scale > 1) {
-        this._scale -= scaleFac;
-        this._updateTransform(100, "linear");
-      }
+      if (this._scale <= 1) return;
+
+      this._scale -= scaleFac;
+      this._updateTransform(100, "linear");
     }
   }
 
@@ -280,7 +283,7 @@ class ImageZoom {
   }
 
   _mousewheel(e) {
-    e.data._scaling(e.deltaY, e.shiftKey ? 0.2 : 0.1);
+    e.data._scaling(e.originalEvent.deltaY, e.shiftKey ? 0.2 : 0.1);
   }
 
   on() {
@@ -295,6 +298,7 @@ class ImageZoom {
     $(document).on("mousedown", this, this._mousedown);
     $(document).on("mouseup", this, this._mouseup);
     $(document).on("mousemove", this, this._mousemove);
+    $(document).on("mousewheel", this, this._mousewheel);
   }
 
   off() {
@@ -309,6 +313,7 @@ class ImageZoom {
     $(document).off("mousedown", this._mousedown);
     $(document).off("mouseup", this._mouseup);
     $(document).off("mousemove", this._mousemove);
+    $(document).off("mousewheel", this._mousewheel);
   }
 
   async reset() {
@@ -319,7 +324,7 @@ class ImageZoom {
     this._translateY = 0;
     this._scale = 1;
 
-    await this._updateTransform(200, "set1");
+    await this._updateTransform(375, "set1");
   }
 }
 

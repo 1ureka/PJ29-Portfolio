@@ -1477,9 +1477,9 @@ class PreviewImage extends component {
 
     image.appendTo(container);
 
-    const closeBtn = this._createCloseButton();
+    this.closeBtn = this._createCloseButton();
 
-    closeBtn.appendTo(container);
+    this.closeBtn.appendTo("body");
 
     return container;
   }
@@ -1549,7 +1549,7 @@ class PreviewImage extends component {
    * @param {Function} handler - 關閉事件的處理函數。
    */
   onClose(handler) {
-    const closeBtn = this.element.children("button");
+    const closeBtn = this.closeBtn;
 
     if (this._handlers.close) {
       closeBtn.off("click", this._handlers.close);
@@ -1601,7 +1601,7 @@ class PreviewImage extends component {
         ease: "back.out(2)",
       });
 
-    const closeBtn = this.element.children("button");
+    const closeBtn = this.closeBtn;
     this._timelines.showClose = gsap
       .timeline({ defaults: { ease: "set1", duration: 0.35 }, paused: true })
       .from(closeBtn, {

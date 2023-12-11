@@ -162,6 +162,167 @@ class LoadManager {
   }
 }
 
+class ImageZoom {
+  constructor(image) {
+    this._image = image;
+    this._container = image.parent();
+
+    this._isDrag = false;
+    this._isBind = false;
+    this._scale = 1;
+    this._mouseX = 0;
+    this._mouseY = 0;
+    this._lastX = 0;
+    this._lastY = 0;
+    this._translateX = 0;
+    this._translateY = 0;
+    this._interval = null;
+  }
+
+  async _updateTransform(time, ease) {
+    return new Promise((resolve) => {
+      gsap
+        .timeline({
+          defaults: { duration: time / 1000, ease: ease },
+          onComplete: resolve,
+        })
+        .to(this._image, { x: this._translateX, y: this._translateY })
+        .to(this._container, { scale: this._scale }, "<");
+    });
+  }
+
+  _limitTranslation() {
+    if (
+      Math.abs(this._translateX * 2) > this._image.width() ||
+      Math.abs(this._translateY * 2) > this._image.height()
+    ) {
+      this._translateX = 0;
+      this._translateY = 0;
+      this._updateTransform(300, "set1");
+    }
+  }
+
+  _startDragging() {
+    $("body").css("cursor", "grab");
+
+    this._isDrag = true;
+
+    this._interval = setInterval(() => {
+      this._lastX = this._mouseX;
+      this._lastY = this._mouseY;
+    }, 10);
+  }
+
+  _stopDragging() {
+    $("body").css("cursor", "auto");
+
+    this._isDrag = false;
+
+    clearInterval(this._interval);
+
+    this._limitTranslation();
+  }
+
+  _dragging() {
+    $("body").css("cursor", "grabbing");
+
+    const deltaX = (this._mouseX - this._lastX) / this._scale;
+    const deltaY = (this._mouseY - this._lastY) / this._scale;
+
+    if (Math.abs(deltaX) + Math.abs(deltaY) > 150 / this._scale) return;
+
+    if (deltaX !== 0 || deltaY !== 0) {
+      this._translateX += deltaX;
+      this._translateY += deltaY;
+      this._updateTransform(0, "none");
+    }
+  }
+
+  _scaling(deltaY, scaleFac) {
+    if (deltaY < 0) {
+      this._translateX -=
+        (this._mouseX - window.innerWidth / 2) / 7 / this._scale;
+      this._translateY -=
+        (this._mouseY - window.innerHeight / 2) / 7 / this._scale;
+      this._scale += scaleFac;
+
+      this._updateTransform(100, "linear");
+      this._limitTranslation();
+    } else {
+      if (this._scale > 1) {
+        this._scale -= scaleFac;
+        this._updateTransform(100, "linear");
+      }
+    }
+  }
+
+  _mousedown(e) {
+    e.preventDefault();
+
+    if (e.which === 1) e.data._startDragging();
+
+    if (e.which === 3) e.data.reset();
+  }
+
+  _mouseup(e) {
+    e.preventDefault();
+
+    if (e.which === 1 && e.data._isDrag) e.data._stopDragging();
+  }
+
+  _mousemove(e) {
+    e.preventDefault();
+
+    e.data._mouseX = e.clientX;
+    e.data._mouseY = e.clientY;
+
+    if (e.data._isDrag) e.data._dragging();
+  }
+
+  _mousewheel(e) {
+    e.data._scaling(e.deltaY, e.shiftKey ? 0.2 : 0.1);
+  }
+
+  on() {
+    if (this._isBind) {
+      console.log("已經綁定移動圖片事件");
+      return;
+    }
+
+    this._isBind = true;
+
+    $(document).on("contextmenu", (e) => e.preventDefault());
+    $(document).on("mousedown", this, this._mousedown);
+    $(document).on("mouseup", this, this._mouseup);
+    $(document).on("mousemove", this, this._mousemove);
+  }
+
+  off() {
+    if (!this._isBind) {
+      console.log("已經移除移動圖片事件");
+      return;
+    }
+
+    this._isBind = false;
+
+    $(document).off("contextmenu");
+    $(document).off("mousedown", this._mousedown);
+    $(document).off("mouseup", this._mouseup);
+    $(document).off("mousemove", this._mousemove);
+  }
+
+  async reset() {
+    if (this._translateX === 0 && this._translateY === 0 && this._scale === 1)
+      return;
+
+    this._translateX = 0;
+    this._translateY = 0;
+    this._scale = 1;
+
+    await this._updateTransform(200, "set1");
+  }
+}
+
 /**
  * 延遲執行的 Promise 函式，用於等待一定的時間。
  * @param {number} ms - 要延遲的時間（毫秒）。

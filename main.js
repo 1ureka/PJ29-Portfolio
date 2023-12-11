@@ -179,9 +179,7 @@ $(document).ready(async function () {
     }
     inTransition = true;
 
-    await delay(100);
-
-    previewImage.switchMode();
+    await Promise.all([delay(100), previewImage.switchMode()]);
     await previewImage.hideCloseButton();
 
     showFullContentsTl.reverse();
@@ -218,7 +216,8 @@ $(document).ready(async function () {
         showFullContentsTl.eventCallback("onComplete", resolve);
       });
 
-      previewImage.switchMode().showCloseButton();
+      previewImage.switchMode();
+      previewImage.showCloseButton();
     }
 
     inTransition = false;

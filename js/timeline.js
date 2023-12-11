@@ -97,13 +97,13 @@ function createBackgroundColorTl(element, toColor, duration = 0.2) {
   return tl;
 }
 
-function createTranslateTl(element, toX, toY) {
+function createTranslateTl(element, fromX, fromY, toX, toY) {
   const tl = gsap
     .timeline({
       defaults: { duration: 0.2, ease: "set1" },
       paused: true,
     })
-    .to(element, { x: toX, y: toY });
+    .fromTo(element, { x: fromX, y: fromY }, { x: toX, y: toY });
 
   return tl;
 }

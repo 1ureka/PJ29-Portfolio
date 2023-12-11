@@ -166,6 +166,10 @@ class LoadManager {
  * 用於處理圖片縮放與拖曳的類別。
  */
 class ImageZoom {
+  /**
+   * ImageZoom 類別的建構函數。
+   * @param {jQuery} image - jQuery 對象，代表要進行縮放與拖曳的圖片。
+   */
   constructor(image) {
     this._image = image;
     this._container = image.parent();
@@ -180,8 +184,41 @@ class ImageZoom {
     this._translateX = 0;
     this._translateY = 0;
     this._interval = null;
+
+    this._handlers = {
+      mousedown: (e) => {
+        e.preventDefault();
+
+        if (e.which === 1) this._startDragging();
+
+        if (e.which === 3) this.reset();
+      },
+      mouseup: (e) => {
+        e.preventDefault();
+
+        if (e.which === 1 && this._isDrag) this._stopDragging();
+      },
+      mousemove: (e) => {
+        e.preventDefault();
+
+        this._mouseX = e.clientX;
+        this._mouseY = e.clientY;
+
+        if (this._isDrag) this._dragging();
+      },
+      mousewheel: (e) => {
+        this._scaling(e.originalEvent.deltaY, e.shiftKey ? 0.2 : 0.1);
+      },
+    };
   }
 
+  /**
+   * 更新圖片的轉換效果。
+   * @param {number} time - 動畫的持續時間（毫秒）。
+   * @param {string} ease - 動畫的緩和函數。
+   * @returns {Promise<void>} 當動畫完成時解析的 Promise。
+   * @private
+   */
   async _updateTransform(time, ease) {
     return new Promise((resolve) => {
       gsap
@@ -194,6 +231,10 @@ class ImageZoom {
     });
   }
 
+  /**
+   * 限制拖曳的範圍，避免圖片移動超出邊界。
+   * @private
+   */
   _limitTranslation() {
     if (
       Math.abs(this._translateX * 2) > this._image.width() ||
@@ -205,6 +246,10 @@ class ImageZoom {
     }
   }
 
+  /**
+   * 開始拖曳圖片。
+   * @private
+   */
   _startDragging() {
     $("body").css("cursor", "grab");
 
@@ -216,6 +261,10 @@ class ImageZoom {
     }, 10);
   }
 
+  /**
+   * 停止拖曳圖片。
+   * @private
+   */
   _stopDragging() {
     $("body").css("cursor", "auto");
 
@@ -226,6 +275,10 @@ class ImageZoom {
     this._limitTranslation();
   }
 
+  /**
+   * 處理拖曳中的操作。
+   * @private
+   */
   _dragging() {
     $("body").css("cursor", "grabbing");
 
@@ -241,6 +294,12 @@ class ImageZoom {
     }
   }
 
+  /**
+   * 處理縮放操作。
+   * @param {number} deltaY - 滾輪滾動的距離。
+   * @param {number} scaleFac - 縮放因子。
+   * @private
+   */
   _scaling(deltaY, scaleFac) {
     if (deltaY < 0) {
       this._translateX -=
@@ -259,63 +318,40 @@ class ImageZoom {
     }
   }
 
-  _mousedown(e) {
-    e.preventDefault();
-
-    if (e.which === 1) e.data._startDragging();
-
-    if (e.which === 3) e.data.reset();
-  }
-
-  _mouseup(e) {
-    e.preventDefault();
-
-    if (e.which === 1 && e.data._isDrag) e.data._stopDragging();
-  }
-
-  _mousemove(e) {
-    e.preventDefault();
-
-    e.data._mouseX = e.clientX;
-    e.data._mouseY = e.clientY;
-
-    if (e.data._isDrag) e.data._dragging();
-  }
-
-  _mousewheel(e) {
-    e.data._scaling(e.originalEvent.deltaY, e.shiftKey ? 0.2 : 0.1);
-  }
-
+  /**
+   * 啟動事件綁定，開始處理圖片拖曳與縮放。
+   */
   on() {
-    if (this._isBind) {
-      console.log("已經綁定移動圖片事件");
-      return;
-    }
+    if (this._isBind) return;
 
     this._isBind = true;
 
     $(document).on("contextmenu", (e) => e.preventDefault());
-    $(document).on("mousedown", this, this._mousedown);
-    $(document).on("mouseup", this, this._mouseup);
-    $(document).on("mousemove", this, this._mousemove);
-    $(document).on("mousewheel", this, this._mousewheel);
+
+    Object.keys(this._handlers).forEach((eventType) => {
+      $(document).on(eventType, this._handlers[eventType]);
+    });
   }
 
+  /**
+   * 解除事件綁定，停止處理圖片拖曳與縮放。
+   */
   off() {
-    if (!this._isBind) {
-      console.log("已經移除移動圖片事件");
-      return;
-    }
+    if (!this._isBind) return;
 
     this._isBind = false;
 
     $(document).off("contextmenu");
-    $(document).off("mousedown", this._mousedown);
-    $(document).off("mouseup", this._mouseup);
-    $(document).off("mousemove", this._mousemove);
-    $(document).off("mousewheel", this._mousewheel);
+
+    Object.keys(this._handlers).forEach((eventType) => {
+      $(document).off(eventType, this._handlers[eventType]);
+    });
   }
 
+  /**
+   * 重置圖片的縮放與拖曳效果。
+   * @returns {Promise<void>} 當重置完成時解析的 Promise。
+   */
   async reset() {
     if (this._translateX === 0 && this._translateY === 0 && this._scale === 1)
       return;

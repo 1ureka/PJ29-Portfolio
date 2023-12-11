@@ -163,6 +163,208 @@ class LoadManager {
 }
 
 /**
+ * 用於處理圖片縮放與拖曳的類別。
+ */
+class ImageZoom {
+  /**
+   * ImageZoom 類別的建構函數。
+   * @param {jQuery} image - jQuery 對象，代表要進行縮放與拖曳的圖片。
+   */
+  constructor(image) {
+    this._image = image;
+    this._container = image.parent();
+
+    this._isDrag = false;
+    this._isBind = false;
+    this._scale = 1;
+    this._mouseX = 0;
+    this._mouseY = 0;
+    this._lastX = 0;
+    this._lastY = 0;
+    this._translateX = 0;
+    this._translateY = 0;
+    this._interval = null;
+
+    this._handlers = {
+      mousedown: (e) => {
+        e.preventDefault();
+
+        if (e.which === 1) this._startDragging();
+
+        if (e.which === 3) this.reset();
+      },
+      mouseup: (e) => {
+        e.preventDefault();
+
+        if (e.which === 1 && this._isDrag) this._stopDragging();
+      },
+      mousemove: (e) => {
+        e.preventDefault();
+
+        this._mouseX = e.clientX;
+        this._mouseY = e.clientY;
+
+        if (this._isDrag) this._dragging();
+      },
+      mousewheel: (e) => {
+        this._scaling(e.originalEvent.deltaY, e.shiftKey ? 0.2 : 0.1);
+      },
+    };
+  }
+
+  /**
+   * 更新圖片的轉換效果。
+   * @param {number} time - 動畫的持續時間（毫秒）。
+   * @param {string} ease - 動畫的緩和函數。
+   * @returns {Promise<void>} 當動畫完成時解析的 Promise。
+   * @private
+   */
+  async _updateTransform(time, ease) {
+    return new Promise((resolve) => {
+      gsap
+        .timeline({
+          defaults: { duration: time / 1000, ease: ease },
+          onComplete: resolve,
+        })
+        .to(this._image, { x: this._translateX, y: this._translateY })
+        .to(this._container, { scale: this._scale }, "<");
+    });
+  }
+
+  /**
+   * 限制拖曳的範圍，避免圖片移動超出邊界。
+   * @private
+   */
+  _limitTranslation() {
+    if (
+      Math.abs(this._translateX * 2) > this._image.width() ||
+      Math.abs(this._translateY * 2) > this._image.height()
+    ) {
+      this._translateX = 0;
+      this._translateY = 0;
+      this._updateTransform(300, "set1");
+    }
+  }
+
+  /**
+   * 開始拖曳圖片。
+   * @private
+   */
+  _startDragging() {
+    $("body").css("cursor", "grab");
+
+    this._isDrag = true;
+
+    this._interval = setInterval(() => {
+      this._lastX = this._mouseX;
+      this._lastY = this._mouseY;
+    }, 10);
+  }
+
+  /**
+   * 停止拖曳圖片。
+   * @private
+   */
+  _stopDragging() {
+    $("body").css("cursor", "auto");
+
+    this._isDrag = false;
+
+    clearInterval(this._interval);
+
+    this._limitTranslation();
+  }
+
+  /**
+   * 處理拖曳中的操作。
+   * @private
+   */
+  _dragging() {
+    $("body").css("cursor", "grabbing");
+
+    const deltaX = (this._mouseX - this._lastX) / this._scale;
+    const deltaY = (this._mouseY - this._lastY) / this._scale;
+
+    if (Math.abs(deltaX) + Math.abs(deltaY) > 150 / this._scale) return;
+
+    if (deltaX !== 0 || deltaY !== 0) {
+      this._translateX += deltaX;
+      this._translateY += deltaY;
+      this._updateTransform(0, "none");
+    }
+  }
+
+  /**
+   * 處理縮放操作。
+   * @param {number} deltaY - 滾輪滾動的距離。
+   * @param {number} scaleFac - 縮放因子。
+   * @private
+   */
+  _scaling(deltaY, scaleFac) {
+    if (deltaY < 0) {
+      this._translateX -=
+        (this._mouseX - window.innerWidth / 2) / 7 / this._scale;
+      this._translateY -=
+        (this._mouseY - window.innerHeight / 2) / 7 / this._scale;
+      this._scale += scaleFac;
+      this._updateTransform(100, "linear");
+
+      this._limitTranslation();
+    } else {
+      if (this._scale <= 1) return;
+
+      this._scale -= scaleFac;
+      this._updateTransform(100, "linear");
+    }
+  }
+
+  /**
+   * 啟動事件綁定，開始處理圖片拖曳與縮放。
+   */
+  on() {
+    if (this._isBind) return;
+
+    this._isBind = true;
+
+    $(document).on("contextmenu", (e) => e.preventDefault());
+
+    Object.keys(this._handlers).forEach((eventType) => {
+      $(document).on(eventType, this._handlers[eventType]);
+    });
+  }
+
+  /**
+   * 解除事件綁定，停止處理圖片拖曳與縮放。
+   */
+  off() {
+    if (!this._isBind) return;
+
+    this._isBind = false;
+
+    $(document).off("contextmenu");
+
+    Object.keys(this._handlers).forEach((eventType) => {
+      $(document).off(eventType, this._handlers[eventType]);
+    });
+  }
+
+  /**
+   * 重置圖片的縮放與拖曳效果。
+   * @returns {Promise<void>} 當重置完成時解析的 Promise。
+   */
+  async reset() {
+    if (this._translateX === 0 && this._translateY === 0 && this._scale === 1)
+      return;
+
+    this._translateX = 0;
+    this._translateY = 0;
+    this._scale = 1;
+
+    await this._updateTransform(375, "set1");
+  }
+}
+
+/**
  * 延遲執行的 Promise 函式，用於等待一定的時間。
  * @param {number} ms - 要延遲的時間（毫秒）。
  * @returns {Promise<void>} 一個 Promise，在指定時間後被解析。

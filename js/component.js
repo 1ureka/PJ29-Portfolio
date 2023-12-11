@@ -694,7 +694,7 @@ class SortSelect extends component {
       ...icons.timeline,
       createScaleTl(button, 1, 1.05),
       createBackgroundColorTl(button, "#ea81af"),
-      createTranslateTl(button, 0, -5),
+      createTranslateTl(button, 0, 0, 0, -5),
       createZIndexTl(button, 5, 6),
     ];
 
@@ -905,7 +905,7 @@ class SettingSelect extends component {
       createScaleTl(iconContainer, 1, 1.2),
       createScaleTl(button, 1, 1.05),
       createBackgroundColorTl(button, "#ea81af"),
-      createTranslateTl(button, 0, -5),
+      createTranslateTl(button, 0, 0, 0, -5),
       createZIndexTl(button, 5, 6),
       ...settingIcon.timeline,
     ];
@@ -1462,12 +1462,6 @@ class PreviewImage extends component {
 
     this.isFullscreen = false;
     this._handlers = {};
-    this._handlers.mousemove = (e) => {
-      console.log(e.type);
-    };
-    this._handlers.scroll = (e) => {
-      console.log(e.type);
-    };
 
     this.element = this._createImageContainer();
     this._createTimelines();
@@ -1483,9 +1477,9 @@ class PreviewImage extends component {
 
     image.appendTo(container);
 
-    const closeBtn = this._createCloseButton();
+    this.closeBtn = this._createCloseButton();
 
-    closeBtn.appendTo(container);
+    this.closeBtn.appendTo("body");
 
     return container;
   }
@@ -1555,7 +1549,7 @@ class PreviewImage extends component {
    * @param {Function} handler - 關閉事件的處理函數。
    */
   onClose(handler) {
-    const closeBtn = this.element.children("button");
+    const closeBtn = this.closeBtn;
 
     if (this._handlers.close) {
       closeBtn.off("click", this._handlers.close);
@@ -1571,17 +1565,19 @@ class PreviewImage extends component {
   /**
    * 切換可操作模式。
    */
-  switchMode() {
+  async switchMode() {
     const image = this.element.children("img");
 
     if (this.isFullscreen === false) {
-      image.on("mousemove", this._handlers.mousemove);
-      image.on("mousewheel", this._handlers.scroll);
+      this._imageZoom = new ImageZoom(image);
+      this._imageZoom.on();
 
       this.isFullscreen = true;
     } else {
-      image.off("mousemove", this._handlers.mousemove);
-      image.off("mousewheel", this._handlers.scroll);
+      this._imageZoom.off();
+
+      await this._imageZoom.reset();
+      this._imageZoom = null;
 
       this.isFullscreen = false;
     }
@@ -1605,7 +1601,7 @@ class PreviewImage extends component {
         ease: "back.out(2)",
       });
 
-    const closeBtn = this.element.children("button");
+    const closeBtn = this.closeBtn;
     this._timelines.showClose = gsap
       .timeline({ defaults: { ease: "set1", duration: 0.35 }, paused: true })
       .from(closeBtn, {

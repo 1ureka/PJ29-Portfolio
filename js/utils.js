@@ -90,8 +90,6 @@ class LoadManager {
     this.images[lcCategory] = this.quenes[lcCategory].getItems().map((e) => {
       return {
         name: e.item.id,
-        size: e.rawResult.size,
-        img: e.result,
         src: e.item.src,
       };
     });

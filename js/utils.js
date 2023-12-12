@@ -240,7 +240,7 @@ class ImageZoom {
     ) {
       this._translateX = 0;
       this._translateY = 0;
-      this._updateTransform(300, "set1");
+      this._updateTransform(500, "back.inOut(2)");
     }
   }
 
@@ -358,7 +358,7 @@ class ImageZoom {
     this._translateY = 0;
     this._scale = 1;
 
-    await this._updateTransform(375, "set1");
+    await this._updateTransform(500, "back.inOut(2)");
   }
 }
 

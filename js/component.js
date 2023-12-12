@@ -892,8 +892,11 @@ class SettingSelect extends component {
 
     button.on("mouseenter", () => {
       const imgs = button.find(".setting-img");
-      imgs.remove();
-      makeGif().show();
+      const gif = makeGif().hide();
+      gif[0].onload = () => {
+        imgs.remove();
+        gif.show();
+      };
     });
     button.on("mouseleave", () => {
       const gifs = button.find(".setting-gif");
@@ -1532,8 +1535,11 @@ class PreviewImage extends component {
 
     closeBtn.on("mouseenter", () => {
       const imgs = closeBtn.find(".close-img");
-      imgs.remove();
-      makeGif().show();
+      const gif = makeGif().hide();
+      gif[0].onload = () => {
+        imgs.remove();
+        gif.show();
+      };
     });
     closeBtn.on("mouseleave", () => {
       const gifs = closeBtn.find(".close-gif");
@@ -1735,8 +1741,11 @@ class PreviewButtons extends component {
 
     button.on("mouseenter", () => {
       const imgs = button.find(".return-img");
-      imgs.remove();
-      makeGif().show();
+      const gif = makeGif().hide();
+      gif[0].onload = () => {
+        imgs.remove();
+        gif.show();
+      };
     });
     button.on("mouseleave", () => {
       const gifs = button.find(".return-gif");
@@ -2046,8 +2055,11 @@ class LightBox extends component {
 
       button.on("mouseenter", () => {
         const imgs = button.find(".up-img");
-        imgs.remove();
-        makeGif().show();
+        const gif = makeGif().hide();
+        gif[0].onload = () => {
+          imgs.remove();
+          gif.show();
+        };
       });
       button.on("mouseleave", () => {
         const gifs = button.find(".animated-up-gif");

@@ -237,8 +237,7 @@ $(document).ready(async function () {
   const switchGallery = async (category) => {
     const keys = Object.keys(gallery);
 
-    if (category === "main")
-      await Promise.all(keys.map((key) => gallery[key].hide()));
+    await Promise.all(keys.map((key) => gallery[key].hide()));
 
     await Promise.all(keys.map((key) => gallery[key].toggle(category === key)));
   };

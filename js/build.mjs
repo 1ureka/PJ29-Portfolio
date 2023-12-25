@@ -1,7 +1,7 @@
 import { readdirSync, writeFileSync } from "fs";
 import { join } from "path";
 
-const mainfolder = "images/jpg";
+const mainfolder = "images/thumbnail";
 const subfolders = ["Nature", "Props", "Scene"];
 const imagePaths = {};
 

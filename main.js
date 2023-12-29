@@ -157,12 +157,19 @@ $(document).ready(async function () {
       const url = e.attr("src");
       const index = e.parent().index();
 
-      await delay(50);
+      await delay(50); // 點擊效果所需時間
       await gallery[category].hide();
-      await enterPreviewMenu();
+      await Promise.all([
+        scrollButtons.hide(),
+        settingSelect.hide(),
+        folderSelect.hide(),
+        sortSelect.hide(),
+        searchBar.hide(),
+      ]);
+      await previewImage.show(url, category);
 
+      previewButtons.show();
       lightBox.show(index, gallery[category].urls);
-      previewImage.show(url, category);
       imageName.show(findImageName(url));
 
       inTransition = false;
@@ -203,9 +210,19 @@ $(document).ready(async function () {
 
     if (targetClass === "return-button") {
       await previewImage.hide();
+      await Promise.all([
+        previewButtons.hide(),
+        imageName.hide(),
+        lightBox.hide(),
+      ]);
       await gallery[category].show();
 
-      await leavePreviewMenu();
+      scrollButtons.show();
+      settingSelect.show();
+      folderSelect.show();
+      sortSelect.show();
+      searchBar.show();
+
       scrollButtons.scrollElement = gallery[category].element;
     }
 
@@ -240,28 +257,6 @@ $(document).ready(async function () {
     await Promise.all(keys.map((key) => gallery[key].hide()));
 
     await Promise.all(keys.map((key) => gallery[key].toggle(category === key)));
-  };
-  const enterPreviewMenu = async () => {
-    await Promise.all([
-      scrollButtons.hide(),
-      settingSelect.hide(),
-      folderSelect.hide(),
-      sortSelect.hide(),
-      searchBar.hide(),
-    ]);
-    previewButtons.show();
-  };
-  const leavePreviewMenu = async () => {
-    await Promise.all([
-      previewButtons.hide(),
-      imageName.hide(),
-      lightBox.hide(),
-    ]);
-    scrollButtons.show();
-    settingSelect.show();
-    folderSelect.show();
-    sortSelect.show();
-    searchBar.show();
   };
 
   //

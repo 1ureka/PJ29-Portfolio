@@ -1651,12 +1651,25 @@ class PreviewImage extends component {
    * 顯示預覽圖片。
    * @param {string} url - 圖片的 URL。
    * @param {string} category - 圖片的類別。
-   * @returns {PreviewImage} - 回傳 `PreviewImage` 實例，以便進行方法鏈結。
+   * @returns {Promise<PreviewImage>} - 回傳 `PreviewImage` 實例，以便進行方法鏈結。
    */
-  show(url, category) {
-    this.url = url;
+  async show(url, category) {
+    this.url = url.replace("/thumbnail/", "/jpg/");
     this.category = category;
-    this.element.children("img").attr("src", url);
+
+    // 下載圖片
+    await new Promise((resolve) => {
+      const image = new Image();
+      image.onload = resolve;
+      image.src = this.url;
+    });
+
+    // 下載完成後更新圖片
+    const imgElement = this.element.children("img")[0];
+    imgElement.src = this.url;
+
+    // 更新圖片後開始解碼
+    await imgElement.decode();
 
     this._timelines.show.restart();
 

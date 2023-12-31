@@ -1679,6 +1679,7 @@ class PreviewImage extends component {
 
     // 更新圖片後開始解碼
     await imgElement.decode();
+    await delay(50);
 
     this._timelines.show.restart();
 

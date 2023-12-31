@@ -1350,12 +1350,21 @@ class Gallery extends component {
       const offsetX = e.pageX - centerX;
       const offsetY = e.pageY - centerY;
 
+      // 計算響應式的旋轉角度，根據元素的寬度和高度進行調整
+      const base = { x: 520, y: 290 };
+      const scale = {
+        x: element.width() / base.x,
+        y: element.height() / base.y,
+      };
+      const responsiveRotateX = -offsetY / (9 * scale.x);
+      const responsiveRotateY = offsetX / (15 * scale.y);
+
       gsap.to(element, {
         overwrite: "auto",
         ease: "back.out(10)",
         duration: 0.5,
-        rotateX: -offsetY / 7,
-        rotateY: offsetX / 15,
+        rotateX: responsiveRotateX,
+        rotateY: responsiveRotateY,
       });
     };
   }
@@ -2003,12 +2012,21 @@ class LightBox extends component {
       const offsetX = e.pageX - centerX;
       const offsetY = e.pageY - centerY;
 
+      // 計算響應式的旋轉角度，根據元素的寬度和高度進行調整
+      const base = { x: 520, y: 290 };
+      const scale = {
+        x: element.width() / base.x,
+        y: element.height() / base.y,
+      };
+      const responsiveRotateX = -offsetY / (9 * scale.x);
+      const responsiveRotateY = offsetX / (15 * scale.y);
+
       gsap.to(element, {
         overwrite: "auto",
         ease: "back.out(10)",
         duration: 0.5,
-        rotateX: -offsetY / 3,
-        rotateY: offsetX / 6,
+        rotateX: responsiveRotateX,
+        rotateY: responsiveRotateY,
       });
     };
   }

@@ -1350,12 +1350,21 @@ class Gallery extends component {
       const offsetX = e.pageX - centerX;
       const offsetY = e.pageY - centerY;
 
+      // 計算響應式的旋轉角度，根據元素的寬度和高度進行調整
+      const base = { x: 520, y: 290 };
+      const scale = {
+        x: element.width() / base.x,
+        y: element.height() / base.y,
+      };
+      const responsiveRotateX = -offsetY / (9 * scale.x);
+      const responsiveRotateY = offsetX / (15 * scale.y);
+
       gsap.to(element, {
         overwrite: "auto",
         ease: "back.out(10)",
         duration: 0.5,
-        rotateX: -offsetY / 7,
-        rotateY: offsetX / 15,
+        rotateX: responsiveRotateX,
+        rotateY: responsiveRotateY,
       });
     };
   }
@@ -1651,12 +1660,25 @@ class PreviewImage extends component {
    * 顯示預覽圖片。
    * @param {string} url - 圖片的 URL。
    * @param {string} category - 圖片的類別。
-   * @returns {PreviewImage} - 回傳 `PreviewImage` 實例，以便進行方法鏈結。
+   * @returns {Promise<PreviewImage>} - 回傳 `PreviewImage` 實例，以便進行方法鏈結。
    */
-  show(url, category) {
-    this.url = url;
+  async show(url, category) {
+    this.url = url.replace("/thumbnail/", "/jpg/");
     this.category = category;
-    this.element.children("img").attr("src", url);
+
+    // 下載圖片
+    await new Promise((resolve) => {
+      const image = new Image();
+      image.onload = resolve;
+      image.src = this.url;
+    });
+
+    // 下載完成後更新圖片
+    const imgElement = this.element.children("img")[0];
+    imgElement.src = this.url;
+
+    // 更新圖片後開始解碼
+    await imgElement.decode();
 
     this._timelines.show.restart();
 
@@ -1990,12 +2012,21 @@ class LightBox extends component {
       const offsetX = e.pageX - centerX;
       const offsetY = e.pageY - centerY;
 
+      // 計算響應式的旋轉角度，根據元素的寬度和高度進行調整
+      const base = { x: 520, y: 290 };
+      const scale = {
+        x: element.width() / base.x,
+        y: element.height() / base.y,
+      };
+      const responsiveRotateX = -offsetY / (9 * scale.x);
+      const responsiveRotateY = offsetX / (15 * scale.y);
+
       gsap.to(element, {
         overwrite: "auto",
         ease: "back.out(10)",
         duration: 0.5,
-        rotateX: -offsetY / 3,
-        rotateY: offsetX / 6,
+        rotateX: responsiveRotateX,
+        rotateY: responsiveRotateY,
       });
     };
   }

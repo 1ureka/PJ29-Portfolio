@@ -37,6 +37,7 @@
   height: calc((100% - 220px) / 5);
   max-height: calc((9 / 16) * 180px);
   margin: 10px;
+  position: relative;
 }
 .light-boxes-container .image-container {
   position: relative;

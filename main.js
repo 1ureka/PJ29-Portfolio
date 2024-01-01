@@ -169,7 +169,7 @@ $(document).ready(async function () {
       await previewImage.show(url, category);
 
       previewButtons.show();
-      lightBox.show(index, gallery[category].urls);
+      lightBox.show(index, gallery[category].urls, category);
       imageName.show(findImageName(url));
 
       inTransition = false;
@@ -243,6 +243,39 @@ $(document).ready(async function () {
   //
   // 創建內容
   const lightBox = new LightBox();
+  lightBox
+    .onNext(async (url) => {
+      if (inTransition) {
+        console.log("停止執行了lightBox.onNext");
+        return;
+      }
+      inTransition = true;
+
+      await previewImage.hide();
+
+      await Promise.all([
+        lightBox.toNext(),
+        previewImage.show(url, lightBox.category),
+      ]);
+
+      inTransition = false;
+    })
+    .onPrev(async (url) => {
+      if (inTransition) {
+        console.log("停止執行了lightBox.onPrev");
+        return;
+      }
+      inTransition = true;
+
+      await previewImage.hide();
+
+      await Promise.all([
+        lightBox.toPrev(),
+        previewImage.show(url, lightBox.category),
+      ]);
+
+      inTransition = false;
+    });
 
   //
   // 創建內容

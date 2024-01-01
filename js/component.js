@@ -1895,6 +1895,7 @@ class LightBox extends component {
 
     this.isShow = false;
     this._timelines = {};
+    this._handlers = {};
   }
 
   /**
@@ -1904,14 +1905,17 @@ class LightBox extends component {
    * @returns {Promise<jQuery>} - 包含創建的投影片內容的jQuery對象。
    */
   async _createLightBox(index, list) {
-    const container = $("<div>").addClass("light-boxes-container");
+    this.list = list;
+    this.index = index;
 
+    const container = $("<div>").addClass("light-boxes-container");
     const buttons = this._createButtons();
 
     container.append(buttons.prevButton);
 
     const urls = getArraySegment(index, list);
     const imgs = await Promise.all(urls.map((url) => this._createImage(url)));
+    this.imgs = imgs;
 
     imgs.forEach((img) => img.appendTo(container));
 
@@ -2104,10 +2108,10 @@ class LightBox extends component {
   }
 
   /**
-   * 創建並初始化圖片庫的時間軸效果。
+   * 創建並初始化投影片的時間軸效果。
    * @private
    */
-  _createTimelines() {
+  _createShowTimelines() {
     const elements = this.element.children();
     this._timelines.show = gsap
       .timeline({ defaults: { ease: "set1" }, paused: true })
@@ -2127,13 +2131,39 @@ class LightBox extends component {
   }
 
   /**
-   * 顯示圖片庫。
+   * 創建投影片隱藏的時間軸效果。
+   * @private
    */
-  async show(index, list) {
+  _createHideTimelines() {
+    const elements = this.element.children();
+    this._timelines.hide = gsap
+      .timeline({ defaults: { ease: "set1" }, paused: true })
+      .to(elements, {
+        autoAlpha: 0,
+        scale: 0.5,
+        ease: "back.in(2)",
+        stagger: { from: "random", amount: 0.35 },
+      })
+      .to(this.element, { autoAlpha: 0, duration: 0.05 });
+
+    return this;
+  }
+
+  /**
+   * 顯示投影片。
+   */
+  async show(index, list, category) {
     if (this.isShow) return this;
 
+    this.category = category;
     this.element = await this._createLightBox(index, list);
-    this._createTimelines().appendTo("#sidebar");
+    this._createShowTimelines().appendTo("#sidebar");
+
+    // 註冊事件
+    if (this._handlers.next)
+      this.element.on("click", ".next-button", this._handlers.next);
+    if (this._handlers.prev)
+      this.element.on("click", ".prev-button", this._handlers.prev);
 
     this.isShow = true;
     this._timelines.show.play();
@@ -2142,26 +2172,151 @@ class LightBox extends component {
   }
 
   /**
-   * 隱藏圖片庫。
+   * 隱藏投影片。
    */
   async hide() {
     if (!this.isShow) return this;
 
     this.isShow = false;
-    this._timelines.show.reverse();
 
-    this._timelines.show.eventCallback("onReverseComplete", null);
+    this._createHideTimelines();
+    this._timelines.hide.play();
+
+    this._timelines.hide.eventCallback("onComplete", null);
 
     await new Promise((resolve) => {
-      this._timelines.show.eventCallback("onReverseComplete", resolve);
+      this._timelines.hide.eventCallback("onComplete", resolve);
     });
 
+    this.element.off();
     this.element.remove();
     this.element = null;
+    this.list = [];
+    this.index = -1;
+    this.imgs = [];
     this._isAppendTo = false;
 
     return this;
   }
+
+  /**
+   * 投影片切換至下一張圖片。
+   * @returns {Promise<void>} - 表示異步操作完成的 Promise 物件。
+   */
+  async toNext() {
+    // 提取變數
+    const index = (this.index + 1) % this.list.length;
+    const nextButton = this.element.children(".next-button");
+
+    // 準備新圖片
+    const url = this.list[(index + 2) % this.list.length];
+    const newImg = await this._createImage(url);
+
+    const tl = gsap
+      .timeline({
+        defaults: { ease: "power2.out", duration: 0.5 },
+        paused: true,
+      })
+      .to(this.imgs[0], { autoAlpha: 0, height: 0, margin: 0 })
+      .from(newImg, { autoAlpha: 0, height: 0, margin: 0 }, "<");
+
+    newImg.insertBefore(nextButton);
+
+    // 投影片切換
+    await new Promise((resolve) => {
+      tl.play();
+      tl.eventCallback("onComplete", resolve);
+    });
+
+    // 更新屬性
+    this.index = index;
+    this.imgs[0].remove();
+    this.imgs.shift();
+    this.imgs.push(newImg);
+  }
+
+  /**
+   * 投影片切換至上一張圖片。
+   * @async
+   * @returns {Promise<void>} - 表示異步操作完成的 Promise 物件。
+   */
+  async toPrev() {
+    // 提取變數
+    const index = (this.index - 1 + this.list.length) % this.list.length;
+    const prevButton = this.element.children(".prev-button");
+
+    // 準備新圖片
+    const url = this.list[(index - 2 + this.list.length) % this.list.length];
+    const newImg = await this._createImage(url);
+
+    const tl = gsap
+      .timeline({
+        defaults: { ease: "power2.out", duration: 0.5 },
+        paused: true,
+      })
+      .to(this.imgs[4], { autoAlpha: 0, height: 0, margin: 0 })
+      .from(newImg, { autoAlpha: 0, height: 0, margin: 0 }, "<");
+
+    newImg.insertAfter(prevButton);
+
+    // 投影片切換
+    await new Promise((resolve) => {
+      tl.play();
+      tl.eventCallback("onComplete", resolve);
+    });
+
+    // 更新屬性
+    this.index = index;
+    this.imgs[4].remove();
+    this.imgs.pop();
+    this.imgs.unshift(newImg);
+  }
+
+  /**
+   * 註冊下一張圖片事件處理程序。
+   * @param {Function} handler - 處理程序函數，接收新圖片的 URL 作為參數。
+   * @returns {LightBox} - 返回 LightBox 實例，支持鏈式調用。
+   */
+  onNext(handler) {
+    // 記錄至屬性
+    if (this._handlers.next) {
+      console.error("lightBox: 已註冊onNext");
+      return;
+    }
+
+    this._handlers.next = () => {
+      const index = (this.index + 1) % this.list.length;
+      const url = this.list[index];
+
+      handler(url);
+    };
+
+    return this;
+  }
+
+  /**
+   * 註冊上一張圖片事件處理程序。
+   * @param {Function} handler - 處理程序函數，接收新圖片的 URL 作為參數。
+   * @returns {LightBox} - 返回 LightBox 實例，支持鏈式調用。
+   */
+  onPrev(handler) {
+    // 記錄至屬性
+    if (this._handlers.prev) {
+      console.error("lightBox: 已註冊onPrev");
+      return;
+    }
+
+    this._handlers.prev = () => {
+      const index = (this.index - 1 + this.list.length) % this.list.length;
+      const url = this.list[index];
+
+      handler(url);
+    };
+
+    return this;
+  }
+
+  onSelect(handler) {}
 }
 
 /**

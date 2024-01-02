@@ -313,7 +313,7 @@ $(document).ready(async function () {
 
         // 下兩張
         case 5:
-          console.log("還沒做");
+          pendingTasks.push(lightBox.toNextTwo());
           break;
 
         // 不存在

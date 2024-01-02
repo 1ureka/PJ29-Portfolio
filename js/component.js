@@ -2207,13 +2207,14 @@ class LightBox extends component {
    */
   async toNext() {
     // 提取變數
-    const index = (this.index + 1) % this.list.length;
+    const index = (this.index + 1) % this.list.length; // 新的中間位置在this.list中的指標
     const nextButton = this.element.children(".next-button");
 
     // 準備新圖片
     const url = this.list[(index + 2) % this.list.length];
     const newImg = await this._createImage(url);
 
+    // 創建與"初始化"時間軸
     const tl = gsap
       .timeline({
         defaults: { ease: "power2.out", duration: 0.5 },
@@ -2244,13 +2245,14 @@ class LightBox extends component {
    */
   async toPrev() {
     // 提取變數
-    const index = (this.index - 1 + this.list.length) % this.list.length;
+    const index = (this.index - 1 + this.list.length) % this.list.length; // 新的中間位置在this.list中的指標
     const prevButton = this.element.children(".prev-button");
 
     // 準備新圖片
     const url = this.list[(index - 2 + this.list.length) % this.list.length];
     const newImg = await this._createImage(url);
 
+    // 創建與"初始化"時間軸
     const tl = gsap
       .timeline({
         defaults: { ease: "power2.out", duration: 0.5 },
@@ -2273,6 +2275,46 @@ class LightBox extends component {
     this.imgs.pop();
     this.imgs.unshift(newImg);
   }
+
+  async toNextTwo() {
+    // 提取變數
+    const length = this.list.length;
+    const newIndex = (this.index + 2) % length; // 新的中間位置在this.list中的指標
+    const nextButton = this.element.children(".next-button");
+
+    // 準備新圖片
+    const urls = [
+      this.list[(newIndex + 1) % length],
+      this.list[(newIndex + 2) % length],
+    ];
+    const promises = urls.map((url) => this._createImage(url));
+    const imgs = await Promise.all(promises);
+
+    // 創建與"初始化"時間軸
+    const tl = gsap
+      .timeline({
+        defaults: { ease: "power2.out", duration: 0.5 },
+        paused: true,
+      })
+      .to(this.imgs.slice(0, 2), { autoAlpha: 0, height: 0, margin: 0 })
+      .from(imgs, { autoAlpha: 0, height: 0, margin: 0 }, "<");
+
+    imgs.forEach((img) => img.insertBefore(nextButton));
+
+    // 投影片切換
+    await new Promise((resolve) => {
+      tl.play();
+      tl.eventCallback("onComplete", resolve);
+    });
+
+    // 更新屬性
+    this.index = newIndex;
+    this.imgs.slice(0, 2).forEach((img) => img.remove());
+    this.imgs.splice(0, 2);
+    this.imgs.push(...imgs);
+  }
+
+  async toPrevTwo() {}
 
   /**
    * 註冊下一張圖片事件處理程序。

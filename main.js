@@ -275,6 +275,56 @@ $(document).ready(async function () {
       ]);
 
       inTransition = false;
+    })
+    .onSelect(async (url, index) => {
+      if (inTransition) {
+        console.log("停止執行了lightBox.onSelect");
+        return;
+      }
+      inTransition = true;
+
+      // 相同圖片不做處理
+      if (index === 3) {
+        console.log("lightBox: 按下了相同圖片");
+        inTransition = false;
+        return;
+      }
+
+      // 傳遞至previewImage
+      await previewImage.hide();
+      const pendingTasks = [previewImage.show(url, lightBox.category)];
+
+      // 傳遞至自身
+      switch (index) {
+        // 上兩張
+        case 1:
+          console.log("還沒做");
+          break;
+
+        // 上一張
+        case 2:
+          pendingTasks.push(lightBox.toPrev());
+          break;
+
+        // 下一張
+        case 4:
+          pendingTasks.push(lightBox.toNext());
+          break;
+
+        // 下兩張
+        case 5:
+          console.log("還沒做");
+          break;
+
+        // 不存在
+        default:
+          console.error(`lightBox: 指標錯誤，index不應該為${index}`);
+          break;
+      }
+
+      await Promise.all(pendingTasks);
+
+      inTransition = false;
     });
 
   //

@@ -2164,6 +2164,8 @@ class LightBox extends component {
       this.element.on("click", ".next-button", this._handlers.next);
     if (this._handlers.prev)
       this.element.on("click", ".prev-button", this._handlers.prev);
+    if (this._handlers.select)
+      this.element.on("click", ".light-box-image", this._handlers.select);
 
     this.isShow = true;
     this._timelines.show.play();
@@ -2316,7 +2318,27 @@ class LightBox extends component {
     return this;
   }
 
-  onSelect(handler) {}
+  /**
+   * 註冊選擇圖片事件處理程序。
+   * @param {Function} handler - 處理程序函數，接收選擇圖片的 URL 和索引作為參數。
+   * @returns {LightBox} - 返回 LightBox 實例，支持鏈式調用。
+   */
+  onSelect(handler) {
+    // 記錄至屬性
+    if (this._handlers.select) {
+      console.error("lightBox: 已註冊onPrev");
+      return;
+    }
+
+    this._handlers.select = (e) => {
+      const url = e.target.src.replace("/thumbnail/", "/jpg/");
+      const index = $(e.target).parents(".light-box-container").index();
+
+      handler(url, index);
+    };
+
+    return this;
+  }
 }
 
 /**

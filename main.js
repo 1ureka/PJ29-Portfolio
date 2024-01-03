@@ -298,24 +298,20 @@ $(document).ready(async function () {
       switch (index) {
         // 上兩張
         case 1:
-          console.log("還沒做");
+          pendingTasks.push(lightBox.toPrevTwo());
           break;
-
         // 上一張
         case 2:
           pendingTasks.push(lightBox.toPrev());
           break;
-
         // 下一張
         case 4:
           pendingTasks.push(lightBox.toNext());
           break;
-
         // 下兩張
         case 5:
           pendingTasks.push(lightBox.toNextTwo());
           break;
-
         // 不存在
         default:
           console.error(`lightBox: 指標錯誤，index不應該為${index}`);

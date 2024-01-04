@@ -390,7 +390,9 @@ async function decode(image) {
  * @returns {string} - 圖片的檔名
  */
 function findImageName(url) {
-  return url.match(/[^/\\]+$/)[0].replace(/\.jpg/, "");
+  const encodedString = url.match(/[^/\\]+$/)[0].replace(/\.jpg/, "");
+  const decodedString = decodeURIComponent(encodedString);
+  return decodedString;
 }
 
 /**

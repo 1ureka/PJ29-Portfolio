@@ -1678,7 +1678,7 @@ class PreviewImage extends component {
     imgElement.src = this.url;
 
     // 更新圖片後開始解碼
-    await imgElement.decode();
+    await decode(imgElement);
     await delay(50);
 
     this._timelines.show.restart();
@@ -2202,91 +2202,21 @@ class LightBox extends component {
   }
 
   /**
-   * 投影片切換至下一張圖片。
+   * 投影片切換至下張圖片。
+   * @param {number} offset - 偏移張數。
    * @returns {Promise<void>} - 表示異步操作完成的 Promise 物件。
    */
-  async toNext() {
-    // 提取變數
-    const index = (this.index + 1) % this.list.length; // 新的中間位置在this.list中的指標
-    const nextButton = this.element.children(".next-button");
-
-    // 準備新圖片
-    const url = this.list[(index + 2) % this.list.length];
-    const newImg = await this._createImage(url);
-
-    // 創建與"初始化"時間軸
-    const tl = gsap
-      .timeline({
-        defaults: { ease: "power2.out", duration: 0.5 },
-        paused: true,
-      })
-      .to(this.imgs[0], { autoAlpha: 0, height: 0, margin: 0 })
-      .from(newImg, { autoAlpha: 0, height: 0, margin: 0 }, "<");
-
-    newImg.insertBefore(nextButton);
-
-    // 投影片切換
-    await new Promise((resolve) => {
-      tl.play();
-      tl.eventCallback("onComplete", resolve);
-    });
-
-    // 更新屬性
-    this.index = index;
-    this.imgs[0].remove();
-    this.imgs.shift();
-    this.imgs.push(newImg);
-  }
-
-  /**
-   * 投影片切換至上一張圖片。
-   * @async
-   * @returns {Promise<void>} - 表示異步操作完成的 Promise 物件。
-   */
-  async toPrev() {
-    // 提取變數
-    const index = (this.index - 1 + this.list.length) % this.list.length; // 新的中間位置在this.list中的指標
-    const prevButton = this.element.children(".prev-button");
-
-    // 準備新圖片
-    const url = this.list[(index - 2 + this.list.length) % this.list.length];
-    const newImg = await this._createImage(url);
-
-    // 創建與"初始化"時間軸
-    const tl = gsap
-      .timeline({
-        defaults: { ease: "power2.out", duration: 0.5 },
-        paused: true,
-      })
-      .to(this.imgs[4], { autoAlpha: 0, height: 0, margin: 0 })
-      .from(newImg, { autoAlpha: 0, height: 0, margin: 0 }, "<");
-
-    newImg.insertAfter(prevButton);
-
-    // 投影片切換
-    await new Promise((resolve) => {
-      tl.play();
-      tl.eventCallback("onComplete", resolve);
-    });
-
-    // 更新屬性
-    this.index = index;
-    this.imgs[4].remove();
-    this.imgs.pop();
-    this.imgs.unshift(newImg);
-  }
-
-  async toNextTwo() {
+  async toNext(offset = 1) {
     // 提取變數
     const length = this.list.length;
-    const newIndex = (this.index + 2) % length; // 新的中間位置在this.list中的指標
+    const newIndex = (this.index + offset) % length; // 新的中間位置在this.list中的指標
     const nextButton = this.element.children(".next-button");
 
     // 準備新圖片
-    const urls = [
-      this.list[(newIndex + 1) % length],
-      this.list[(newIndex + 2) % length],
-    ];
+    const urls = Array.from(
+      { length: offset },
+      (_, i) => this.list[(newIndex + 2 - i) % length]
+    ).reverse();
     const promises = urls.map((url) => this._createImage(url));
     const imgs = await Promise.all(promises);
 
@@ -2296,7 +2226,7 @@ class LightBox extends component {
         defaults: { ease: "power2.out", duration: 0.5 },
         paused: true,
       })
-      .to(this.imgs.slice(0, 2), { autoAlpha: 0, height: 0, margin: 0 })
+      .to(this.imgs.slice(0, offset), { autoAlpha: 0, height: 0, margin: 0 })
       .from(imgs, { autoAlpha: 0, height: 0, margin: 0 }, "<");
 
     imgs.forEach((img) => img.insertBefore(nextButton));
@@ -2309,22 +2239,28 @@ class LightBox extends component {
 
     // 更新屬性
     this.index = newIndex;
-    this.imgs.slice(0, 2).forEach((img) => img.remove());
-    this.imgs.splice(0, 2);
+    this.imgs.slice(0, offset).forEach((img) => img.remove());
+    this.imgs.splice(0, offset);
     this.imgs.push(...imgs);
   }
 
-  async toPrevTwo() {
+  /**
+   * 投影片切換至上張圖片。
+   * @async
+   * @param {number} offset - 偏移張數。
+   * @returns {Promise<void>} - 表示異步操作完成的 Promise 物件。
+   */
+  async toPrev(offset = 1) {
     // 提取變數
     const length = this.list.length;
-    const newIndex = (this.index - 2 + length) % length; // 新的中間位置在this.list中的指標
+    const newIndex = (this.index - offset + length) % length; // 新的中間位置在this.list中的指標
     const prevButton = this.element.children(".prev-button");
 
     // 準備新圖片
-    const urls = [
-      this.list[(newIndex - 1 + length) % length],
-      this.list[(newIndex - 2 + length) % length],
-    ];
+    const urls = Array.from(
+      { length: offset },
+      (_, i) => this.list[(newIndex - 2 + i + length) % length]
+    ).reverse();
     const promises = urls.map((url) => this._createImage(url));
     const imgs = await Promise.all(promises);
 
@@ -2334,7 +2270,11 @@ class LightBox extends component {
         defaults: { ease: "power2.out", duration: 0.5 },
         paused: true,
       })
-      .to(this.imgs.slice(3, 5), { autoAlpha: 0, height: 0, margin: 0 })
+      .to(this.imgs.slice(5 - offset, 5), {
+        autoAlpha: 0,
+        height: 0,
+        margin: 0,
+      })
       .from(imgs, { autoAlpha: 0, height: 0, margin: 0 }, "<");
 
     imgs.forEach((img) => img.insertAfter(prevButton));
@@ -2347,8 +2287,8 @@ class LightBox extends component {
 
     // 更新屬性
     this.index = newIndex;
-    this.imgs.slice(3, 5).forEach((img) => img.remove());
-    this.imgs.splice(-2);
+    this.imgs.slice(5 - offset, 5).forEach((img) => img.remove());
+    this.imgs.splice(-offset);
     imgs.reverse(); // 確保順序正確
     this.imgs.unshift(...imgs);
   }

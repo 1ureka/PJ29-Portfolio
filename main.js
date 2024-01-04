@@ -254,7 +254,7 @@ $(document).ready(async function () {
       await previewImage.hide();
 
       await Promise.all([
-        lightBox.toNext(),
+        lightBox.toNext(1),
         previewImage.show(url, lightBox.category),
       ]);
 
@@ -270,7 +270,7 @@ $(document).ready(async function () {
       await previewImage.hide();
 
       await Promise.all([
-        lightBox.toPrev(),
+        lightBox.toPrev(1),
         previewImage.show(url, lightBox.category),
       ]);
 
@@ -298,19 +298,19 @@ $(document).ready(async function () {
       switch (index) {
         // 上兩張
         case 1:
-          pendingTasks.push(lightBox.toPrevTwo());
+          pendingTasks.push(lightBox.toPrev(2));
           break;
         // 上一張
         case 2:
-          pendingTasks.push(lightBox.toPrev());
+          pendingTasks.push(lightBox.toPrev(1));
           break;
         // 下一張
         case 4:
-          pendingTasks.push(lightBox.toNext());
+          pendingTasks.push(lightBox.toNext(1));
           break;
         // 下兩張
         case 5:
-          pendingTasks.push(lightBox.toNextTwo());
+          pendingTasks.push(lightBox.toNext(2));
           break;
         // 不存在
         default:

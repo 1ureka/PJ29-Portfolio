@@ -258,6 +258,10 @@ $(document).ready(async function () {
         previewImage.show(url, lightBox.category),
       ]);
 
+      // 更新圖片名字
+      const name = findImageName(url);
+      imageName.changeName(name);
+
       inTransition = false;
     })
     .onPrev(async (url) => {
@@ -273,6 +277,10 @@ $(document).ready(async function () {
         lightBox.toPrev(1),
         previewImage.show(url, lightBox.category),
       ]);
+
+      // 更新圖片名字
+      const name = findImageName(url);
+      imageName.changeName(name);
 
       inTransition = false;
     })
@@ -319,6 +327,10 @@ $(document).ready(async function () {
       }
 
       await Promise.all(pendingTasks);
+
+      // 更新圖片名字
+      const name = findImageName(url);
+      imageName.changeName(name);
 
       inTransition = false;
     });

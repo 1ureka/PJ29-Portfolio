@@ -2468,4 +2468,19 @@ class ImageName extends component {
 
     return this;
   }
+
+  /**
+   * 修改元素的名稱。
+   * @param {string} name - 新的名稱。
+   */
+  changeName(name) {
+    const nameElement = this.element.find(".file-name");
+    const oldName = nameElement.text();
+
+    if (name === oldName) return this;
+
+    nameElement.text(name);
+
+    return this;
+  }
 }

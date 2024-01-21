@@ -14,52 +14,25 @@ class LoadManager {
   /**
    * 異步載入主進程。
    */
-  async load() {
-    /** 獲取載入的urls物件。 @type {Object.<string, string[]>} */
-    const result = await this._loadUrls();
-    const categories = Object.keys(result);
+  async load(fileCollection) {
+    const categories = Object.keys(fileCollection);
     this.categoriesAmount = categories.length;
 
     for (const category of categories) {
-      const urls = result[category];
-      await this._loadImages(category, urls);
+      await this._loadImages(category, fileCollection[category]);
     }
 
     this.progressHandler({ name: "載入完成", state: 100 });
   }
 
   /**
-   * 異步載入urls物件。
-   * @private
-   * @returns {Promise<Object.<string, string[]>>} 獲取的urls物件。
-   */
-  async _loadUrls() {
-    return new Promise((resolve) => {
-      const queue = new createjs.LoadQueue();
-
-      queue.on("fileload", (e) => {
-        this.currentProgress = 10;
-        this.progressHandler({ name: "載入urls", state: this.currentProgress });
-        resolve(e.result);
-      });
-
-      queue.on("fileprogress", (e) => {
-        this.currentProgress = e.progress * 10;
-        this.progressHandler({ name: "載入urls", state: this.currentProgress });
-      });
-
-      queue.loadFile({ src: "imagesUrls.json", type: createjs.Types.JSON });
-    });
-  }
-
-  /**
    * 異步載入指定類別的圖片。
    * @private
    * @param {string} category - 圖片類別。
-   * @param {string[]} urls - 圖片URL陣列。
+   * @param {Object[]} fileList - 檔案資訊陣列。
    */
-  async _loadImages(category, urls) {
-    const manifest = this._createManifest(urls);
+  async _loadImages(category, fileList) {
+    const manifest = this._createManifest(fileList);
     const lcCategory = category.toLowerCase();
 
     this.quenes[lcCategory] = new createjs.LoadQueue(false);
@@ -87,25 +60,26 @@ class LoadManager {
       this.quenes[lcCategory].loadManifest(manifest);
     });
 
-    this.images[lcCategory] = this.quenes[lcCategory].getItems().map((e) => {
-      return {
-        name: e.item.id,
-        src: e.item.src,
-      };
+    this.images[lcCategory] = fileList.map((info) => {
+      const url = info.url;
+      delete info.url;
+      info.src = url;
+
+      return info;
     });
   }
 
   /**
    * 根據圖片URL陣列創建manifest物件。
    * @private
-   * @param {string[]} urls - 圖片URL陣列。
+   * @param {Object[]} fileList - 檔案資訊陣列。
    * @returns {[{ id: string, src: string }]} 用於載入的manifest物件。
    */
-  _createManifest(urls) {
-    const manifest = urls.map((url) => {
+  _createManifest(fileList) {
+    const manifest = fileList.map((info) => {
       return {
-        id: url.match(/[^/\\]+$/)[0].replace(/\.jpg/, ""),
-        src: url,
+        id: info.name,
+        src: info.url,
       };
     });
 

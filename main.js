@@ -5,12 +5,47 @@ CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
 $(document).ready(async function () {
   let inTransition = true;
 
+  //
+  // 驗證與載入url
+  const loadUrls = async () => {
+    const timeoutDuration = 5000;
+
+    const event = await new Promise((resolve) => {
+      const interval = setInterval(
+        () => window.dispatchEvent(new Event("loadUrls")),
+        500
+      );
+
+      const timeout = setTimeout(() => {
+        clearInterval(interval);
+        console.error("無法載入雲端資料");
+        alert("無法載入雲端資料，無法使用");
+      }, timeoutDuration);
+
+      window.addEventListener(
+        "urlsLoaded",
+        (e) => {
+          clearInterval(interval);
+          clearTimeout(timeout);
+          resolve(e);
+        },
+        { once: true }
+      );
+    });
+
+    return event.detail;
+  };
+
+  const fileCollection = await loadUrls();
+
+  //
+  // 載入圖片
   const loadManager = new LoadManager();
   loadManager.onProgress((log) => {
     $("#loading-message").text(log.name);
     $("#progress-bar").css("width", `${log.state}%`);
   });
-  await loadManager.load();
+  await loadManager.load(fileCollection);
 
   //
   // 創建上下按鈕

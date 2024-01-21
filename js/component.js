@@ -1663,7 +1663,7 @@ class PreviewImage extends component {
    * @returns {Promise<PreviewImage>} - 回傳 `PreviewImage` 實例，以便進行方法鏈結。
    */
   async show(url, category) {
-    this.url = url.replace("/thumbnail/", "/jpg/");
+    this.url = url;
     this.category = category;
 
     // 下載圖片

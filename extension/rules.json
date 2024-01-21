@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "requestHeaders": [
+        {
+          "header": "User-Agent",
+          "operation": "set",
+          "value": "DiscordBot (https://1ureka.github.io/PJ29-Portfolio/, 1.0.0)"
+        }
+      ]
+    },
+    "condition": { "urlFilter": "https://discord.com/api/" }
+  }
+]

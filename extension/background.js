@@ -6,7 +6,7 @@ chrome.runtime.onMessage.addListener(async function (request, sender) {
 
   // Discord API 的目標 URL
   const url =
-    "https://discord.com/api/v10/channels/1198588781570297976/messages?limit=100";
+    "https://discord.com/api/v10/channels/1198635555253125240/messages?limit=100";
 
   // 提取金鑰
   const authorizationResponse = await fetch("authorization.json");
@@ -56,6 +56,7 @@ chrome.runtime.onMessage.addListener(async function (request, sender) {
         return {
           name,
           url: val.attachments[0].url,
+          origin: val.attachments[1].url,
           size: val.attachments[0].size,
           timestamp: val.timestamp,
           folder,

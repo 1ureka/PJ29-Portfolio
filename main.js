@@ -5,12 +5,49 @@ CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
 $(document).ready(async function () {
   let inTransition = true;
 
+  //
+  // 驗證與載入url
+  const loadUrls = async () => {
+    const timeoutDuration = 5000;
+
+    const event = await new Promise((resolve) => {
+      const interval = setInterval(
+        () => window.dispatchEvent(new Event("loadUrls")),
+        500
+      );
+
+      const timeout = setTimeout(() => {
+        clearInterval(interval);
+        console.error("無法載入雲端資料");
+        alert("無法載入雲端資料，無法使用");
+      }, timeoutDuration);
+
+      window.addEventListener(
+        "urlsLoaded",
+        (e) => {
+          clearInterval(interval);
+          clearTimeout(timeout);
+          resolve(e);
+        },
+        { once: true }
+      );
+    });
+
+    return event.detail;
+  };
+
+  const fileCollection = await loadUrls();
+
+  //
+  // 載入圖片
   const loadManager = new LoadManager();
   loadManager.onProgress((log) => {
     $("#loading-message").text(log.name);
     $("#progress-bar").css("width", `${log.state}%`);
   });
-  await loadManager.load();
+  await loadManager.load(fileCollection);
+
+  await delay(375);
 
   //
   // 創建上下按鈕
@@ -154,8 +191,8 @@ $(document).ready(async function () {
 
       inTransition = true;
 
-      const url = e.attr("src");
       const index = e.parent().index();
+      const url = imageArray[index].origin;
 
       await delay(50); // 點擊效果所需時間
       await gallery[category].hide();
@@ -170,7 +207,7 @@ $(document).ready(async function () {
 
       previewButtons.show();
       lightBox.show(index, gallery[category].urls, category);
-      imageName.show(findImageName(url));
+      imageName.show(loadManager.findImageInfo(url).name);
 
       inTransition = false;
     });
@@ -253,14 +290,14 @@ $(document).ready(async function () {
 
       await previewImage.hide();
 
+      // 更新圖片名字
+      const info = loadManager.findImageInfo(url);
+      imageName.changeName(info.name);
+
       await Promise.all([
         lightBox.toNext(1),
-        previewImage.show(url, lightBox.category),
+        previewImage.show(info.origin, lightBox.category),
       ]);
-
-      // 更新圖片名字
-      const name = findImageName(url);
-      imageName.changeName(name);
 
       inTransition = false;
     })
@@ -273,14 +310,14 @@ $(document).ready(async function () {
 
       await previewImage.hide();
 
+      // 更新圖片名字
+      const info = loadManager.findImageInfo(url);
+      imageName.changeName(info.name);
+
       await Promise.all([
         lightBox.toPrev(1),
-        previewImage.show(url, lightBox.category),
+        previewImage.show(info.origin, lightBox.category),
       ]);
-
-      // 更新圖片名字
-      const name = findImageName(url);
-      imageName.changeName(name);
 
       inTransition = false;
     })
@@ -300,7 +337,12 @@ $(document).ready(async function () {
 
       // 傳遞至previewImage
       await previewImage.hide();
-      const pendingTasks = [previewImage.show(url, lightBox.category)];
+
+      // 更新圖片名字
+      const info = loadManager.findImageInfo(url);
+      imageName.changeName(info.name);
+
+      const pendingTasks = [previewImage.show(info.origin, lightBox.category)];
 
       // 傳遞至自身
       switch (index) {
@@ -327,10 +369,6 @@ $(document).ready(async function () {
       }
 
       await Promise.all(pendingTasks);
-
-      // 更新圖片名字
-      const name = findImageName(url);
-      imageName.changeName(name);
 
       inTransition = false;
     });

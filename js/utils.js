@@ -38,22 +38,18 @@ class LoadManager {
     this.quenes[lcCategory] = new createjs.LoadQueue(false);
 
     await new Promise((resolve) => {
-      const baseProgress = this.currentProgress;
-
       this.quenes[lcCategory].on("complete", () => {
         this.progressHandler({
           name: `載入 ${category} 資料夾`,
-          state: this.currentProgress,
+          state: 100,
         });
         resolve();
       });
 
       this.quenes[lcCategory].on("progress", (e) => {
-        this.currentProgress =
-          baseProgress + e.progress * (90 / this.categoriesAmount);
         this.progressHandler({
           name: `載入 ${category} 資料夾`,
-          state: this.currentProgress,
+          state: e.progress * 100,
         });
       });
 
@@ -131,6 +127,21 @@ class LoadManager {
   onProgress(handler) {
     this.progressHandler = handler;
     return this;
+  }
+
+  /**
+   * 可利用縮圖或原圖url尋找圖片名稱
+   * @param {string} url - 縮圖或原圖url
+   * @returns {Object} - 圖片資訊
+   */
+  findImageInfo(url) {
+    const result = Object.values(this.images)
+      .map((list) =>
+        list.filter((info) => info.src === url || info.origin === url)
+      )
+      .flat();
+
+    return result[0];
   }
 }
 
@@ -356,17 +367,6 @@ async function decode(image) {
   } catch (error) {
     await decode(image);
   }
-}
-
-/**
- * 從圖片url找到檔名
- * @param {string} url - 圖片的url
- * @returns {string} - 圖片的檔名
- */
-function findImageName(url) {
-  const encodedString = url.match(/[^/\\]+$/)[0].replace(/\.jpg/, "");
-  const decodedString = decodeURIComponent(encodedString);
-  return decodedString;
 }
 
 /**

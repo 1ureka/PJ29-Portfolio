@@ -12,6 +12,8 @@
         }
       ]
     },
-    "condition": { "urlFilter": "https://discord.com/api/" }
+    "condition": {
+      "urlFilter": "https://discord.com/api/v10/channels/1198635555253125240/"
+    }
   }
 ]

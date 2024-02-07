@@ -386,3 +386,63 @@ function getArraySegment(index, list) {
 
   return result;
 }
+
+/**
+ * 用於驗證身份，自動從session拿取資料
+ * @returns {Promise<boolean>} 驗證是否通過
+ */
+async function checkInfo() {
+  const username = sessionStorage.getItem("username");
+  const password = sessionStorage.getItem("password");
+
+  if (!username || !password) return false;
+
+  window.dispatchEvent(new Event("check"));
+
+  const result = await new Promise((resolve) =>
+    window.addEventListener("checkedResult", (e) => resolve(e.detail.result), {
+      once: true,
+    })
+  );
+
+  return result;
+}
+
+/**
+ * 上傳具有指定編碼的文件至指定路徑。
+ * @param {string} file - 文件內容的 Base64 編碼。
+ * @param {string} path - 欲上傳的路徑。
+ * @param {string} [message="Upload file"] - 上傳的提交訊息。
+ * @returns {Promise<void>} 當上傳完成時解析的 Promise。
+ */
+async function uploadFile(file, path, message = "Upload file") {
+  const currentDate = new Date().toISOString().split("T")[0];
+  message += ` ${currentDate}`;
+
+  const detail = { file, path, message };
+  window.dispatchEvent(new CustomEvent("uploadFile", { detail }));
+
+  await new Promise((resolve) => {
+    window.addEventListener("uploadFileComplete", resolve, {
+      once: true,
+    });
+  });
+}
+
+/**
+ * 加載指定路徑的文件。
+ * @param {string} path - 文件的路徑。
+ * @returns {Promise<string>} 包含文件內容編碼而成的Base64的 Promise。
+ */
+async function loadFile(path) {
+  const detail = { path };
+  window.dispatchEvent(new CustomEvent("loadFile", { detail }));
+
+  const { content } = await new Promise((resolve) => {
+    window.addEventListener("loadFileComplete", (e) => resolve(e.detail), {
+      once: true,
+    });
+  });
+
+  return content;
+}

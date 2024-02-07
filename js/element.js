@@ -681,7 +681,7 @@ class Bulb {
 
     const tl = gsap
       .timeline({
-        defaults: { duration: 0.2, ease: "set1" },
+        defaults: { duration: 0.5, ease: "set1" },
         paused: true,
       })
       .to(bulb, { backgroundColor: c }, "<")

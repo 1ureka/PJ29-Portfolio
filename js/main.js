@@ -1,8 +1,10 @@
-gsap.registerPlugin(CustomEase);
-
-CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
-
 $(document).ready(async function () {
+  const waveBackground = new WaveBackground(-1);
+  waveBackground.show();
+
+  const loadingIcon = new LoadingIcon();
+  loadingIcon.appendTo("#loading-container > div").show();
+
   let inTransition = true;
 
   //
@@ -48,127 +50,51 @@ $(document).ready(async function () {
   await loadManager.load(fileCollection);
 
   await delay(375);
+  waveBackground.hide();
+
+  //
+  // 創建主要按鈕
+  const mainButtons = new MainButtons();
+  mainButtons.appendTo("#sidebar").onSelect((option) => console.log(option));
+
+  //
+  // 創建header燈泡
+  const headerBulb = new HeaderBulb({
+    Nature: "#8ce197",
+    Props: "#ffff7a",
+    Scene: "#92e9ff",
+  });
+  headerBulb.appendTo("#header");
+
+  //
+  // 創建首頁內容
+  Intro.createURLStyle({
+    background: {
+      Scene: loadManager.getImage("scene", 0).origin,
+      Props: loadManager.getImage("props", 0).origin,
+      Nature: loadManager.getImage("nature", 3).origin,
+    },
+    card: {
+      Scene: loadManager.getImage("scene", 0).src,
+      Props: loadManager.getImage("props", 0).src,
+      Nature: loadManager.getImage("nature", 3).src,
+    },
+  });
+  const intro = new Intro();
+  intro.appendTo("#content");
+  intro.onSelect(async (e) => {
+    if (e.type === "navigate") {
+      await intro.switchTab(e.target);
+      headerBulb.switchLight(e.target);
+    } else {
+      console.log(`往${e.target}`);
+    }
+  });
 
   //
   // 創建上下按鈕
   const scrollButtons = new ScrollButtons();
   scrollButtons.appendTo("body");
-
-  //
-  // 創建搜尋欄
-  const searchBar = new SearchBar();
-  searchBar
-    .appendTo("#header")
-    .onInput(() => {
-      console.log("input", searchBar.input);
-      headerBulb.flickerLight();
-    })
-    .onClear(() => {
-      console.log("clear");
-      headerBulb.flickerLight();
-    });
-
-  //
-  // 創建header右方燈泡
-  const headerBulb = new HeaderBulb({
-    main: "#ea81af",
-    nature: "#8ce197",
-    props: "#ffff7a",
-    scene: "#92e9ff",
-  });
-  headerBulb.appendTo("#header");
-
-  //
-  // 創建側邊攔 - 資料夾選單
-  const folderSelect = new FolderSelect([
-    { label: "作品集", category: "main" },
-    { label: "自然", category: "nature" },
-    { label: "物件", category: "props" },
-    { label: "場景", category: "scene" },
-  ]);
-  folderSelect.appendTo("#sidebar").onSelect(async (category) => {
-    if (inTransition) {
-      console.log("停止執行了folderSelect.onSelect");
-      return;
-    }
-
-    inTransition = true;
-
-    if (category === "main") {
-      await switchGallery("main");
-
-      headerBulb.switchLight("main");
-      folderBoxes.show();
-
-      scrollButtons.scrollElement = folderBoxes.element;
-
-      inTransition = false;
-      return;
-    }
-
-    await folderBoxes.hide();
-    await delay(100);
-    await switchGallery(category);
-    headerBulb.switchLight(category);
-
-    scrollButtons.scrollElement = gallery[category].element;
-
-    inTransition = false;
-  });
-
-  //
-  // 創建排序選單
-  const sortSelect = new SortSelect();
-  sortSelect.appendTo("#sidebar");
-
-  //
-  // 創建設定選單 - 選項
-  const settingSelect = new SettingSelect();
-  settingSelect.appendTo("#sidebar");
-
-  //
-  // 創建內容
-  const folderBoxes = new FolderBoxes([
-    {
-      bulbColor: "#8ce197",
-      bulbIntensity: 1,
-      label: "自然",
-      img: loadManager.getImage("nature", 0),
-      category: "nature",
-    },
-    {
-      bulbColor: "#ffff7a",
-      bulbIntensity: 1,
-      label: "物件",
-      img: loadManager.getImage("props", 0),
-      category: "props",
-    },
-    {
-      bulbColor: "#92e9ff",
-      bulbIntensity: 1,
-      label: "場景",
-      img: loadManager.getImage("scene", 0),
-      category: "scene",
-    },
-  ]);
-  folderBoxes.appendTo("#content").onSelect(async (category) => {
-    if (inTransition) {
-      console.log("停止執行了folderBoxes.onSelect");
-      return;
-    }
-
-    inTransition = true;
-
-    await folderBoxes.hide();
-    await switchGallery(category);
-
-    headerBulb.switchLight(category);
-
-    scrollButtons.scrollElement = gallery[category].element;
-    folderSelect.open();
-
-    inTransition = false;
-  });
 
   //
   // 創建內容
@@ -196,13 +122,7 @@ $(document).ready(async function () {
 
       await delay(50); // 點擊效果所需時間
       await gallery[category].hide();
-      await Promise.all([
-        scrollButtons.hide(),
-        settingSelect.hide(),
-        folderSelect.hide(),
-        sortSelect.hide(),
-        searchBar.hide(),
-      ]);
+      await Promise.all([scrollButtons.hide()]);
       await previewImage.show(url, category);
 
       previewButtons.show();
@@ -255,10 +175,6 @@ $(document).ready(async function () {
       await gallery[category].show();
 
       scrollButtons.show();
-      settingSelect.show();
-      folderSelect.show();
-      sortSelect.show();
-      searchBar.show();
 
       scrollButtons.scrollElement = gallery[category].element;
     }
@@ -407,15 +323,11 @@ $(document).ready(async function () {
     .timeline({ defaults: { ease: "power2.out", duration: 0.6 } })
     .to("#header, #sidebar, #version-display", { x: 0, y: 0, stagger: 0.35 });
 
-  const showDefaultsComponentsTl = gsap
-    .timeline({ defaults: { ease: "power2.out", duration: 0.6 } })
-    .to("body", { onStart: () => folderBoxes.show(), duration: 0.65 })
-    .to("body", { onStart: () => scrollButtons.show(), duration: 0.65 }, "<");
-
   const opening = gsap.timeline({
     onComplete: () => {
       $("#loading-container").remove();
-      headerBulb.switchLight("main");
+      headerBulb.switchLight("Scene");
+      intro.show();
 
       inTransition = false;
     },
@@ -423,9 +335,5 @@ $(document).ready(async function () {
     paused: true,
   });
 
-  opening
-    .add(hideLoadingTl)
-    .add(showMenuTl)
-    .add(showDefaultsComponentsTl, "<0.6")
-    .play();
+  opening.add(hideLoadingTl).add(showMenuTl).play();
 });

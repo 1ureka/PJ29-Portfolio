@@ -1,0 +1,7 @@
+/* all_styles.css */
+@import url("global.css");
+@import url("color.css");
+@import url("header/header.css");
+@import url("sidebar/sidebar.css");
+@import url("content/content.css");
+@import url("aside/aside.css");

@@ -1,0 +1,91 @@
+:root {
+  --is-main-button-show: 1;
+}
+
+.main-buttons-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 15px;
+  padding-top: 45px;
+  padding-left: 25px;
+  gap: 20px;
+  transition: all 0.35s cubic-bezier(0.645, 0.045, 0.355, 1);
+  translate: calc(-120px + var(--is-main-button-show) * 120px);
+  opacity: var(--is-main-button-show);
+}
+
+.main-button {
+  position: relative;
+  padding: 6px 15px;
+  transition: all 0.2s ease;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+
+  box-shadow: none;
+}
+
+.main-button * {
+  pointer-events: none;
+}
+
+.main-button:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  border-radius: 5px;
+  background: hsl(240 10% 20%);
+  width: 40px;
+  height: 40px;
+  transition: all 0.3s ease;
+}
+
+.main-button span {
+  position: relative;
+  font-family: "Noto Sans TC", sans-serif;
+  font-size: 20px;
+  letter-spacing: 5px;
+  color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.main-button svg {
+  position: relative;
+  top: 0;
+  margin-left: 10px;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke: #ffffff;
+  stroke-width: 2;
+  transform: translateX(-5px);
+  transition: all 0.3s ease;
+}
+
+.main-button:hover:before {
+  width: 100%;
+  background: #ea81af;
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 3px 0px inset,
+    rgba(0, 0, 0, 0.15) 0px 3px 7px 3px inset;
+}
+
+.main-button:hover span {
+  color: rgb(10, 10, 10);
+  font-weight: bold;
+  letter-spacing: 10px;
+}
+
+.main-button:hover svg {
+  transform: translateX(0);
+  stroke: rgb(10, 10, 10);
+}
+
+.main-button:active {
+  transform: scale(0.92);
+}

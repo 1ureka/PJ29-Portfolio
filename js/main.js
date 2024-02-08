@@ -1,14 +1,115 @@
-$(document).ready(async function () {
+let inTransition = true;
+
+function createBackground() {
   const waveBackground = new WaveBackground(-1);
-  waveBackground.show();
 
   const loadingIcon = new LoadingIcon();
-  loadingIcon.appendTo("#loading-container > div").show();
+  loadingIcon.appendTo("body");
 
-  let inTransition = true;
+  const maskbackground = {
+    show: () => {
+      $("#loading-container").css({
+        "backdrop-filter": "blur(5px) brightness(0.9)",
+        "pointer-events": "all",
+      });
+    },
+    hide: () => {
+      $("#loading-container").css({
+        "backdrop-filter": "",
+        "pointer-events": "none",
+      });
+    },
+  };
+
+  return { waveBackground, maskbackground, loadingIcon };
+}
+
+async function login() {
+  // 如果已經認證過則認證完成
+  if (await checkInfo()) {
+    $("#login-container").remove();
+    return;
+  }
+
+  // 沒有認證過則顯示登入選單
+  $(":root").css("--is-login", "0");
+
+  // 開始監聽submit事件，並等待認證完成
+  $("#login-container").on("submit", async function (e) {
+    e.preventDefault();
+
+    let username = $(this).find("input[type='text']").val();
+    let password = $(this).find("input[type='password']").val();
+
+    sessionStorage.setItem("username", username);
+    sessionStorage.setItem("password", password);
+
+    username = null;
+    password = null;
+
+    if (await checkInfo()) {
+      $(":root").css("--is-login", "1");
+      $(this).off("submit");
+      window.dispatchEvent(new Event("login"));
+      return;
+    }
+
+    if ($("#login-fail-message").length) {
+      $("#login-fail-message").css("rotate", "15deg");
+      await delay(100);
+      $("#login-fail-message").css("rotate", "-15deg");
+      await delay(100);
+      $("#login-fail-message").css("rotate", "");
+      return;
+    }
+
+    $("<span>錯誤的名稱或密碼</span>")
+      .hide()
+      .attr("id", "login-fail-message")
+      .insertAfter($(this).find("button"))
+      .slideDown(500);
+  });
+
+  // 等待認證完成
+  await new Promise((resolve) =>
+    window.addEventListener("login", resolve, { once: true })
+  );
+
+  // 等待login退出CSS動畫完成
+  await delay(1500);
+  $("#login-container").remove();
+}
+
+function createIndex() {
+  const mainButtons = new MainButtons();
+  mainButtons.appendTo("#sidebar");
+  const addImagePopup = new AddImagePopup();
+  addImagePopup.appendTo("body");
+
+  const headerBulb = new HeaderBulb({
+    Nature: "#8ce197",
+    Props: "#ffff7a",
+    Scene: "#92e9ff",
+  });
+  headerBulb.appendTo("#header");
+
+  const intro = new Intro();
+  intro.appendTo("#content");
+
+  return { mainButtons, addImagePopup, headerBulb, intro };
+}
+
+$(document).ready(async function () {
+  const { waveBackground, maskbackground, loadingIcon } = createBackground();
+  waveBackground.show();
+
+  await login();
+
+  maskbackground.show();
+  loadingIcon.show();
 
   //
-  // 驗證與載入url
+  // 驗證與載入
   const loadUrls = async () => {
     const timeoutDuration = 5000;
 
@@ -39,35 +140,13 @@ $(document).ready(async function () {
   };
 
   const fileCollection = await loadUrls();
-
-  //
-  // 載入圖片
   const loadManager = new LoadManager();
-  loadManager.onProgress((log) => {
-    $("#loading-message").text(log.name);
-    $("#progress-bar").css("width", `${log.state}%`);
-  });
   await loadManager.load(fileCollection);
 
-  await delay(375);
-  waveBackground.hide();
+  await delay(375); //temp
 
   //
-  // 創建主要按鈕
-  const mainButtons = new MainButtons();
-  mainButtons.appendTo("#sidebar").onSelect((option) => console.log(option));
-
-  //
-  // 創建header燈泡
-  const headerBulb = new HeaderBulb({
-    Nature: "#8ce197",
-    Props: "#ffff7a",
-    Scene: "#92e9ff",
-  });
-  headerBulb.appendTo("#header");
-
-  //
-  // 創建首頁內容
+  // 創建首頁
   Intro.createURLStyle({
     background: {
       Scene: loadManager.getImage("scene", 0).origin,
@@ -80,8 +159,9 @@ $(document).ready(async function () {
       Nature: loadManager.getImage("nature", 3).src,
     },
   });
-  const intro = new Intro();
-  intro.appendTo("#content");
+
+  const { mainButtons, addImagePopup, headerBulb, intro } = createIndex();
+
   intro.onSelect(async (e) => {
     if (e.type === "navigate") {
       await intro.switchTab(e.target);
@@ -89,6 +169,77 @@ $(document).ready(async function () {
     } else {
       console.log(`往${e.target}`);
     }
+  });
+  mainButtons.onSelect(async (option) => {
+    if (option === "新增") {
+      maskbackground.show();
+      loadingIcon.show();
+
+      // 使用者輸入
+      let files = await new Promise((resolve) => {
+        const html = `<input type="file" accept="image/*" multiple style="display:none;position:"fixed" />`;
+        const input = $(html).appendTo("body");
+
+        input.one("change", function () {
+          resolve(this.files);
+          $(this).remove();
+        });
+
+        input.click();
+      });
+
+      // 判斷合法性
+      if (!files.length) {
+        alert("沒有選擇檔案");
+        return;
+      }
+      files = Object.values(files).filter((file) => typeof file !== Number); // 排除length
+      if (!files.every((file) => file.type.match("image.*"))) {
+        alert("請選擇一個圖像文件");
+        return;
+      }
+
+      // 壓縮圖片
+      const compressTasks = files.map(async (file) => {
+        const origin = await compressImage(file, 1920 * 2, 1080 * 2);
+        const thumbnail = await compressImage(file, 1920, 1080);
+        return { origin, thumbnail, name: file.name };
+      });
+      const dataUrls = await Promise.all(compressTasks);
+
+      // 製作預覽
+      const previews = dataUrls.map((url) => {
+        return { url1: url.origin, url2: url.thumbnail, title: url.name };
+      });
+
+      loadingIcon.hide();
+
+      await delay(100);
+
+      addImagePopup.show(previews);
+    } else {
+      console.log(option);
+    }
+  });
+  addImagePopup.onClose(() => {
+    addImagePopup.hide();
+    maskbackground.hide();
+  });
+  addImagePopup.onSubmit(async (e) => {
+    const { category, files } = e;
+    const manifest = files.map((file) => {
+      const { url1, url2, title } = file;
+      return { category, url1, url2, name: title };
+    });
+    console.log("manifest為 ", manifest);
+
+    await addImagePopup.hide();
+    loadingIcon.show();
+
+    await addImages(manifest);
+
+    maskbackground.hide();
+    loadingIcon.hide();
   });
 
   //
@@ -305,6 +456,13 @@ $(document).ready(async function () {
   };
 
   //
+  // 載入完成
+  waveBackground.hide();
+  await delay(500);
+  maskbackground.hide();
+  loadingIcon.hide();
+
+  //
   // 全局動畫
   const showFullContentsTl = gsap
     .timeline({ defaults: { ease: "set1", duration: 0.75 }, paused: true })
@@ -313,19 +471,12 @@ $(document).ready(async function () {
     .to("#sidebar", { x: -300 }, "<")
     .to("#version-display", { y: 60 }, "<");
 
-  const hideLoadingTl = gsap
-    .timeline({ defaults: { ease: "power2.out", duration: 0.4 } })
-    .to("#loading-container", { scale: 0.5, ease: "back.in(6)" })
-    .to("#loading-container", { autoAlpha: 0, duration: 0.6 }, "<")
-    .to("#progress-bar", { autoAlpha: 0, y: 5, duration: 0.6 }, "<");
-
   const showMenuTl = gsap
     .timeline({ defaults: { ease: "power2.out", duration: 0.6 } })
     .to("#header, #sidebar, #version-display", { x: 0, y: 0, stagger: 0.35 });
 
   const opening = gsap.timeline({
     onComplete: () => {
-      $("#loading-container").remove();
       headerBulb.switchLight("Scene");
       intro.show();
 
@@ -335,5 +486,5 @@ $(document).ready(async function () {
     paused: true,
   });
 
-  opening.add(hideLoadingTl).add(showMenuTl).play();
+  opening.add(showMenuTl).play();
 });

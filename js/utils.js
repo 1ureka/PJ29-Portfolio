@@ -8,7 +8,7 @@ class LoadManager {
     /** 用於儲存載入的圖片物件。 @type {Object.<string, { name: string, size: number, img: img, src: string }[]>} */
     this.images = {};
     /** 用於處理載入進度的處理器函式。 */
-    this.progressHandler = (log) => console.log(log);
+    this.progressHandler = () => {};
   }
 
   /**
@@ -388,6 +388,33 @@ function getArraySegment(index, list) {
 }
 
 /**
+ * 壓縮圖片並返回 base64 編碼的數據 URL。
+ * @param {File} file - 要壓縮的圖片檔案。
+ * @param {number} width - 壓縮後圖片的寬度。
+ * @param {number} height - 壓縮後圖片的高度。
+ * @returns {Promise<string>} 返回壓縮後圖片的 base64 編碼的數據 URL。
+ */
+async function compressImage(file, width, height) {
+  const blob = await new Promise((resolve) => {
+    new Compressor(file, {
+      width,
+      height,
+      mimeType: "image/webp",
+      convertSize: Infinity,
+      success: resolve,
+    });
+  });
+
+  const dataUrl = await new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target.result);
+    reader.readAsDataURL(blob);
+  });
+
+  return dataUrl;
+}
+
+/**
  * 用於驗證身份，自動從session拿取資料
  * @returns {Promise<boolean>} 驗證是否通過
  */
@@ -445,4 +472,146 @@ async function loadFile(path) {
   });
 
   return content;
+}
+
+/**
+ * 刪除指定路徑的文件。
+ * @param {string} path - 文件的路徑。
+ * @param {string} [message="Delete file"] - 刪除的提交訊息。
+ * @returns {Promise<void>} 當刪除完成時解析的 Promise。
+ */
+async function deleteFile(path, message = "Delete file") {
+  const detail = { path, message };
+  window.dispatchEvent(new CustomEvent("deleteFile", { detail }));
+
+  await new Promise((resolve) => {
+    window.addEventListener("deleteFileComplete", resolve, {
+      once: true,
+    });
+  });
+}
+
+/**
+ * 將字符串轉換為 Base64 編碼。
+ * @param {string} str - 要進行編碼的字符串。
+ * @returns {string} - 返回 Base64 編碼的結果。
+ */
+function stringToBase64(str) {
+  const encoder = new TextEncoder();
+  const utf8Bytes = encoder.encode(str);
+  return btoa(String.fromCharCode.apply(null, utf8Bytes));
+}
+
+/**
+ * 將 Base64 編碼的字符串轉換為原始字符串。
+ * @param {string} encodedStr - 要進行解碼的 Base64 編碼字符串。
+ * @returns {string} - 返回解碼後的原始字符串。
+ */
+function base64ToString(encodedStr) {
+  const decoder = new TextDecoder();
+  const utf8Bytes = new Uint8Array(
+    atob(encodedStr)
+      .split("")
+      .map((char) => char.charCodeAt(0))
+  );
+  return decoder.decode(utf8Bytes);
+}
+
+/**
+ * 將 Data URL 轉換為 Base64 字符串。
+ * @param {string} dataUrl - 要轉換的 Data URL 字符串。
+ * @returns {string} - 返回 Base64 字符串。
+ */
+function dataUrlToBase64(dataUrl) {
+  // Data URL 字符串：data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...
+  return dataUrl.split(",")[1];
+}
+
+/**
+ * 將 Base64 字符串轉換為 Data URL。
+ * @param {string} string - 要轉換的 Base64 字符串。
+ * @param {string} fileType - 文件類型（例如：'png'、'jpeg' 等）。
+ * @returns {string} - 返回轉換後的 Data URL。
+ */
+function base64ToDataUrl(string, fileType) {
+  return `data:image/${fileType};base64,${string}`;
+}
+
+/**
+ * 將圖片添加到資料庫。
+ * @param {Object[]} manifest - 包含多個物件的數組。
+ * @param {string} manifest[].category - 目標分類。
+ * @param {string} manifest[].url1 - 原圖base64編碼。
+ * @param {string} manifest[].url2 - 縮圖base64編碼。
+ * @param {string} manifest[].name - 檔名。
+ */
+async function addImages(manifest) {
+  for (const info of manifest) {
+    await uploadFile(info.url1, `PJ29/thumbnail/${info.category}/${info.name}`);
+    await uploadFile(info.url2, `PJ29/origin/${info.category}/${info.name}`);
+
+    let base64;
+    let json;
+
+    base64 = await loadFile("PJ29/dict.json");
+    json = JSON.parse(base64ToString(base64));
+
+    json[info.category].push(info.name);
+    json[info.category] = [...new Set(json[info.category])].sort();
+
+    json = JSON.stringify(json, null, 2);
+    base64 = stringToBase64(json);
+    await uploadFile(base64, "PJ29/dict.json");
+  }
+}
+
+/**
+ * 從資料庫刪除圖片。
+ * @param {Object[]} manifest - 包含多個物件的數組。
+ * @param {string} manifest[].category - 目標分類。
+ * @param {string} manifest[].name - 檔名。
+ */
+async function deleteImages(manifest) {
+  for (const info of manifest) {
+    await deleteFile(`PJ29/thumbnail/${info.category}/${info.name}`);
+    await deleteFile(`PJ29/origin/${info.category}/${info.name}`);
+
+    let base64;
+    let json;
+
+    base64 = await loadFile("PJ29/dict.json");
+    json = JSON.parse(base64ToString(base64));
+
+    json[info.category] = json[info.category]
+      .filter((name) => name !== info.name)
+      .sort();
+
+    json = JSON.stringify(json, null, 2);
+    base64 = stringToBase64(json);
+    await uploadFile(base64, "PJ29/dict.json");
+  }
+}
+
+/**
+ * 同步資料庫圖片。
+ * @returns {Promise<Object>} 包含從資料庫同步的圖片資訊的物件。
+ */
+async function syncImages() {
+  base64 = await loadFile("PJ29/dict.json");
+  json = JSON.parse(base64ToString(base64));
+
+  const categories = json;
+
+  const manifest = {};
+
+  for (const category in categories) {
+    for (const name of categories[category]) {
+      const thumbnail = await loadFile(`PJ29/thumbnail/${category}/${name}`);
+      const origin = await loadFile(`PJ29/origin/${category}/${name}`);
+      const info = { url1: thumbnail, url2: origin, name: name };
+      manifest[category].push(info);
+    }
+  }
+
+  return manifest;
 }

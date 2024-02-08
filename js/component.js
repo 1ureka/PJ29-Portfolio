@@ -278,7 +278,7 @@ class HeaderBulb extends component {
 }
 
 /**
- * sidebar
+ * sidebar, model
  */
 
 /**
@@ -327,6 +327,198 @@ class MainButtons extends component {
     $(":root").css("--is-main-button-show", "0");
     $(".main-buttons-container").css("pointerEvents", "none");
     return this;
+  }
+}
+
+class AddImagePopup extends component {
+  constructor() {
+    super();
+
+    this._files = [];
+
+    const container = $("<div>")
+      .addClass("popup")
+      .addClass("add-image-container");
+
+    const buttons = this._createButtons();
+
+    container.append(
+      $("<span>").text("• 目標資料夾"),
+      this._createSelect(),
+      $("<span>").text("• 檔案預覽"),
+      this._createContent(),
+      buttons.submit,
+      buttons.close
+    );
+
+    this.element = container;
+
+    this._tl = this._createTimeline();
+  }
+
+  _createSelect() {
+    return $("<form>")
+      .attr("id", "add-image-categories")
+      .append(
+        $("<div>"),
+        $("<input>").attr({
+          type: "radio",
+          id: "add-image-Scene",
+          name: "add-image-categories",
+          value: "Scene",
+          checked: true,
+        }),
+        $("<label>").attr("for", "add-image-Scene").text("場景"),
+        $("<input>").attr({
+          type: "radio",
+          id: "add-image-Props",
+          name: "add-image-categories",
+          value: "Props",
+        }),
+        $("<label>").attr("for", "add-image-Props").text("物件"),
+        $("<input>").attr({
+          type: "radio",
+          id: "add-image-Nature",
+          name: "add-image-categories",
+          value: "Nature",
+        }),
+        $("<label>").attr("for", "add-image-Nature").text("自然")
+      );
+  }
+
+  _createContent() {
+    return $("<div>")
+      .addClass("add-imgae-content-overflow")
+      .append(
+        $("<div>")
+          .addClass("add-image-scroll-icons")
+          .append(
+            $("<div>").addClass("scroll-down-icon").append(this._createSVG1())
+          ),
+        $("<div>").addClass("add-image-content")
+      );
+  }
+
+  _createArticle(imgUrl1, imgUrl2, title) {
+    return $("<article>").append(
+      $("<div>").append(
+        $("<img>").attr({ src: imgUrl1, decoding: "async" }),
+        $("<img>").attr({ src: imgUrl2, decoding: "async" })
+      ),
+      $("<p>").text(title)
+    );
+  }
+
+  _createSVG1() {
+    return $(`
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="none"></path>
+      <path d="M11.9997 13.1716L7.04996 8.22186L5.63574 9.63607L11.9997 16L18.3637 9.63607L16.9495 8.22186L11.9997 13.1716Z" fill="white">
+      </path>
+    </svg>
+    `);
+  }
+
+  _createSVG2() {
+    return $(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+      <path fill="none" d="M0 0h24v24H0z"></path>
+      <path fill="currentColor" d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.455.547-.679.045L12 14l6-8-8 6-8.054-2.685z"></path>
+    </svg>
+    `);
+  }
+
+  _createButtons() {
+    return {
+      submit: $("<div>")
+        .addClass("add-image-submit")
+        .append(
+          $("<button>").append(
+            $("<div>")
+              .addClass("svg-wrapper-1")
+              .append(
+                $("<div>").addClass("svg-wrapper").append(this._createSVG2())
+              ),
+            $("<span>").text("送出")
+          )
+        ),
+      close: $("<div>")
+        .addClass("add-image-close")
+        .append($("<img>").attr("src", "images/icons/close.png")),
+    };
+  }
+
+  _createTimeline() {
+    return gsap
+      .timeline({
+        defaults: { ease: "back.out(2)" },
+        paused: true,
+      })
+      .fromTo(
+        this.element,
+        { autoAlpha: 0, y: -200 },
+        { duration: 0.7, autoAlpha: 1, y: 0 }
+      );
+  }
+
+  onClose(handler) {
+    if (this._closeHandler) return;
+    this._closeHandler = handler;
+
+    this.element.on("click", ".add-image-close", this._closeHandler);
+
+    return this;
+  }
+
+  onSubmit(handler) {
+    if (this._submitHandler) return;
+    this._submitHandler = (e) => {
+      const container = $(e.target).parents(".add-image-container");
+      const category = container.find("input:checked").attr("id").split("-")[2];
+      handler({ category, files: this._files });
+    };
+
+    this.element.on("click", ".add-image-submit", this._submitHandler);
+
+    return this;
+  }
+
+  async show(items) {
+    if (this._inAnimate || this._isShow) return;
+    this._inAnimate = true;
+    this._isShow = true;
+
+    const content = this.element.find(".add-image-content");
+    content.find("article").remove();
+
+    this._files = [];
+
+    items.forEach((item) => {
+      this._createArticle(item.url1, item.url2, item.title).appendTo(content);
+      this._files.push(item);
+    });
+
+    this._tl.play();
+    this._tl.eventCallback("onComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onComplete", resolve);
+    });
+
+    this._inAnimate = false;
+  }
+
+  async hide() {
+    if (this._inAnimate || !this._isShow) return;
+    this._inAnimate = true;
+    this._isShow = false;
+
+    this._tl.reverse();
+    this._tl.eventCallback("onReverseComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onReverseComplete", resolve);
+    });
+
+    this._inAnimate = false;
   }
 }
 

@@ -348,6 +348,44 @@ class ImageZoom {
 }
 
 /**
+ * 一個用來生成唯一識別碼(UUID)的類別。
+ */
+class UUIDGenerator {
+  /**
+   * 創建一個新的UUIDGenerator實例。
+   */
+  constructor() {
+    /**
+     * @type {Set<string>} 存儲已生成的 UUID 的集合。
+     */
+    this.generatedIds = new Set();
+  }
+
+  /**
+   * 生成一個新的UUID。
+   * @returns {string} 生成的 UUID。
+   */
+  generateUUID() {
+    let uuid;
+    do {
+      uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+        /[xy]/g,
+        function (c) {
+          const r = (Math.random() * 16) | 0;
+          const v = c === "x" ? r : (r & 0x3) | 0x8;
+          return v.toString(16);
+        }
+      );
+    } while (this.generatedIds.has(uuid));
+
+    this.generatedIds.add(uuid);
+    return uuid;
+  }
+}
+// 預先創建
+const idGenerator = new UUIDGenerator();
+
+/**
  * 延遲執行的 Promise 函式，用於等待一定的時間。
  * @param {number} ms - 要延遲的時間（毫秒）。
  * @returns {Promise<void>} 一個 Promise，在指定時間後被解析。
@@ -446,11 +484,12 @@ async function uploadFile(file, path, message = "Upload file") {
   const currentDate = new Date().toISOString().split("T")[0];
   message += ` ${currentDate}`;
 
-  const detail = { file, path, message };
+  const id = idGenerator.generateUUID();
+  const detail = { file, path, message, id };
   window.dispatchEvent(new CustomEvent("uploadFile", { detail }));
 
   await new Promise((resolve) => {
-    window.addEventListener("uploadFileComplete", resolve, {
+    window.addEventListener(`uploadFileComplete${id}`, resolve, {
       once: true,
     });
   });
@@ -462,11 +501,12 @@ async function uploadFile(file, path, message = "Upload file") {
  * @returns {Promise<string>} 包含文件內容編碼而成的Base64的 Promise。
  */
 async function loadFile(path) {
-  const detail = { path };
+  const id = idGenerator.generateUUID();
+  const detail = { path, id };
   window.dispatchEvent(new CustomEvent("loadFile", { detail }));
 
   const { content } = await new Promise((resolve) => {
-    window.addEventListener("loadFileComplete", (e) => resolve(e.detail), {
+    window.addEventListener(`loadFileComplete${id}`, (e) => resolve(e.detail), {
       once: true,
     });
   });
@@ -481,11 +521,12 @@ async function loadFile(path) {
  * @returns {Promise<void>} 當刪除完成時解析的 Promise。
  */
 async function deleteFile(path, message = "Delete file") {
-  const detail = { path, message };
+  const id = idGenerator.generateUUID();
+  const detail = { path, message, id };
   window.dispatchEvent(new CustomEvent("deleteFile", { detail }));
 
   await new Promise((resolve) => {
-    window.addEventListener("deleteFileComplete", resolve, {
+    window.addEventListener(`deleteFileComplete${id}`, resolve, {
       once: true,
     });
   });
@@ -546,23 +587,25 @@ function base64ToDataUrl(string, fileType) {
  * @param {string} manifest[].name - 檔名。
  */
 async function addImages(manifest) {
-  for (const info of manifest) {
-    await uploadFile(info.url1, `PJ29/thumbnail/${info.category}/${info.name}`);
-    await uploadFile(info.url2, `PJ29/origin/${info.category}/${info.name}`);
+  let base64;
+  let json;
 
-    let base64;
-    let json;
+  base64 = await loadFile("PJ29/dict.json");
+  json = JSON.parse(base64ToString(base64));
 
-    base64 = await loadFile("PJ29/dict.json");
-    json = JSON.parse(base64ToString(base64));
+  const promises = manifest.map(async (info) => {
+    await uploadFile(info.url1, `PJ29/origin/${info.category}/${info.name}`);
+    await uploadFile(info.url2, `PJ29/thumbnail/${info.category}/${info.name}`);
 
     json[info.category].push(info.name);
     json[info.category] = [...new Set(json[info.category])].sort();
+  });
 
-    json = JSON.stringify(json, null, 2);
-    base64 = stringToBase64(json);
-    await uploadFile(base64, "PJ29/dict.json");
-  }
+  await Promise.all(promises);
+
+  json = JSON.stringify(json, null, 2);
+  base64 = stringToBase64(json);
+  await uploadFile(base64, "PJ29/dict.json");
 }
 
 /**
@@ -572,24 +615,26 @@ async function addImages(manifest) {
  * @param {string} manifest[].name - 檔名。
  */
 async function deleteImages(manifest) {
-  for (const info of manifest) {
-    await deleteFile(`PJ29/thumbnail/${info.category}/${info.name}`);
+  let base64;
+  let json;
+
+  base64 = await loadFile("PJ29/dict.json");
+  json = JSON.parse(base64ToString(base64));
+
+  const promises = manifest.map(async (info) => {
     await deleteFile(`PJ29/origin/${info.category}/${info.name}`);
-
-    let base64;
-    let json;
-
-    base64 = await loadFile("PJ29/dict.json");
-    json = JSON.parse(base64ToString(base64));
+    await deleteFile(`PJ29/thumbnail/${info.category}/${info.name}`);
 
     json[info.category] = json[info.category]
       .filter((name) => name !== info.name)
       .sort();
+  });
 
-    json = JSON.stringify(json, null, 2);
-    base64 = stringToBase64(json);
-    await uploadFile(base64, "PJ29/dict.json");
-  }
+  await Promise.all(promises);
+
+  json = JSON.stringify(json, null, 2);
+  base64 = stringToBase64(json);
+  await uploadFile(base64, "PJ29/dict.json");
 }
 
 /**
@@ -598,18 +643,35 @@ async function deleteImages(manifest) {
  */
 async function syncImages() {
   base64 = await loadFile("PJ29/dict.json");
-  json = JSON.parse(base64ToString(base64));
+  fileList = JSON.parse(base64ToString(base64));
 
-  const categories = json;
+  const categories = ["Nature", "Props", "Scene"];
+  const manifest = { Nature: {}, Props: {}, Scene: {} };
 
-  const manifest = {};
+  for (const category of categories) {
+    const list = fileList[category];
+    list.forEach((name) => (manifest[category][name] = {}));
 
-  for (const category in categories) {
-    for (const name of categories[category]) {
-      const thumbnail = await loadFile(`PJ29/thumbnail/${category}/${name}`);
-      const origin = await loadFile(`PJ29/origin/${category}/${name}`);
-      const info = { url1: thumbnail, url2: origin, name: name };
-      manifest[category].push(info);
+    const chunks = [];
+    for (let i = 0; i < list.length; i += 25) {
+      chunks.push(list.slice(i, i + 25));
+    }
+
+    for (const chunk of chunks) {
+      console.log("正在載入", chunk);
+
+      const promises = chunk.map(async (name) => {
+        const thumbnail = await loadFile(`PJ29/thumbnail/${category}/${name}`);
+        const origin = await loadFile(`PJ29/origin/${category}/${name}`);
+        manifest[category][name] = {
+          url1: base64ToDataUrl(thumbnail, "webp"),
+          url2: base64ToDataUrl(origin, "webp"),
+        };
+      });
+
+      await Promise.all(promises);
+
+      console.log("載入完成", chunk);
     }
   }
 

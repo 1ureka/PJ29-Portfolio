@@ -103,7 +103,10 @@ function createIndex() {
 
 function createGallery() {
   const gallery = new Gallery();
-  return { gallery };
+  const scrollButtons = new ScrollButtons();
+  scrollButtons.appendTo("body");
+
+  return { gallery, scrollButtons };
 }
 
 function createPreview(category, index) {}
@@ -137,7 +140,7 @@ $(document).ready(async function () {
     },
   });
 
-  const { gallery } = createGallery();
+  const { gallery, scrollButtons } = createGallery();
   const { mainButtons, addImagePopup, deleteImagePopup, headerBulb, intro } =
     createIndex();
 
@@ -154,8 +157,12 @@ $(document).ready(async function () {
       headerBulb.switchLight(e.target);
     } else {
       console.log(`往${e.target}`);
+
       await intro.hide();
       await gallery.show(e.target);
+
+      scrollButtons.show();
+      scrollButtons.scrollElement = gallery.element;
     }
 
     inTransition = false;
@@ -331,11 +338,6 @@ $(document).ready(async function () {
 
     inTransition = false;
   });
-
-  //
-  // 創建上下按鈕
-  const scrollButtons = new ScrollButtons();
-  scrollButtons.appendTo("body");
 
   //
   // 創建內容

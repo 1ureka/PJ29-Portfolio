@@ -1087,8 +1087,7 @@ class Gallery extends component {
   }
 
   /**
-   * 綁定圖片元素的時間軸。
-   * @private
+   * 綁定圖片元素的時間軸。 @private
    * @param {jQuery} imageContainer - 圖片容器的jQuery對象。
    */
   _bindTimeline(imageContainer) {
@@ -1140,8 +1139,7 @@ class Gallery extends component {
   }
 
   /**
-   * 創建滑鼠移動事件處理器。
-   * @private
+   * 創建滑鼠移動事件處理器。 @private
    * @param {jQuery} element - 被處理的元素。
    * @returns {Function} - 滑鼠移動事件處理器函式。
    */
@@ -1172,8 +1170,7 @@ class Gallery extends component {
   }
 
   /**
-   * 創建並初始化圖片庫的時間軸效果。
-   * @private
+   * 創建並初始化圖片庫的時間軸效果。 @private
    * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
    */
   _createTimelines() {
@@ -1200,7 +1197,11 @@ class Gallery extends component {
   async _reset(urls) {
     this.element = await this._createGallery(urls);
 
-    if (this._handler) this.element.on("click", "img", this._handler);
+    if (this._selectHandler)
+      this.element.on("click", "img", this._selectHandler);
+
+    if (this._closeHandler)
+      this.element.on("click", ".close-btn", this._closeHandler);
 
     this._tl = this._createTimelines();
     this.appendTo("#content");
@@ -1261,9 +1262,26 @@ class Gallery extends component {
    * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
    */
   onSelect(handler) {
-    if (this.handler) this.element.off("click", "img", this._handler);
+    if (this._selectHandler)
+      this.element.off("click", "img", this._selectHandler);
 
-    this._handler = function () {
+    this._selectHandler = function () {
+      handler($(this));
+    };
+
+    return this;
+  }
+
+  /**
+   * 設定圖片庫返回事件的處理函數。
+   * @param {Function} handler - 選擇事件的處理函數。
+   * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
+   */
+  onClose(handler) {
+    if (this._closeHandler)
+      this.element.off("click", ".close-btn", this._closeHandler);
+
+    this._closeHandler = function () {
       handler($(this));
     };
 

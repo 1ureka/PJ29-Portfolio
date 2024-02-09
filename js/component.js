@@ -522,6 +522,222 @@ class AddImagePopup extends component {
   }
 }
 
+class DeleteImagePopup extends component {
+  constructor() {
+    super();
+
+    const container = $("<div>")
+      .addClass("popup")
+      .addClass("delete-image-container");
+
+    container.append(
+      $("<span>").text("• 目標資料夾"),
+      this._createSelect(),
+      $("<span>").text("• 選擇檔案"),
+      this._createContent(),
+      this._createButton()
+    );
+
+    this.element = container;
+
+    this._tl = this._createTimeline();
+  }
+
+  _createSelect() {
+    return $("<form>")
+      .attr("id", "delete-image-categories")
+      .append(
+        $("<div>"),
+        $("<input>").attr({
+          type: "radio",
+          id: "delete-image-Scene",
+          name: "delete-image-categories",
+          value: "Scene",
+          checked: true,
+        }),
+        $("<label>").attr("for", "delete-image-Scene").text("場景"),
+        $("<input>").attr({
+          type: "radio",
+          id: "delete-image-Props",
+          name: "delete-image-categories",
+          value: "Props",
+        }),
+        $("<label>").attr("for", "delete-image-Props").text("物件"),
+        $("<input>").attr({
+          type: "radio",
+          id: "delete-image-Nature",
+          name: "delete-image-categories",
+          value: "Nature",
+        }),
+        $("<label>").attr("for", "delete-image-Nature").text("自然")
+      );
+  }
+
+  _createContent() {
+    return $("<div>")
+      .addClass("delete-imgae-content-overflow")
+      .append(
+        $("<div>")
+          .addClass("delete-image-scroll-icons")
+          .append(
+            $("<div>").addClass("scroll-down-icon").append(this._createSVG1())
+          ),
+        $("<div>").addClass("delete-image-content")
+      );
+  }
+
+  _createArticle(name) {
+    return $("<article>").append(
+      $("<p>").text(name),
+      this._createDeleteButton()
+    );
+  }
+
+  _createDeleteButton() {
+    return $("<button>")
+      .addClass("delete-image-button")
+      .append(
+        this._createSVG3(),
+        $("<span>").addClass("delete-image-tip").text("刪除")
+      );
+  }
+
+  _createSVG1() {
+    return $(`
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="none"></path>
+      <path d="M11.9997 13.1716L7.04996 8.22186L5.63574 9.63607L11.9997 16L18.3637 9.63607L16.9495 8.22186L11.9997 13.1716Z" fill="white">
+      </path>
+    </svg>
+    `);
+  }
+
+  _createSVG2() {
+    return $(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+      <path fill="none" d="M0 0h24v24H0z"></path>
+      <path fill="currentColor" d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.455.547-.679.045L12 14l6-8-8 6-8.054-2.685z"></path>
+    </svg>
+    `);
+  }
+
+  _createSVG3() {
+    return $(`
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 50 59"
+    ><path
+      fill="#B5BAC1"
+      d="M0 7.5C0 5.01472 2.01472 3 4.5 3H45.5C47.9853 3 50 5.01472 50 7.5V7.5C50 8.32843 49.3284 9 48.5 9H1.5C0.671571 9 0 8.32843 0 7.5V7.5Z"
+    ></path>
+    <path
+      fill="#B5BAC1"
+      d="M17 3C17 1.34315 18.3431 0 20 0H29.3125C30.9694 0 32.3125 1.34315 32.3125 3V3H17V3Z"
+    ></path>
+    <path
+      fill="#B5BAC1"
+      d="M2.18565 18.0974C2.08466 15.821 3.903 13.9202 6.18172 13.9202H43.8189C46.0976 13.9202 47.916 15.821 47.815 18.0975L46.1699 55.1775C46.0751 57.3155 44.314 59.0002 42.1739 59.0002H7.8268C5.68661 59.0002 3.92559 57.3155 3.83073 55.1775L2.18565 18.0974ZM18.0003 49.5402C16.6196 49.5402 15.5003 48.4209 15.5003 47.0402V24.9602C15.5003 23.5795 16.6196 22.4602 18.0003 22.4602C19.381 22.4602 20.5003 23.5795 20.5003 24.9602V47.0402C20.5003 48.4209 19.381 49.5402 18.0003 49.5402ZM29.5003 47.0402C29.5003 48.4209 30.6196 49.5402 32.0003 49.5402C33.381 49.5402 34.5003 48.4209 34.5003 47.0402V24.9602C34.5003 23.5795 33.381 22.4602 32.0003 22.4602C30.6196 22.4602 29.5003 23.5795 29.5003 24.9602V47.0402Z"
+      clip-rule="evenodd"
+      fill-rule="evenodd"
+    ></path>
+    <path fill="#B5BAC1" d="M2 13H48L47.6742 21.28H2.32031L2 13Z"></path>
+    </svg>
+    `);
+  }
+
+  _createButton() {
+    return $("<div>")
+      .addClass("delete-image-close")
+      .append($("<img>").attr("src", "images/icons/close.png"));
+  }
+
+  _createTimeline() {
+    return gsap
+      .timeline({
+        defaults: { ease: "back.out(2)" },
+        paused: true,
+      })
+      .fromTo(
+        this.element,
+        { autoAlpha: 0, y: -200 },
+        { duration: 0.7, autoAlpha: 1, y: 0 }
+      );
+  }
+
+  onClose(handler) {
+    if (this._closeHandler) return;
+    this._closeHandler = handler;
+
+    this.element.on("click", ".delete-image-close", this._closeHandler);
+
+    return this;
+  }
+
+  onSelect(handler) {
+    if (this._submitHandler) return;
+    this._submitHandler = (e) => {
+      const container = $(e.target).parents(".delete-image-container");
+      const category = container.find("input:checked").attr("id").split("-")[2];
+      const name = $(e.target).children("p").text();
+      handler({ category, name, element: $(e.target) });
+    };
+
+    this.element.on("click", "article", this._submitHandler);
+
+    return this;
+  }
+
+  async show(items) {
+    if (this._inAnimate || this._isShow) return;
+    this._inAnimate = true;
+    this._isShow = true;
+
+    $("#delete-image-Scene")[0].checked = true;
+
+    const content = this.element.find(".delete-image-content");
+    content.find("article").remove();
+
+    items["Scene"].forEach((name) =>
+      this._createArticle(name).appendTo(content)
+    );
+
+    this._innerHandler = (e) => {
+      content.find("article").remove();
+      const category = $(e.target).attr("for").split("-")[2];
+      items[category].forEach((name) =>
+        this._createArticle(name).appendTo(content)
+      );
+    };
+
+    this.element.on("click", "form > label", this._innerHandler);
+
+    this._tl.play();
+    this._tl.eventCallback("onComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onComplete", resolve);
+    });
+
+    this._inAnimate = false;
+  }
+
+  async hide() {
+    if (this._inAnimate || !this._isShow) return;
+    this._inAnimate = true;
+    this._isShow = false;
+
+    this.element.off("click", "form > label", this._innerHandler);
+
+    this._tl.reverse();
+    this._tl.eventCallback("onReverseComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onReverseComplete", resolve);
+    });
+
+    this._inAnimate = false;
+  }
+}
+
 /**
  * content
  */

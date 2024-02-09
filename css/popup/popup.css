@@ -1,5 +1,6 @@
 @import url("popup-login-form.css");
 @import url("popup-add-image.css");
+@import url("popup-delete-image.css");
 
 .popup {
   display: flex;

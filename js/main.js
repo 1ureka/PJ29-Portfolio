@@ -8,13 +8,13 @@ function createBackground() {
 
   const maskbackground = {
     show: () => {
-      $("#loading-container").css({
+      $("#mask-background").css({
         "backdrop-filter": "blur(5px) brightness(0.9)",
         "pointer-events": "all",
       });
     },
     hide: () => {
-      $("#loading-container").css({
+      $("#mask-background").css({
         "backdrop-filter": "",
         "pointer-events": "none",
       });
@@ -85,6 +85,8 @@ function createIndex() {
   mainButtons.appendTo("#sidebar");
   const addImagePopup = new AddImagePopup();
   addImagePopup.appendTo("body");
+  const deleteImagePopup = new DeleteImagePopup();
+  deleteImagePopup.appendTo("body");
 
   const headerBulb = new HeaderBulb({
     Nature: "#8ce197",
@@ -96,7 +98,7 @@ function createIndex() {
   const intro = new Intro();
   intro.appendTo("#content");
 
-  return { mainButtons, addImagePopup, headerBulb, intro };
+  return { mainButtons, addImagePopup, deleteImagePopup, headerBulb, intro };
 }
 
 $(document).ready(async function () {
@@ -143,24 +145,27 @@ $(document).ready(async function () {
   const loadManager = new LoadManager();
   await loadManager.load(fileCollection);
 
-  await delay(375); //temp
-
   //
   // 創建首頁
   Intro.createURLStyle({
     background: {
-      Scene: loadManager.getImage("scene", 0).origin,
-      Props: loadManager.getImage("props", 0).origin,
-      Nature: loadManager.getImage("nature", 3).origin,
+      Scene: images.Scene["P17.webp"].url2.replace(/\n/g, ""),
+      Props: images.Props["Bike 1.webp"].url2.replace(/\n/g, ""),
+      Nature: images.Nature[
+        "Nature Instance Assets Preview (Oak Tree B).webp"
+      ].url2.replace(/\n/g, ""),
     },
     card: {
-      Scene: loadManager.getImage("scene", 0).src,
-      Props: loadManager.getImage("props", 0).src,
-      Nature: loadManager.getImage("nature", 3).src,
+      Scene: images.Scene["P17.webp"].url1.replace(/\n/g, ""),
+      Props: images.Props["Bike 1.webp"].url1.replace(/\n/g, ""),
+      Nature: images.Nature[
+        "Nature Instance Assets Preview (Oak Tree B).webp"
+      ].url1.replace(/\n/g, ""),
     },
   });
 
-  const { mainButtons, addImagePopup, headerBulb, intro } = createIndex();
+  const { mainButtons, addImagePopup, deleteImagePopup, headerBulb, intro } =
+    createIndex();
 
   intro.onSelect(async (e) => {
     if (e.type === "navigate") {
@@ -172,9 +177,6 @@ $(document).ready(async function () {
   });
   mainButtons.onSelect(async (option) => {
     if (option === "新增") {
-      maskbackground.show();
-      loadingIcon.show();
-
       // 使用者輸入
       let files = await new Promise((resolve) => {
         const html = `<input type="file" accept="image/*" multiple style="display:none;position:"fixed" />`;
@@ -187,6 +189,9 @@ $(document).ready(async function () {
 
         input.click();
       });
+
+      maskbackground.show();
+      loadingIcon.show();
 
       // 判斷合法性
       if (!files.length) {
@@ -203,7 +208,11 @@ $(document).ready(async function () {
       const compressTasks = files.map(async (file) => {
         const origin = await compressImage(file, 1920 * 2, 1080 * 2);
         const thumbnail = await compressImage(file, 1920, 1080);
-        return { origin, thumbnail, name: file.name };
+        return {
+          origin,
+          thumbnail,
+          name: file.name.replace(".png", ".webp"),
+        };
       });
       const dataUrls = await Promise.all(compressTasks);
 
@@ -214,11 +223,16 @@ $(document).ready(async function () {
 
       loadingIcon.hide();
 
-      await delay(100);
+      await delay(250);
 
       addImagePopup.show(previews);
-    } else {
-      console.log(option);
+    } else if (option === "刪除") {
+      maskbackground.show();
+      deleteImagePopup.show({
+        Nature: ["檔名檔名檔名.webp", "檔名檔名檔名.webp", "名檔名檔名.webp"],
+        Props: [],
+        Scene: ["檔名檔名檔名檔名檔名檔名.webp"],
+      });
     }
   });
   addImagePopup.onClose(() => {
@@ -228,7 +242,9 @@ $(document).ready(async function () {
   addImagePopup.onSubmit(async (e) => {
     const { category, files } = e;
     const manifest = files.map((file) => {
-      const { url1, url2, title } = file;
+      let { url1, url2, title } = file;
+      url1 = dataUrlToBase64(url1);
+      url2 = dataUrlToBase64(url2);
       return { category, url1, url2, name: title };
     });
     console.log("manifest為 ", manifest);
@@ -239,6 +255,18 @@ $(document).ready(async function () {
     await addImages(manifest);
 
     maskbackground.hide();
+    loadingIcon.hide();
+  });
+  deleteImagePopup.onClose(() => {
+    deleteImagePopup.hide();
+    maskbackground.hide();
+  });
+  deleteImagePopup.onSelect(async (e) => {
+    const { category, name, element } = e;
+    console.log(category, name, element);
+    element.hide(500, () => element.remove());
+    loadingIcon.show();
+    await delay(1500);
     loadingIcon.hide();
   });
 

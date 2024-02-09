@@ -103,66 +103,6 @@ class FullscreenIcon extends IconInterface {
 }
 
 /**
- * 垂直分割線元素
- */
-class VerticalSeparator {
-  constructor(config) {
-    this.element = this._createSeparator(config);
-  }
-
-  _createSeparator(config) {
-    // 預設配置
-    const defaultConfig = {
-      margin: 5,
-      width: 2,
-      backgroundColor: "white",
-    };
-
-    config = { ...defaultConfig, ...config };
-
-    const separator = $("<div>")
-      .addClass("v-separator")
-      .css({
-        margin: `0 ${config.margin}px`,
-        width: `${config.width}px`,
-        backgroundColor: config.backgroundColor,
-      });
-
-    return separator;
-  }
-}
-
-/**
- * 水平分割線元素
- */
-class HorizontalSeparator {
-  constructor(config) {
-    this.element = this._createSeparator(config);
-  }
-
-  _createSeparator(config) {
-    // 預設配置
-    const defaultConfig = {
-      margin: 5,
-      height: 2,
-      backgroundColor: "white",
-    };
-
-    config = { ...defaultConfig, ...config };
-
-    const separator = $("<div>")
-      .addClass("h-separator")
-      .css({
-        margin: `${config.margin}px 0`,
-        height: `${config.height}px`,
-        backgroundColor: config.backgroundColor,
-      });
-
-    return separator;
-  }
-}
-
-/**
  * 燈泡元素
  */
 class Bulb {

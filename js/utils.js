@@ -5,6 +5,21 @@ class Images {
   constructor() {
     this._fileList = null;
     this._images = null;
+    this._initialTitle = document.title;
+  }
+
+  /**
+   * 用於設定目前狀態
+   * @param {boolean} isAsync - 是否為非同步狀態
+   */
+  _setState(isAsync) {
+    if (isAsync) {
+      document.title = this._initialTitle + " ( 未同步 )";
+      $("#content").css("pointerEvents", "none");
+    } else {
+      document.title = this._initialTitle;
+      $("#content").css("pointerEvents", "auto");
+    }
   }
 
   /**
@@ -49,6 +64,8 @@ class Images {
 
     const base64 = stringToBase64(JSON.stringify(fileList, null, 2));
     await uploadFile(base64, "PJ29/dict.json");
+
+    this._setState(true);
   }
 
   /**
@@ -75,6 +92,8 @@ class Images {
 
     const base64 = stringToBase64(JSON.stringify(fileList, null, 2));
     await uploadFile(base64, "PJ29/dict.json");
+
+    this._setState(true);
   }
 
   /**
@@ -109,7 +128,8 @@ class Images {
     let fileList = await this.getList();
 
     const categories = ["Nature", "Props", "Scene"];
-    const manifest = { Nature: {}, Props: {}, Scene: {} };
+    let manifest = this._images;
+    if (!manifest) manifest = { Nature: {}, Props: {}, Scene: {} };
 
     for (const category of categories) {
       const list = fileList[category];
@@ -123,9 +143,11 @@ class Images {
         console.log("正在載入", chunk);
 
         const result = await this.loadImages(
-          chunk.map((name) => {
-            return { category, name };
-          })
+          chunk
+            .filter((name) => !manifest[category][name])
+            .map((name) => {
+              return { category, name };
+            })
         );
 
         result.forEach((info) => {
@@ -142,6 +164,8 @@ class Images {
     }
 
     this._images = manifest;
+
+    this._setState(false);
   }
 
   /**

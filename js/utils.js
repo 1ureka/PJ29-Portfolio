@@ -16,6 +16,7 @@ class Images {
     if (!this._fileList) {
       const base64 = await loadFile("PJ29/dict.json");
       fileList = JSON.parse(base64ToString(base64));
+      this._fileList = fileList;
     } else {
       fileList = this._fileList;
     }

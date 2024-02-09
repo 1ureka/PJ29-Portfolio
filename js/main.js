@@ -216,18 +216,18 @@ $(document).ready(async function () {
   });
   addImagePopup.onSubmit(async (e) => {
     const { category, files } = e;
+
     const manifest = files.map((file) => {
       let { url1, url2, title } = file;
       url1 = dataUrlToBase64(url1);
       url2 = dataUrlToBase64(url2);
       return { category, url1, url2, name: title };
     });
-    console.log("manifest為 ", manifest);
 
     await addImagePopup.hide();
     loadingIcon.show();
 
-    await addImages(manifest);
+    await images.addImages(manifest);
 
     maskbackground.hide();
     loadingIcon.hide();
@@ -238,10 +238,12 @@ $(document).ready(async function () {
   });
   deleteImagePopup.onSelect(async (e) => {
     const { category, name, element } = e;
-    console.log(category, name);
+
     element.hide(500, () => element.remove());
     loadingIcon.show();
-    await delay(1500);
+
+    await images.deleteImages([{ category, name }]);
+
     loadingIcon.hide();
   });
 

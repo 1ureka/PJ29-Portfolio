@@ -363,43 +363,6 @@ $(document).ready(async function () {
 
   //
   // 創建內容
-  /** @type {{ [key: string]: Gallery }} */
-  // const gallery = {};
-  // const categories = ["nature", "props", "scene"];
-
-  // categories.forEach((category) => {
-  //   // 取得相應類別的圖片數組，並使用 map 處理每個圖片對象，提取出 JQuery 對象
-  //   const imageArray = loadManager.getImageArray(category);
-  //   const urlArray = imageArray.map((obj) => obj.src);
-
-  //   gallery[category] = new Gallery(urlArray);
-
-  //   gallery[category].onSelect(async (e) => {
-  //     if (inTransition) {
-  //       console.log("停止執行了gallery.onSelect");
-  //       return;
-  //     }
-
-  //     inTransition = true;
-
-  //     const index = e.parent().index();
-  //     const url = imageArray[index].origin;
-
-  //     await delay(50); // 點擊效果所需時間
-  //     await gallery[category].hide();
-  //     await Promise.all([scrollButtons.hide()]);
-  //     await previewImage.show(url, category);
-
-  //     previewButtons.show();
-  //     lightBox.show(index, gallery[category].urls, category);
-  //     imageName.show(loadManager.findImageInfo(url).name);
-
-  //     inTransition = false;
-  //   });
-  // });
-
-  //
-  // 創建內容
   const previewImage = new PreviewImage();
   previewImage.appendTo("#content").onClose(async () => {
     if (inTransition) {

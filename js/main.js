@@ -196,13 +196,18 @@ $(document).ready(async function () {
       await delay(250);
 
       addImagePopup.show(previews);
+      //
     } else if (option === "刪除") {
       maskbackground.show();
-      deleteImagePopup.show({
-        Nature: ["檔名檔名檔名.webp", "檔名檔名檔名.webp", "名檔名檔名.webp"],
-        Props: [],
-        Scene: ["檔名檔名檔名檔名檔名檔名.webp"],
-      });
+      const list = await images.getList();
+      deleteImagePopup.show(list);
+      //
+    } else if (option === "同步") {
+      loadingIcon.show();
+
+      await images.syncImages();
+
+      loadingIcon.hide();
     }
   });
   addImagePopup.onClose(() => {
@@ -233,7 +238,7 @@ $(document).ready(async function () {
   });
   deleteImagePopup.onSelect(async (e) => {
     const { category, name, element } = e;
-    console.log(category, name, element);
+    console.log(category, name);
     element.hide(500, () => element.remove());
     loadingIcon.show();
     await delay(1500);

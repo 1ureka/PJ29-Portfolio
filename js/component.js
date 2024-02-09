@@ -278,7 +278,7 @@ class HeaderBulb extends component {
 }
 
 /**
- * sidebar, model
+ * sidebar, modal
  */
 
 /**

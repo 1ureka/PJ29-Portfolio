@@ -1010,9 +1010,6 @@ class Intro extends component {
   }
 
   async show() {
-    if (this._isShowing) return;
-    this._isShowing = true;
-
     this._tl = this._createTimeline();
 
     this._tl.play();
@@ -1020,21 +1017,14 @@ class Intro extends component {
     await new Promise((resolve) => {
       this._tl.eventCallback("onComplete", resolve);
     });
-
-    this._isShowing = false;
   }
 
   async hide() {
-    if (this._isHiding) return;
-    this._isHiding = true;
-
     this._tl.reverse();
     this._tl.eventCallback("onReverseComplete", null);
     await new Promise((resolve) => {
       this._tl.eventCallback("onReverseComplete", resolve);
     });
-
-    this._isHiding = false;
   }
 }
 

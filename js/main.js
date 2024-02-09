@@ -158,8 +158,12 @@ $(document).ready(async function () {
     } else {
       console.log(`往${e.target}`);
 
+      const category = e.target;
+      const fileList = images.getList()[category];
+      const urls = fileList.map((name) => images.getImage(category, name));
+
       await intro.hide();
-      await gallery.show(e.target);
+      await gallery.show(urls);
 
       scrollButtons.show();
       scrollButtons.scrollElement = gallery.element;

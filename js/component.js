@@ -968,6 +968,8 @@ class Intro extends component {
   }
 
   async switchTab(type) {
+    $(".content-intro-learnmore").css("pointerEvents", "none");
+
     //
     // hide
     await this.hide();
@@ -1007,6 +1009,8 @@ class Intro extends component {
     //
     // show
     await this.show();
+
+    $(".content-intro-learnmore").css("pointerEvents", "auto");
   }
 
   async show() {

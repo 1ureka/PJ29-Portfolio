@@ -66,8 +66,7 @@ img {
   pointer-events: none;
 }
 
-/* loadingScreen */
-#loading-container {
+#mask-background {
   position: fixed;
   top: 0;
   bottom: 0;

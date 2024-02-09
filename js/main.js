@@ -101,7 +101,10 @@ function createIndex() {
   return { mainButtons, addImagePopup, deleteImagePopup, headerBulb, intro };
 }
 
-function createGallery(category) {}
+function createGallery() {
+  const gallery = new Gallery();
+  return { gallery };
+}
 
 function createPreview(category, index) {}
 
@@ -120,7 +123,7 @@ $(document).ready(async function () {
   await images.syncImages();
 
   //
-  // 創建首頁
+  // 創建首頁與圖片牆
   Intro.createURLStyle({
     background: {
       Scene: images.getImage("Scene", 0),
@@ -134,18 +137,37 @@ $(document).ready(async function () {
     },
   });
 
+  const { gallery } = createGallery();
   const { mainButtons, addImagePopup, deleteImagePopup, headerBulb, intro } =
     createIndex();
 
   intro.onSelect(async (e) => {
+    if (inTransition) {
+      console.log("停止執行了 intro.onSelect");
+      return;
+    }
+
+    inTransition = true;
+
     if (e.type === "navigate") {
       await intro.switchTab(e.target);
       headerBulb.switchLight(e.target);
     } else {
       console.log(`往${e.target}`);
+      await intro.hide();
+      await gallery.show(e.target);
     }
+
+    inTransition = false;
   });
   mainButtons.onSelect(async (option) => {
+    if (inTransition) {
+      console.log("停止執行了 mainButtons.onSelect");
+      return;
+    }
+
+    inTransition = true;
+
     if (option === "新增") {
       // 使用者輸入
       let files = await new Promise((resolve) => {
@@ -209,12 +231,30 @@ $(document).ready(async function () {
 
       loadingIcon.hide();
     }
+
+    inTransition = false;
   });
-  addImagePopup.onClose(() => {
-    addImagePopup.hide();
+  addImagePopup.onClose(async () => {
+    if (inTransition) {
+      console.log("停止執行了 addImagePopup.onClose");
+      return;
+    }
+
+    inTransition = true;
+
+    await addImagePopup.hide();
     maskbackground.hide();
+
+    inTransition = false;
   });
   addImagePopup.onSubmit(async (e) => {
+    if (inTransition) {
+      console.log("停止執行了 addImagePopup.onSelect");
+      return;
+    }
+
+    inTransition = true;
+
     const { category, files } = e;
 
     const manifest = files.map((file) => {
@@ -231,12 +271,30 @@ $(document).ready(async function () {
 
     maskbackground.hide();
     loadingIcon.hide();
+
+    inTransition = false;
   });
-  deleteImagePopup.onClose(() => {
-    deleteImagePopup.hide();
+  deleteImagePopup.onClose(async () => {
+    if (inTransition) {
+      console.log("停止執行了 deleteImagePopup.onClose");
+      return;
+    }
+
+    inTransition = true;
+
+    await deleteImagePopup.hide();
     maskbackground.hide();
+
+    inTransition = false;
   });
   deleteImagePopup.onSelect(async (e) => {
+    if (inTransition) {
+      console.log("停止執行了 deleteImagePopup.onSelect");
+      return;
+    }
+
+    inTransition = true;
+
     const { category, name, element } = e;
 
     element.hide(500, () => element.remove());
@@ -245,6 +303,33 @@ $(document).ready(async function () {
     await images.deleteImages([{ category, name }]);
 
     loadingIcon.hide();
+
+    inTransition = false;
+  });
+  gallery.onClose(async () => {
+    if (inTransition) {
+      console.log("停止執行了 gallery.onClose");
+      return;
+    }
+
+    inTransition = true;
+
+    await gallery.hide();
+    await intro.show();
+
+    inTransition = false;
+  });
+  gallery.onSelect((e) => {
+    if (inTransition) {
+      console.log("停止執行了 gallery.onSelect");
+      return;
+    }
+
+    inTransition = true;
+
+    console.log(e);
+
+    inTransition = false;
   });
 
   //
@@ -449,16 +534,6 @@ $(document).ready(async function () {
   // 創建內容
   const imageName = new ImageName();
   imageName.appendTo("#header");
-
-  //
-  // 過場
-  const switchGallery = async (category) => {
-    const keys = Object.keys(gallery);
-
-    await Promise.all(keys.map((key) => gallery[key].hide()));
-
-    await Promise.all(keys.map((key) => gallery[key].toggle(category === key)));
-  };
 
   //
   // 載入完成

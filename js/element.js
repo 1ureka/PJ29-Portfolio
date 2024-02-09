@@ -66,58 +66,6 @@ class ScrollIcon extends IconInterface {
 }
 
 /**
- * 滾動圖示
- */
-class SearchIcon extends IconInterface {
-  constructor() {
-    super();
-  }
-
-  _createIcon() {
-    const container = $("<div>").addClass("search-icon-container");
-
-    const lens = $("<div>").addClass("search-icon-lens");
-    const inner1 = $("<div>").addClass("search-icon-inner");
-    const inner2 = $("<div>").addClass("search-icon-inner");
-    gsap.set(inner1.add(inner2), { rotate: 5 });
-    gsap.set(inner2, { x: -10 });
-    lens.append(inner1, inner2);
-
-    const img = $("<img>")
-      .addClass("search-icon-img")
-      .attr("src", `images/icons/search.png`);
-
-    container.append(lens, img);
-
-    return container;
-  }
-
-  _createTimeline() {
-    const container = this.element;
-
-    const timelines = [];
-
-    const t1 = gsap
-      .timeline({ defaults: { ease: "set1", duration: 0.6 }, paused: true })
-      .to(container.find(".search-icon-inner"), {
-        x: "+=40",
-        rotate: 20,
-      });
-    const t2 = gsap
-      .timeline({ defaults: { ease: "set1", duration: 0.3 }, paused: true })
-      .to(container, {
-        scale: 1.1,
-        rotate: "+=15",
-        transformOrigin: "16.5px 17px",
-      });
-
-    timelines.push(t1, t2);
-
-    return timelines;
-  }
-}
-
-/**
  * 全螢幕圖示
  */
 class FullscreenIcon extends IconInterface {

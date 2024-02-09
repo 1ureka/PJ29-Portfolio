@@ -153,19 +153,28 @@ $(document).ready(async function () {
     inTransition = true;
 
     if (e.type === "navigate") {
+      //
       await intro.switchTab(e.target);
       headerBulb.switchLight(e.target);
+      //
     } else {
-      console.log(`往${e.target}`);
-
+      //
       const category = e.target;
-      const fileList = images.getList()[category];
-      const urls = fileList.map((name) => images.getImage(category, name));
+      const fileList = await images.getList();
+      console.log(fileList);
+      const urls = fileList[category].map((name) =>
+        images.getImage(category, name)
+      );
 
       await intro.hide();
+
+      waveBackground.show();
+      scrollButtons.show();
+
+      await delay(100);
+
       await gallery.show(urls);
 
-      scrollButtons.show();
       scrollButtons.scrollElement = gallery.element;
     }
 
@@ -180,6 +189,8 @@ $(document).ready(async function () {
     inTransition = true;
 
     if (option === "新增") {
+      //
+      inTransition = false;
       // 使用者輸入
       let files = await new Promise((resolve) => {
         const html = `<input type="file" accept="image/*" multiple style="display:none;position:"fixed" />`;
@@ -324,6 +335,13 @@ $(document).ready(async function () {
     }
 
     inTransition = true;
+
+    $(".gallery .image-container").css("pointerEvents", "none");
+
+    await delay(100);
+
+    scrollButtons.hide();
+    waveBackground.hide();
 
     await gallery.hide();
     await intro.show();

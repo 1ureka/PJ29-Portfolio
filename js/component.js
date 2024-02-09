@@ -1049,6 +1049,38 @@ class Gallery extends component {
   }
 
   /**
+   * 創建返回按鈕。 @private
+   * @returns {jQuery} - 返回按鈕。
+   */
+  _createButton() {
+    const icon = $("<div>")
+      .addClass("close-button-icon")
+      .append(
+        $("<div>")
+          .addClass("close-button-box")
+          .append(
+            $("<span>").addClass("close-button-elem").append(this._createSVG()),
+            $("<span>").addClass("close-button-elem").append(this._createSVG())
+          )
+      );
+
+    return $("<button>").addClass("gallery-close-button").append(icon);
+  }
+
+  /**
+   * 創建返回按鈕圖示。 @private
+   * @returns {jQuery} - 返回按鈕圖示。
+   */
+  _createSVG() {
+    return $(`
+    <svg viewBox="0 0 46 40" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"
+    ></path>
+    </svg>`);
+  }
+
+  /**
    * 創建圖片庫的主要元素。 @private
    * @param {string[]} urls - 所有要展示圖片的 URL。
    * @returns {Promise<jQuery>} - 圖片庫的主要元素。
@@ -1059,7 +1091,8 @@ class Gallery extends component {
 
     const images = await Promise.all(urls.map((url) => this._createImage(url)));
 
-    grid.append(images).appendTo(gallery);
+    grid.append(images);
+    gallery.append(grid, this._createButton());
 
     return gallery;
   }
@@ -1108,7 +1141,7 @@ class Gallery extends component {
         "<"
       );
     const t2 = gsap.timeline({ paused: true }).to(imageContainer, {
-      duration: 0.15,
+      duration: 0.1,
       ease: "set1",
       scale: 0.95,
       repeat: 1,
@@ -1174,10 +1207,12 @@ class Gallery extends component {
    * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
    */
   _createTimelines() {
-    const images = this.element.children().children();
+    const images = this.element.find(".image-container");
+    const button = this.element.find(".gallery-close-button");
     return gsap
       .timeline({ defaults: { ease: "set1" }, paused: true })
       .from(this.element, { autoAlpha: 0, duration: 0.05 })
+      .fromTo(button, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.35 })
       .from(
         images,
         {
@@ -1201,7 +1236,7 @@ class Gallery extends component {
       this.element.on("click", "img", this._selectHandler);
 
     if (this._closeHandler)
-      this.element.on("click", ".close-btn", this._closeHandler);
+      this.element.on("click", ".gallery-close-button", this._closeHandler);
 
     this._tl = this._createTimelines();
     this.appendTo("#content");
@@ -1279,7 +1314,7 @@ class Gallery extends component {
    */
   onClose(handler) {
     if (this._closeHandler)
-      this.element.off("click", ".close-btn", this._closeHandler);
+      this.element.off("click", ".gallery-close-button", this._closeHandler);
 
     this._closeHandler = function () {
       handler($(this));

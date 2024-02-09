@@ -330,6 +330,9 @@ class MainButtons extends component {
   }
 }
 
+/**
+ * 這個類別提供創建和控制新增選單的功能。
+ */
 class AddImagePopup extends component {
   constructor() {
     super();
@@ -522,6 +525,9 @@ class AddImagePopup extends component {
   }
 }
 
+/**
+ * 這個類別提供創建和控制刪除選單的功能。
+ */
 class DeleteImagePopup extends component {
   constructor() {
     super();
@@ -1036,29 +1042,22 @@ class Intro extends component {
  * 這個類別用於創建和管理圖片庫組件。
  */
 class Gallery extends component {
-  /** @param {string[]} urls - 圖片的 URL 陣列。 */
-  constructor(urls) {
+  constructor() {
     super();
-    /** @type {string[]} */
-    this.urls = urls;
-    this.timelines = {};
 
-    this.isShow = false;
     this._isRegisterOnSelect = false;
   }
 
   /**
-   * 創建圖片庫的主要元素。
-   * @private
+   * 創建圖片庫的主要元素。 @private
+   * @param {string[]} urls - 所有要展示圖片的 URL。
    * @returns {Promise<jQuery>} - 圖片庫的主要元素。
    */
-  async _createGallery() {
+  async _createGallery(urls) {
     const gallery = $("<div>").addClass("gallery");
     const grid = $("<div>").addClass("images-grid");
 
-    const images = await Promise.all(
-      this.urls.map((url) => this._createImage(url))
-    );
+    const images = await Promise.all(urls.map((url) => this._createImage(url)));
 
     grid.append(images).appendTo(gallery);
 
@@ -1066,8 +1065,7 @@ class Gallery extends component {
   }
 
   /**
-   * 創建單個圖片元素。
-   * @private
+   * 創建單個圖片元素。 @private
    * @param {string} url - 圖片的 URL。
    * @returns {Promise<jQuery>} - 創建的圖片容器元素。
    */
@@ -1075,8 +1073,9 @@ class Gallery extends component {
     const container = $("<div>").addClass("image-container");
 
     const image = $("<img>").attr("src", url).attr("decoding", "async");
-    const reflexContainer = $("<div>").addClass("reflex-container");
-    $("<div>").addClass("reflex-plane").appendTo(reflexContainer);
+    const reflexContainer = $("<div>")
+      .addClass("reflex-container")
+      .append($("<div>").addClass("reflex-plane"));
 
     container.append(reflexContainer, image);
 
@@ -1095,8 +1094,28 @@ class Gallery extends component {
   _bindTimeline(imageContainer) {
     const image = imageContainer.find("img");
     const element = image.add(imageContainer.find(".reflex-plane"));
-    const t1 = createImageHoverTl(imageContainer);
-    const t2 = createScaleYoyoTl(imageContainer, 0.9);
+
+    const t1 = gsap
+      .timeline({ paused: true })
+      .fromTo(
+        image,
+        { filter: "brightness(0.95)" },
+        { duration: 0.2, ease: "set1", filter: "brightness(1.12)" }
+      )
+      .fromTo(
+        imageContainer,
+        { scale: 1 },
+        { duration: 0.2, ease: "set1", scale: 1.05 },
+        "<"
+      );
+    const t2 = gsap.timeline({ paused: true }).to(imageContainer, {
+      duration: 0.15,
+      ease: "set1",
+      scale: 0.95,
+      repeat: 1,
+      yoyo: true,
+    });
+
     const mousemoveHandler = this._createMousemoveHandler(element);
 
     image.on("mouseenter", () => {
@@ -1159,7 +1178,7 @@ class Gallery extends component {
    */
   _createTimelines() {
     const images = this.element.children().children();
-    this.timelines.show = gsap
+    return gsap
       .timeline({ defaults: { ease: "set1" }, paused: true })
       .from(this.element, { autoAlpha: 0, duration: 0.05 })
       .from(
@@ -1172,24 +1191,41 @@ class Gallery extends component {
         },
         "<"
       );
-
-    return this;
   }
 
   /**
-   * 顯示圖片庫。
+   * 初始化或重置整個gallery
+   * @param {string[]} urls - 所有要展示圖片的 URL。
+   */
+  async _reset(urls) {
+    this.element = await this._createGallery(urls);
+
+    if (this._handler) this.element.on("click", "img", this._handler);
+
+    this._tl = this._createTimelines();
+    this.appendTo("#content");
+  }
+
+  /**
+   * 顯示圖片庫。 (包含創建元素)
+   * @param {string[]} urls - 所有要展示圖片的 URL。
    * @returns {Promise<Gallery>} - 回傳 `Gallery` 實例，以便進行方法鏈結。
    */
-  async show() {
-    if (this.isShow) return this;
+  async show(urls) {
+    if (this._inAnimate || this._isShow) return;
+    this._inAnimate = true;
+    this._isShow = true;
 
-    this.element = await this._createGallery();
-    this._createTimelines().appendTo("#content");
-    this.element.on("click", "img", this._onSelectHandler);
+    await this._reset(urls);
     await delay(100);
 
-    this.isShow = true;
-    this.timelines.show.play();
+    this._tl.play();
+    this._tl.eventCallback("onComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onComplete", resolve);
+    });
+
+    this._inAnimate = false;
 
     return this;
   }
@@ -1199,31 +1235,24 @@ class Gallery extends component {
    * @returns {Promise<Gallery>} - 回傳 `Gallery` 實例，以便進行方法鏈結。
    */
   async hide() {
-    if (!this.isShow) return this;
+    if (this._inAnimate || !this._isShow) return;
+    this._inAnimate = true;
+    this._isShow = false;
 
-    this.isShow = false;
     this.element.find(".image-container").off();
-    this.timelines.show.reverse();
 
-    this.timelines.show.eventCallback("onReverseComplete", null);
-
+    this._tl.reverse();
+    this._tl.eventCallback("onReverseComplete", null);
     await new Promise((resolve) => {
-      this.timelines.show.eventCallback("onReverseComplete", resolve);
+      this._tl.eventCallback("onReverseComplete", resolve);
     });
+
     this.element.remove();
     this.element = null;
     this._isAppendTo = false;
+    this._inAnimate = false;
 
     return this;
-  }
-
-  /**
-   * 切換圖片庫的顯示/隱藏狀態。
-   * @param {boolean} e - 顯示為 `true`，隱藏為 `false`。
-   * @returns {Promise<Gallery>} - 回傳 `Gallery` 實例，以便進行方法鏈結。
-   */
-  async toggle(e) {
-    return e ? await this.show() : await this.hide();
   }
 
   /**
@@ -1232,17 +1261,21 @@ class Gallery extends component {
    * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
    */
   onSelect(handler) {
-    if (this._isRegisterOnSelect && this.element)
-      this.element.off("click", "img", this._onSelectHandler);
+    if (this.handler) this.element.off("click", "img", this._handler);
 
-    this._isRegisterOnSelect = true;
-    this._onSelectHandler = function () {
+    this._handler = function () {
       handler($(this));
     };
 
     return this;
   }
 }
+
+//
+// WIP
+//
+//
+//
 
 // 之後改名為Preview
 /**

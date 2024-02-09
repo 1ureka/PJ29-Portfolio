@@ -101,66 +101,36 @@ function createIndex() {
   return { mainButtons, addImagePopup, deleteImagePopup, headerBulb, intro };
 }
 
+function createGallery(category) {}
+
+function createPreview(category, index) {}
+
 $(document).ready(async function () {
+  //
+  // 初始化與等待登入
   const { waveBackground, maskbackground, loadingIcon } = createBackground();
   waveBackground.show();
-
   await login();
 
+  //
+  // 載入資源
   maskbackground.show();
   loadingIcon.show();
-
-  //
-  // 驗證與載入
-  const loadUrls = async () => {
-    const timeoutDuration = 5000;
-
-    const event = await new Promise((resolve) => {
-      const interval = setInterval(
-        () => window.dispatchEvent(new Event("loadUrls")),
-        500
-      );
-
-      const timeout = setTimeout(() => {
-        clearInterval(interval);
-        console.error("無法載入雲端資料");
-        alert("無法載入雲端資料，無法使用");
-      }, timeoutDuration);
-
-      window.addEventListener(
-        "urlsLoaded",
-        (e) => {
-          clearInterval(interval);
-          clearTimeout(timeout);
-          resolve(e);
-        },
-        { once: true }
-      );
-    });
-
-    return event.detail;
-  };
-
-  const fileCollection = await loadUrls();
-  const loadManager = new LoadManager();
-  await loadManager.load(fileCollection);
+  const images = new Images();
+  await images.syncImages();
 
   //
   // 創建首頁
   Intro.createURLStyle({
     background: {
-      Scene: images.Scene["P17.webp"].url2.replace(/\n/g, ""),
-      Props: images.Props["Bike 1.webp"].url2.replace(/\n/g, ""),
-      Nature: images.Nature[
-        "Nature Instance Assets Preview (Oak Tree B).webp"
-      ].url2.replace(/\n/g, ""),
+      Scene: images.getImage("Scene", 0),
+      Props: images.getImage("Props", 0),
+      Nature: images.getImage("Nature", 3),
     },
     card: {
-      Scene: images.Scene["P17.webp"].url1.replace(/\n/g, ""),
-      Props: images.Props["Bike 1.webp"].url1.replace(/\n/g, ""),
-      Nature: images.Nature[
-        "Nature Instance Assets Preview (Oak Tree B).webp"
-      ].url1.replace(/\n/g, ""),
+      Scene: images.getThumbnail("Scene", 0),
+      Props: images.getThumbnail("Props", 0),
+      Nature: images.getThumbnail("Nature", 3),
     },
   });
 
@@ -278,39 +248,39 @@ $(document).ready(async function () {
   //
   // 創建內容
   /** @type {{ [key: string]: Gallery }} */
-  const gallery = {};
-  const categories = ["nature", "props", "scene"];
+  // const gallery = {};
+  // const categories = ["nature", "props", "scene"];
 
-  categories.forEach((category) => {
-    // 取得相應類別的圖片數組，並使用 map 處理每個圖片對象，提取出 JQuery 對象
-    const imageArray = loadManager.getImageArray(category);
-    const urlArray = imageArray.map((obj) => obj.src);
+  // categories.forEach((category) => {
+  //   // 取得相應類別的圖片數組，並使用 map 處理每個圖片對象，提取出 JQuery 對象
+  //   const imageArray = loadManager.getImageArray(category);
+  //   const urlArray = imageArray.map((obj) => obj.src);
 
-    gallery[category] = new Gallery(urlArray);
+  //   gallery[category] = new Gallery(urlArray);
 
-    gallery[category].onSelect(async (e) => {
-      if (inTransition) {
-        console.log("停止執行了gallery.onSelect");
-        return;
-      }
+  //   gallery[category].onSelect(async (e) => {
+  //     if (inTransition) {
+  //       console.log("停止執行了gallery.onSelect");
+  //       return;
+  //     }
 
-      inTransition = true;
+  //     inTransition = true;
 
-      const index = e.parent().index();
-      const url = imageArray[index].origin;
+  //     const index = e.parent().index();
+  //     const url = imageArray[index].origin;
 
-      await delay(50); // 點擊效果所需時間
-      await gallery[category].hide();
-      await Promise.all([scrollButtons.hide()]);
-      await previewImage.show(url, category);
+  //     await delay(50); // 點擊效果所需時間
+  //     await gallery[category].hide();
+  //     await Promise.all([scrollButtons.hide()]);
+  //     await previewImage.show(url, category);
 
-      previewButtons.show();
-      lightBox.show(index, gallery[category].urls, category);
-      imageName.show(loadManager.findImageInfo(url).name);
+  //     previewButtons.show();
+  //     lightBox.show(index, gallery[category].urls, category);
+  //     imageName.show(loadManager.findImageInfo(url).name);
 
-      inTransition = false;
-    });
-  });
+  //     inTransition = false;
+  //   });
+  // });
 
   //
   // 創建內容
@@ -374,99 +344,99 @@ $(document).ready(async function () {
 
   //
   // 創建內容
-  const lightBox = new LightBox();
-  lightBox
-    .onNext(async (url) => {
-      if (inTransition) {
-        console.log("停止執行了lightBox.onNext");
-        return;
-      }
-      inTransition = true;
+  // const lightBox = new LightBox();
+  // lightBox
+  //   .onNext(async (url) => {
+  //     if (inTransition) {
+  //       console.log("停止執行了lightBox.onNext");
+  //       return;
+  //     }
+  //     inTransition = true;
 
-      await previewImage.hide();
+  //     await previewImage.hide();
 
-      // 更新圖片名字
-      const info = loadManager.findImageInfo(url);
-      imageName.changeName(info.name);
+  //     // 更新圖片名字
+  //     const info = loadManager.findImageInfo(url);
+  //     imageName.changeName(info.name);
 
-      await Promise.all([
-        lightBox.toNext(1),
-        previewImage.show(info.origin, lightBox.category),
-      ]);
+  //     await Promise.all([
+  //       lightBox.toNext(1),
+  //       previewImage.show(info.origin, lightBox.category),
+  //     ]);
 
-      inTransition = false;
-    })
-    .onPrev(async (url) => {
-      if (inTransition) {
-        console.log("停止執行了lightBox.onPrev");
-        return;
-      }
-      inTransition = true;
+  //     inTransition = false;
+  //   })
+  //   .onPrev(async (url) => {
+  //     if (inTransition) {
+  //       console.log("停止執行了lightBox.onPrev");
+  //       return;
+  //     }
+  //     inTransition = true;
 
-      await previewImage.hide();
+  //     await previewImage.hide();
 
-      // 更新圖片名字
-      const info = loadManager.findImageInfo(url);
-      imageName.changeName(info.name);
+  //     // 更新圖片名字
+  //     const info = loadManager.findImageInfo(url);
+  //     imageName.changeName(info.name);
 
-      await Promise.all([
-        lightBox.toPrev(1),
-        previewImage.show(info.origin, lightBox.category),
-      ]);
+  //     await Promise.all([
+  //       lightBox.toPrev(1),
+  //       previewImage.show(info.origin, lightBox.category),
+  //     ]);
 
-      inTransition = false;
-    })
-    .onSelect(async (url, index) => {
-      if (inTransition) {
-        console.log("停止執行了lightBox.onSelect");
-        return;
-      }
-      inTransition = true;
+  //     inTransition = false;
+  //   })
+  //   .onSelect(async (url, index) => {
+  //     if (inTransition) {
+  //       console.log("停止執行了lightBox.onSelect");
+  //       return;
+  //     }
+  //     inTransition = true;
 
-      // 相同圖片不做處理
-      if (index === 3) {
-        console.log("lightBox: 按下了相同圖片");
-        inTransition = false;
-        return;
-      }
+  //     // 相同圖片不做處理
+  //     if (index === 3) {
+  //       console.log("lightBox: 按下了相同圖片");
+  //       inTransition = false;
+  //       return;
+  //     }
 
-      // 傳遞至previewImage
-      await previewImage.hide();
+  //     // 傳遞至previewImage
+  //     await previewImage.hide();
 
-      // 更新圖片名字
-      const info = loadManager.findImageInfo(url);
-      imageName.changeName(info.name);
+  //     // 更新圖片名字
+  //     const info = loadManager.findImageInfo(url);
+  //     imageName.changeName(info.name);
 
-      const pendingTasks = [previewImage.show(info.origin, lightBox.category)];
+  //     const pendingTasks = [previewImage.show(info.origin, lightBox.category)];
 
-      // 傳遞至自身
-      switch (index) {
-        // 上兩張
-        case 1:
-          pendingTasks.push(lightBox.toPrev(2));
-          break;
-        // 上一張
-        case 2:
-          pendingTasks.push(lightBox.toPrev(1));
-          break;
-        // 下一張
-        case 4:
-          pendingTasks.push(lightBox.toNext(1));
-          break;
-        // 下兩張
-        case 5:
-          pendingTasks.push(lightBox.toNext(2));
-          break;
-        // 不存在
-        default:
-          console.error(`lightBox: 指標錯誤，index不應該為${index}`);
-          break;
-      }
+  //     // 傳遞至自身
+  //     switch (index) {
+  //       // 上兩張
+  //       case 1:
+  //         pendingTasks.push(lightBox.toPrev(2));
+  //         break;
+  //       // 上一張
+  //       case 2:
+  //         pendingTasks.push(lightBox.toPrev(1));
+  //         break;
+  //       // 下一張
+  //       case 4:
+  //         pendingTasks.push(lightBox.toNext(1));
+  //         break;
+  //       // 下兩張
+  //       case 5:
+  //         pendingTasks.push(lightBox.toNext(2));
+  //         break;
+  //       // 不存在
+  //       default:
+  //         console.error(`lightBox: 指標錯誤，index不應該為${index}`);
+  //         break;
+  //     }
 
-      await Promise.all(pendingTasks);
+  //     await Promise.all(pendingTasks);
 
-      inTransition = false;
-    });
+  //     inTransition = false;
+  //   });
 
   //
   // 創建內容

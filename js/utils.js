@@ -1,147 +1,190 @@
 /**
- * 用於載入並處理圖片資源的類別。
+ * 用於與圖片資料庫溝通。
  */
-class LoadManager {
+class Images {
   constructor() {
-    /** 用於儲存載入佇列的物件。 @type {Object.<string, createjs.LoadQueue>} */
-    this.quenes = {};
-    /** 用於儲存載入的圖片物件。 @type {Object.<string, { name: string, size: number, img: img, src: string }[]>} */
-    this.images = {};
-    /** 用於處理載入進度的處理器函式。 */
-    this.progressHandler = () => {};
+    this._fileList = null;
+    this._images = null;
   }
 
   /**
-   * 異步載入主進程。
+   * 返回目前的檔案結構，若本地沒有，會從資料庫拿。
    */
-  async load(fileCollection) {
-    const categories = Object.keys(fileCollection);
-    this.categoriesAmount = categories.length;
+  async getList() {
+    let fileList;
 
-    for (const category of categories) {
-      await this._loadImages(category, fileCollection[category]);
+    if (!this._fileList) {
+      const base64 = await loadFile("PJ29/dict.json");
+      fileList = JSON.parse(base64ToString(base64));
+    } else {
+      fileList = this._fileList;
     }
 
-    this.progressHandler({ name: "載入完成", state: 100 });
+    return fileList;
   }
 
   /**
-   * 異步載入指定類別的圖片。
-   * @private
-   * @param {string} category - 圖片類別。
-   * @param {Object[]} fileList - 檔案資訊陣列。
+   * 將圖片添加到資料庫。
+   * @param {Object[]} manifest - 包含多個物件的數組。
+   * @param {string} manifest[].category - 目標分類。
+   * @param {string} manifest[].url1 - 原圖base64編碼。
+   * @param {string} manifest[].url2 - 縮圖base64編碼。
+   * @param {string} manifest[].name - 檔名。
    */
-  async _loadImages(category, fileList) {
-    const manifest = this._createManifest(fileList);
-    const lcCategory = category.toLowerCase();
+  async addImages(manifest) {
+    let fileList = await this.getList();
 
-    this.quenes[lcCategory] = new createjs.LoadQueue(false);
+    const promises = manifest.map(async (info) => {
+      const { category, url1, url2, name } = info;
 
-    await new Promise((resolve) => {
-      this.quenes[lcCategory].on("complete", () => {
-        this.progressHandler({
-          name: `載入 ${category} 資料夾`,
-          state: 100,
-        });
-        resolve();
-      });
+      await uploadFile(url1, `PJ29/origin/${info.category}/${info.name}`);
+      await uploadFile(url2, `PJ29/thumbnail/${info.category}/${info.name}`);
 
-      this.quenes[lcCategory].on("progress", (e) => {
-        this.progressHandler({
-          name: `載入 ${category} 資料夾`,
-          state: e.progress * 100,
-        });
-      });
-
-      this.quenes[lcCategory].loadManifest(manifest);
+      fileList[category].push(name);
+      fileList[category] = [...new Set(fileList[category])].sort();
     });
 
-    this.images[lcCategory] = fileList.map((info) => {
-      const url = info.url;
-      delete info.url;
-      info.src = url;
+    await Promise.all(promises);
 
-      return info;
-    });
+    const base64 = stringToBase64(JSON.stringify(fileList, null, 2));
+    await uploadFile(base64, "PJ29/dict.json");
   }
 
   /**
-   * 根據圖片URL陣列創建manifest物件。
-   * @private
-   * @param {Object[]} fileList - 檔案資訊陣列。
-   * @returns {[{ id: string, src: string }]} 用於載入的manifest物件。
+   * 從資料庫刪除圖片。
+   * @param {Object[]} manifest - 包含多個物件的數組。
+   * @param {string} manifest[].category - 目標分類。
+   * @param {string} manifest[].name - 檔名。
    */
-  _createManifest(fileList) {
-    const manifest = fileList.map((info) => {
+  async deleteImages(manifest) {
+    let fileList = await this.getList();
+
+    const promises = manifest.map(async (info) => {
+      const { category, name } = info;
+
+      await deleteFile(`PJ29/origin/${category}/${name}`);
+      await deleteFile(`PJ29/thumbnail/${category}/${name}`);
+
+      fileList[category] = fileList[category]
+        .filter((fileName) => fileName !== name)
+        .sort();
+    });
+
+    await Promise.all(promises);
+
+    const base64 = stringToBase64(JSON.stringify(fileList, null, 2));
+    await uploadFile(base64, "PJ29/dict.json");
+  }
+
+  /**
+   * 從資料庫讀取圖片。
+   * @param {Object[]} manifest - 包含多個物件的數組。
+   * @param {string} manifest[].category - 目標分類。
+   * @param {string} manifest[].name - 檔名。
+   */
+  async loadImages(manifest) {
+    const promises = manifest.map(async (info) => {
+      const { category, name } = info;
+
+      const thumbnail = await loadFile(`PJ29/thumbnail/${category}/${name}`);
+      const origin = await loadFile(`PJ29/origin/${category}/${name}`);
+
       return {
-        id: info.name,
-        src: info.url,
+        name,
+        url1: base64ToDataUrl(thumbnail, "webp"),
+        url2: base64ToDataUrl(origin, "webp"),
       };
     });
 
-    return manifest;
+    const list = await Promise.all(promises);
+
+    return list;
   }
 
   /**
-   * 根據類別和識別符號獲取圖片物件。
+   * 同步資料庫圖片。
+   */
+  async syncImages() {
+    let fileList = await this.getList();
+
+    const categories = ["Nature", "Props", "Scene"];
+    const manifest = { Nature: {}, Props: {}, Scene: {} };
+
+    for (const category of categories) {
+      const list = fileList[category];
+
+      const chunks = Array.from(
+        { length: Math.ceil(list.length / 25) },
+        (_, index) => list.slice(index * 25, (index + 1) * 25)
+      );
+
+      for (const chunk of chunks) {
+        console.log("正在載入", chunk);
+
+        const result = await this.loadImages(
+          chunk.map((name) => {
+            return { category, name };
+          })
+        );
+
+        result.forEach((info) => {
+          let { name, url1, url2 } = info;
+          url1 = url1.replace(/\n/g, "");
+          url2 = url2.replace(/\n/g, "");
+          manifest[category][name] = { url1, url2 };
+        });
+
+        console.log("載入完成", chunk);
+      }
+
+      manifest[category] = sortByKey(manifest[category]);
+    }
+
+    this._images = manifest;
+  }
+
+  /**
+   * 根據類別和識別符號獲取縮圖。
    * @param {string} category - 圖片類別。
    * @param {number|string} identifier - 圖片索引或名稱。
-   * @returns {{ name: string, size: number, img: img, src: string } | null} 圖片物件，如果不存在則返回null。
+   * @returns {string | null} 圖片dataUrl，如果不存在則返回null。
    */
-  getImage(category, identifier) {
-    if (!this.images[category]) return null;
+  getThumbnail(category, identifier) {
+    if (!this._images[category]) return null;
 
-    let obj;
+    let dataUrl;
 
     if (typeof identifier === "number") {
       // 如果第二個參數是數字，視為索引
-      obj = this.images[category][identifier];
+      dataUrl = Object.values(this._images[category])[identifier].url1;
     } else if (typeof identifier === "string") {
       // 如果第二個參數是字串，視為名稱
-      obj = this.images[category].find((item) => item.name === identifier);
+      dataUrl = this._images[category][identifier].url1;
     }
 
-    return obj || null;
+    return dataUrl;
   }
 
   /**
-   * 根據類別獲取整個圖片物件陣列。
+   * 根據類別和識別符號獲取原圖。
    * @param {string} category - 圖片類別。
-   * @returns {{ name: string, size: number, img: img, src: string }[] | null} 圖片物件陣列，如果不存在則返回null。
+   * @param {number|string} identifier - 圖片索引或名稱。
+   * @returns {string | null} 圖片dataUrl，如果不存在則返回null。
    */
-  getImageArray(category) {
-    if (!this.images[category]) return null;
+  getImage(category, identifier) {
+    if (!this._images[category]) return null;
 
-    const arr = this.images[category].map((item) => {
-      return item;
-    });
+    let dataUrl;
 
-    return arr;
-  }
+    if (typeof identifier === "number") {
+      // 如果第二個參數是數字，視為索引
+      dataUrl = Object.values(this._images[category])[identifier].url2;
+    } else if (typeof identifier === "string") {
+      // 如果第二個參數是字串，視為名稱
+      dataUrl = this._images[category][identifier].url2;
+    }
 
-  /**
-   * 設置載入進度處理器函式。
-   * @param {(log: { name: string, state: string }) => void} handler - 進度處理器函式。
-   * @returns {this} ImageManager實例。
-   */
-  onProgress(handler) {
-    this.progressHandler = handler;
-    return this;
-  }
-
-  /**
-   * 可利用縮圖或原圖url尋找圖片名稱
-   * @param {string} url - 縮圖或原圖url
-   * @returns {Object} - 圖片資訊
-   */
-  findImageInfo(url) {
-    const result = Object.values(this.images)
-      .map((list) =>
-        list.filter((info) => info.src === url || info.origin === url)
-      )
-      .flat();
-
-    return result[0];
+    return dataUrl;
   }
 }
 
@@ -453,6 +496,20 @@ async function compressImage(file, width, height) {
 }
 
 /**
+ * 排序物件中的鍵按字母順序排序。
+ * @param {Object} unordered 未排序的物件。
+ * @returns {Object} 排序後的物件。
+ */
+function sortByKey(unordered) {
+  return Object.keys(unordered)
+    .sort()
+    .reduce((obj, key) => {
+      obj[key] = unordered[key];
+      return obj;
+    }, {});
+}
+
+/**
  * 用於驗證身份，自動從session拿取資料
  * @returns {Promise<boolean>} 驗證是否通過
  */
@@ -576,104 +633,4 @@ function dataUrlToBase64(dataUrl) {
  */
 function base64ToDataUrl(string, fileType) {
   return `data:image/${fileType};base64,${string}`;
-}
-
-/**
- * 將圖片添加到資料庫。
- * @param {Object[]} manifest - 包含多個物件的數組。
- * @param {string} manifest[].category - 目標分類。
- * @param {string} manifest[].url1 - 原圖base64編碼。
- * @param {string} manifest[].url2 - 縮圖base64編碼。
- * @param {string} manifest[].name - 檔名。
- */
-async function addImages(manifest) {
-  let base64;
-  let json;
-
-  base64 = await loadFile("PJ29/dict.json");
-  json = JSON.parse(base64ToString(base64));
-
-  const promises = manifest.map(async (info) => {
-    await uploadFile(info.url1, `PJ29/origin/${info.category}/${info.name}`);
-    await uploadFile(info.url2, `PJ29/thumbnail/${info.category}/${info.name}`);
-
-    json[info.category].push(info.name);
-    json[info.category] = [...new Set(json[info.category])].sort();
-  });
-
-  await Promise.all(promises);
-
-  json = JSON.stringify(json, null, 2);
-  base64 = stringToBase64(json);
-  await uploadFile(base64, "PJ29/dict.json");
-}
-
-/**
- * 從資料庫刪除圖片。
- * @param {Object[]} manifest - 包含多個物件的數組。
- * @param {string} manifest[].category - 目標分類。
- * @param {string} manifest[].name - 檔名。
- */
-async function deleteImages(manifest) {
-  let base64;
-  let json;
-
-  base64 = await loadFile("PJ29/dict.json");
-  json = JSON.parse(base64ToString(base64));
-
-  const promises = manifest.map(async (info) => {
-    await deleteFile(`PJ29/origin/${info.category}/${info.name}`);
-    await deleteFile(`PJ29/thumbnail/${info.category}/${info.name}`);
-
-    json[info.category] = json[info.category]
-      .filter((name) => name !== info.name)
-      .sort();
-  });
-
-  await Promise.all(promises);
-
-  json = JSON.stringify(json, null, 2);
-  base64 = stringToBase64(json);
-  await uploadFile(base64, "PJ29/dict.json");
-}
-
-/**
- * 同步資料庫圖片。
- * @returns {Promise<Object>} 包含從資料庫同步的圖片資訊的物件。
- */
-async function syncImages() {
-  base64 = await loadFile("PJ29/dict.json");
-  fileList = JSON.parse(base64ToString(base64));
-
-  const categories = ["Nature", "Props", "Scene"];
-  const manifest = { Nature: {}, Props: {}, Scene: {} };
-
-  for (const category of categories) {
-    const list = fileList[category];
-    list.forEach((name) => (manifest[category][name] = {}));
-
-    const chunks = [];
-    for (let i = 0; i < list.length; i += 25) {
-      chunks.push(list.slice(i, i + 25));
-    }
-
-    for (const chunk of chunks) {
-      console.log("正在載入", chunk);
-
-      const promises = chunk.map(async (name) => {
-        const thumbnail = await loadFile(`PJ29/thumbnail/${category}/${name}`);
-        const origin = await loadFile(`PJ29/origin/${category}/${name}`);
-        manifest[category][name] = {
-          url1: base64ToDataUrl(thumbnail, "webp"),
-          url2: base64ToDataUrl(origin, "webp"),
-        };
-      });
-
-      await Promise.all(promises);
-
-      console.log("載入完成", chunk);
-    }
-  }
-
-  return manifest;
 }

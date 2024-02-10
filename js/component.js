@@ -974,8 +974,6 @@ class Intro extends component {
   }
 
   async switchTab(type) {
-    $(".content-intro-learnmore").css("pointerEvents", "none");
-
     //
     // hide
     await this.hide();
@@ -1015,8 +1013,6 @@ class Intro extends component {
     //
     // show
     await this.show();
-
-    $(".content-intro-learnmore").css("pointerEvents", "auto");
   }
 
   async show() {
@@ -1064,7 +1060,9 @@ class Gallery extends component {
           )
       );
 
-    return $("<button>").addClass("gallery-close-button").append(icon);
+    return $("<button>")
+      .addClass("gallery-close-button")
+      .append(icon, $("<span>").addClass("gallery-close-tip").text("返回"));
   }
 
   /**
@@ -1211,17 +1209,19 @@ class Gallery extends component {
     const button = this.element.find(".gallery-close-button");
     return gsap
       .timeline({ defaults: { ease: "set1" }, paused: true })
-      .from(this.element, { autoAlpha: 0, duration: 0.05 })
+      .fromTo(this.element, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.05 })
       .fromTo(button, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.35 })
-      .from(
+      .fromTo(
         images,
         {
           autoAlpha: 0,
-          scale: 0.5,
-          ease: "back.out(2)",
-          stagger: { from: "random", amount: 0.35 },
+          filter: "blur(30px)",
         },
-        "<"
+        {
+          autoAlpha: 1,
+          filter: "",
+          stagger: { from: "random", amount: 0.35 },
+        }
       );
   }
 
@@ -1324,17 +1324,10 @@ class Gallery extends component {
   }
 }
 
-//
-// WIP
-//
-//
-//
-
-// 之後改名為Preview
 /**
  * 這個類別用於創建和管理預覽圖片組件。
  */
-class PreviewImage extends component {
+class Preview extends component {
   constructor() {
     super();
 
@@ -1573,6 +1566,12 @@ class PreviewImage extends component {
     return this;
   }
 }
+
+//
+// WIP
+//
+//
+//
 
 // 合併至Preview
 /**

@@ -362,64 +362,64 @@ $(document).ready(async function () {
   });
 
   //
-  // 創建內容
-  const previewImage = new PreviewImage();
-  previewImage.appendTo("#content").onClose(async () => {
-    if (inTransition) {
-      console.log("停止執行了previewImage.onClose");
-      return;
-    }
-    inTransition = true;
+  // 創建預覽以及全螢幕
+  // const previewImage = new PreviewImage();
+  // previewImage.appendTo("#content").onClose(async () => {
+  //   if (inTransition) {
+  //     console.log("停止執行了previewImage.onClose");
+  //     return;
+  //   }
+  //   inTransition = true;
 
-    await Promise.all([delay(100), previewImage.switchMode()]);
-    await previewImage.hideCloseButton();
+  //   await Promise.all([delay(100), previewImage.switchMode()]);
+  //   await previewImage.hideCloseButton();
 
-    showFullContentsTl.reverse();
+  //   showFullContentsTl.reverse();
 
-    inTransition = false;
-  });
+  //   inTransition = false;
+  // });
 
   //
   // 創建預覽時的選單按鈕
-  const previewButtons = new PreviewButtons();
-  previewButtons.appendTo("#sidebar").onSelect(async (e) => {
-    if (inTransition) {
-      console.log("停止執行了previewButtons.onSelect");
-      return;
-    }
+  // const previewButtons = new PreviewButtons();
+  // previewButtons.appendTo("#sidebar").onSelect(async (e) => {
+  //   if (inTransition) {
+  //     console.log("停止執行了previewButtons.onSelect");
+  //     return;
+  //   }
 
-    inTransition = true;
+  //   inTransition = true;
 
-    const targetClass = $(e.target).attr("class");
-    const category = previewImage.category;
+  //   const targetClass = $(e.target).attr("class");
+  //   const category = previewImage.category;
 
-    if (targetClass === "return-button") {
-      await previewImage.hide();
-      await Promise.all([
-        previewButtons.hide(),
-        imageName.hide(),
-        lightBox.hide(),
-      ]);
-      await gallery[category].show();
+  //   if (targetClass === "return-button") {
+  //     await previewImage.hide();
+  //     await Promise.all([
+  //       previewButtons.hide(),
+  //       imageName.hide(),
+  //       lightBox.hide(),
+  //     ]);
+  //     await gallery[category].show();
 
-      scrollButtons.show();
+  //     scrollButtons.show();
 
-      scrollButtons.scrollElement = gallery[category].element;
-    }
+  //     scrollButtons.scrollElement = gallery[category].element;
+  //   }
 
-    if (targetClass === "fullscreen-button") {
-      showFullContentsTl.play();
-      showFullContentsTl.eventCallback("onComplete", null);
-      await new Promise((resolve) => {
-        showFullContentsTl.eventCallback("onComplete", resolve);
-      });
+  //   if (targetClass === "fullscreen-button") {
+  //     showFullContentsTl.play();
+  //     showFullContentsTl.eventCallback("onComplete", null);
+  //     await new Promise((resolve) => {
+  //       showFullContentsTl.eventCallback("onComplete", resolve);
+  //     });
 
-      previewImage.switchMode();
-      previewImage.showCloseButton();
-    }
+  //     previewImage.switchMode();
+  //     previewImage.showCloseButton();
+  //   }
 
-    inTransition = false;
-  });
+  //   inTransition = false;
+  // });
 
   //
   // 創建內容
@@ -519,8 +519,8 @@ $(document).ready(async function () {
 
   //
   // 創建內容
-  const imageName = new ImageName();
-  imageName.appendTo("#header");
+  // const imageName = new ImageName();
+  // imageName.appendTo("#header");
 
   //
   // 載入完成

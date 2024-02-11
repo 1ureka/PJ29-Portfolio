@@ -163,7 +163,7 @@ $(document).ready(async function () {
       const fileList = await images.getList();
       console.log(fileList);
       const urls = fileList[category].map((name) =>
-        images.getImage(category, name)
+        images.getThumbnail(category, name)
       );
 
       await intro.hide();

@@ -131,7 +131,7 @@
   text-decoration: none;
   background: transparent;
   padding: 0;
-  width: 10rem;
+  width: 160px;
   height: auto;
   box-shadow: none;
   z-index: 2;
@@ -148,8 +148,8 @@
   position: relative;
   display: block;
   margin: 0;
-  width: 3rem;
-  height: 3rem;
+  width: 48px;
+  height: 48px;
   background: #282936;
   border-radius: 1.625rem;
 }
@@ -158,22 +158,22 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 0.625rem;
+  left: 10px;
   margin: auto;
-  width: 1.125rem;
-  height: 0.125rem;
+  width: 18px;
+  height: 2px;
   background: none;
 }
 .content-intro-learnmore > .circle .icon.arrow::before {
   transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
   position: absolute;
   content: "";
-  top: -0.29rem;
-  right: 0.0625rem;
-  width: 0.625rem;
-  height: 0.625rem;
-  border-top: 0.125rem solid #fff;
-  border-right: 0.125rem solid #fff;
+  top: -4.64px; /* 0.29rem * 16px = 4.64px */
+  right: 1px; /* 0.0625rem * 16px = 1px */
+  width: 10px; /* 0.625rem * 16px = 10px */
+  height: 10px; /* 0.625rem * 16px = 10px */
+  border-top: 2px solid #fff; /* 0.125rem * 16px = 2px */
+  border-right: 2px solid #fff; /* 0.125rem * 16px = 2px */
   transform: rotate(45deg);
 }
 .content-intro-learnmore > .button-text {
@@ -183,8 +183,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 0.75rem 0;
-  margin: 0 0 0 1.85rem;
+  padding: 12px 0; /* 0.75rem * 16px = 12px */
+  margin: 0 0 0 29.6px; /* 1.85rem * 16px = 29.6px */
   color: rgba(255, 255, 255, 0.5);
   font-weight: 700;
   line-height: 1.6;
@@ -197,18 +197,18 @@
   background-color: #ea81af;
 }
 .content-intro-learnmore:hover > .button-text {
-  transform: translate(-1.7rem, 0);
+  transform: translate(-27.2px, 0); /* -1.7rem * 16px = -27.2px */
 }
 .content-intro-learnmore:hover > .circle .icon.arrow::before {
-  border-top: 0.125rem solid rgb(10 10 10);
-  border-right: 0.125rem solid rgb(10 10 10);
+  border-top: 2px solid rgb(10 10 10); /* 0.125rem * 16px = 2px */
+  border-right: 2px solid rgb(10 10 10); /* 0.125rem * 16px = 2px */
 }
 .content-intro-learnmore:hover > .circle > .icon.arrow {
   background: rgb(10 10 10);
-  transform: translate(6.7rem, 0);
+  transform: translate(107.2px, 0); /* 6.7rem * 16px = 107.2px */
 }
 .content-intro-learnmore:active > .circle > .icon.arrow {
-  transform: translate(6.5rem, 0);
+  transform: translate(104px, 0); /* 6.5rem * 16px = 104px */
   transition: all 0.1s;
 }
 .content-intro-learnmore:active > .circle {

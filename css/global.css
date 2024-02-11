@@ -46,26 +46,6 @@ img {
   font-family: "Comfortaa", sans-serif;
 }
 
-/* createVerticalSeparator */
-.v-separator {
-  width: 2px;
-  height: 100%;
-  background-color: white;
-  margin: 0 5px;
-  filter: blur(0.5px);
-  pointer-events: none;
-}
-
-/* createHorizontalSeparator */
-.h-separator {
-  height: 2px;
-  width: 100%;
-  background-color: white;
-  margin: 5px 0;
-  filter: blur(0.5px);
-  pointer-events: none;
-}
-
 #mask-background {
   position: fixed;
   top: 0;
@@ -78,28 +58,4 @@ img {
   z-index: 15;
   pointer-events: none;
   transition: all 0.3s;
-}
-
-/* createBulb */
-.bulb-container,
-.bulb {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-}
-.bulb {
-  background-color: #00000000;
-  box-shadow: 0px 0px 20px #00000000;
-  border-radius: 50%;
-}
-.bulb-filter {
-  background: radial-gradient(
-    circle at 5px 5px,
-    hsla(240, 0%, 0%, 0),
-    hsla(240, 0%, 0%, 0.35),
-    hsla(240, 0%, 0%, 0.9)
-  );
-  filter: blur(0.5px);
-  border-radius: 50%;
 }

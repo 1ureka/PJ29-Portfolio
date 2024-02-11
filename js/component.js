@@ -1049,33 +1049,46 @@ class Gallery extends component {
    * @returns {jQuery} - 返回按鈕。
    */
   _createButton() {
-    const icon = $("<div>")
-      .addClass("close-button-icon")
+    const iconContainer = $("<div>").addClass("close-button-icon");
+
+    const makeImg = () => {
+      return $("<img>")
+        .attr("src", "images/icons/return.png")
+        .addClass("return-img")
+        .appendTo(iconContainer);
+    };
+    const makeGif = () => {
+      const timestamp = $.now();
+      return $("<img>")
+        .attr("src", `images/icons/return.gif?timestamp=${timestamp}`)
+        .addClass("return-gif")
+        .appendTo(iconContainer);
+    };
+
+    makeImg();
+
+    const button = $("<button>")
+      .addClass("gallery-close-button")
       .append(
-        $("<div>")
-          .addClass("close-button-box")
-          .append(
-            $("<span>").addClass("close-button-elem").append(this._createSVG()),
-            $("<span>").addClass("close-button-elem").append(this._createSVG())
-          )
+        iconContainer,
+        $("<span>").addClass("gallery-close-tip").text("返回")
       );
 
-    return $("<button>")
-      .addClass("gallery-close-button")
-      .append(icon, $("<span>").addClass("gallery-close-tip").text("返回"));
-  }
+    button.on("mouseenter", () => {
+      const imgs = button.find(".return-img");
+      const gif = makeGif().hide();
+      gif[0].onload = () => {
+        imgs.remove();
+        gif.show();
+      };
+    });
+    button.on("mouseleave", () => {
+      const gifs = button.find(".return-gif");
+      gifs.hide(500, () => gifs.remove());
+      makeImg().hide().show(500);
+    });
 
-  /**
-   * 創建返回按鈕圖示。 @private
-   * @returns {jQuery} - 返回按鈕圖示。
-   */
-  _createSVG() {
-    return $(`
-    <svg viewBox="0 0 46 40" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z"
-    ></path>
-    </svg>`);
+    return button;
   }
 
   /**
@@ -1090,7 +1103,7 @@ class Gallery extends component {
     const images = await Promise.all(urls.map((url) => this._createImage(url)));
 
     grid.append(images);
-    gallery.append(grid, this._createButton());
+    gallery.append(grid);
 
     return gallery;
   }
@@ -1206,11 +1219,14 @@ class Gallery extends component {
    */
   _createTimelines() {
     const images = this.element.find(".image-container");
-    const button = this.element.find(".gallery-close-button");
+    const button = this._button;
     return gsap
       .timeline({ defaults: { ease: "set1" }, paused: true })
-      .fromTo(this.element, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.05 })
-      .fromTo(button, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.35 })
+      .fromTo(
+        button,
+        { autoAlpha: 0, scaleX: 0 },
+        { autoAlpha: 1, scaleX: 1, duration: 0.35 }
+      )
       .fromTo(
         images,
         {
@@ -1231,14 +1247,15 @@ class Gallery extends component {
    */
   async _reset(urls) {
     this.element = await this._createGallery(urls);
+    this._button = this._createButton();
 
     if (this._selectHandler)
       this.element.on("click", "img", this._selectHandler);
 
-    if (this._closeHandler)
-      this.element.on("click", ".gallery-close-button", this._closeHandler);
+    if (this._closeHandler) this._button.on("click", this._closeHandler);
 
     this._tl = this._createTimelines();
+    this._button.appendTo("#header");
     this.appendTo("#content");
   }
 
@@ -1283,7 +1300,9 @@ class Gallery extends component {
       this._tl.eventCallback("onReverseComplete", resolve);
     });
 
+    this._button.remove();
     this.element.remove();
+    this._button = null;
     this.element = null;
     this._isAppendTo = false;
     this._inAnimate = false;
@@ -1313,8 +1332,7 @@ class Gallery extends component {
    * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
    */
   onClose(handler) {
-    if (this._closeHandler)
-      this.element.off("click", ".gallery-close-button", this._closeHandler);
+    if (this._closeHandler) this._button.off("click", this._closeHandler);
 
     this._closeHandler = function () {
       handler($(this));

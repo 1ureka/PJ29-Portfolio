@@ -98,7 +98,7 @@ class FullscreenIcon extends IconInterface {
         paused: true,
       })
       .to(img1, { autoAlpha: 0, scale: 0.5, ease: "back.in(3)" })
-      .to(img2, { autoAlpha: 1, scale: 1 });
+      .to(img2, { autoAlpha: 1, scale: 1 }, "<0.1");
   }
 }
 

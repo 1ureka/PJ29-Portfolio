@@ -755,6 +755,8 @@ class Intro extends component {
   constructor() {
     super();
 
+    this.category = "Scene";
+
     this._map = {
       Scene: {
         h1: "場景",
@@ -1013,6 +1015,7 @@ class Intro extends component {
     //
     // show
     await this.show();
+    this.category = type;
   }
 
   async show() {
@@ -1148,13 +1151,13 @@ class Gallery extends component {
       .fromTo(
         imageContainer,
         { scale: 1 },
-        { duration: 0.2, ease: "set1", scale: 1.05 },
+        { duration: 0.2, ease: "set1", scale: 1.02 },
         "<"
       );
     const t2 = gsap.timeline({ paused: true }).to(imageContainer, {
-      duration: 0.1,
+      duration: 0.15,
       ease: "set1",
-      scale: 0.95,
+      scale: 0.97,
       repeat: 1,
       yoyo: true,
     });
@@ -1320,7 +1323,8 @@ class Gallery extends component {
       this.element.off("click", "img", this._selectHandler);
 
     this._selectHandler = function () {
-      handler($(this));
+      const index = $(this).parent().index();
+      handler(index);
     };
 
     return this;
@@ -1349,27 +1353,41 @@ class Preview extends component {
   constructor() {
     super();
 
-    this.element = $("<div>").addClass("preview-container");
+    this.element = $("<div>")
+      .addClass("preview-container")
+      .css("pointerEvents", "none");
   }
 
-  _create(list, index) {
+  async _create(prev, current, next, fileName) {
     const header = $("<section>").addClass("preview-header");
     const images = $("<section>").addClass("preview-images");
 
     header.append(
       this._createReturnButton(),
-      $("<p>").addClass("preview-file-name").text("檔名檔名檔名檔名檔名檔名"),
+      $("<p>").addClass("preview-file-name").text(fileName),
       this._createFullscreenButton()
     );
 
+    this._prevImg = $("<img>")
+      .addClass("preview-image")
+      .attr("src", prev)
+      .attr("decoding", "async");
+    this._currentImg = $("<img>")
+      .attr("src", current)
+      .attr("decoding", "async");
+    this._nextImg = $("<img>")
+      .addClass("preview-image")
+      .attr("src", next)
+      .attr("decoding", "async");
+
     images.append(
       $("<div>").append(
-        $("<img>").addClass("preview-image").attr("src", "BGa.png"),
+        this._prevImg,
         $("<span>").addClass("icon-arrow").append(this._createSVG())
       ),
-      $("<img>").attr("src", "BGa.png"),
+      this._currentImg,
       $("<div>").append(
-        $("<img>").addClass("preview-image").attr("src", "BGa.png"),
+        this._nextImg,
         $("<span>").addClass("icon-arrow").append(this._createSVG())
       )
     );
@@ -1379,9 +1397,24 @@ class Preview extends component {
       rotateY: 180,
     });
 
+    await Promise.all([
+      decode(this._prevImg[0]),
+      decode(this._currentImg[0]),
+      decode(this._nextImg[0]),
+    ]);
+
     this.element.append(header, images);
 
     this._tl = this._createTimeline();
+  }
+
+  reset(prev, current, next, fileName) {
+    const urls = [prev, current, next];
+    const images = [this._prevImg, this._currentImg, this._nextImg];
+
+    urls.forEach((url, index) => images[index].attr("src", url));
+
+    this.element.find(".preview-file-name").text(fileName);
   }
 
   _createReturnButton() {
@@ -1445,9 +1478,6 @@ class Preview extends component {
   `);
   }
 
-  // 用於進出全螢幕與切換上下張
-  _bindEvents() {}
-
   _createTimeline() {
     return gsap
       .timeline({ paused: true })
@@ -1464,12 +1494,15 @@ class Preview extends component {
       );
   }
 
-  async show(list, index) {
-    if (this._inAnimate || this._isShow) return;
+  // 用於進出全螢幕
+  _bindEvents() {}
+
+  async show(prev, current, next, fileName) {
+    if (this._inAnimate || this._isShow) return this;
     this._inAnimate = true;
     this._isShow = true;
 
-    this._create(list, index);
+    await this._create(prev, current, next, fileName);
 
     this._tl.play();
     this._tl.eventCallback("onComplete", null);
@@ -1477,15 +1510,14 @@ class Preview extends component {
       this._tl.eventCallback("onComplete", resolve);
     });
 
+    this.element.css("pointerEvents", "auto");
     this._inAnimate = false;
 
     return this;
   }
 
   async hide() {
-    this._tl.reverse();
-
-    if (this._inAnimate || !this._isShow) return;
+    if (this._inAnimate || !this._isShow) return this;
     this._inAnimate = true;
     this._isShow = false;
 
@@ -1496,12 +1528,36 @@ class Preview extends component {
     });
 
     this.element.children().remove();
+    this.element.css("pointerEvents", "none");
     this._inAnimate = false;
 
     return this;
   }
 
-  onClose() {}
+  onClose(handler) {
+    if (this._closeHandler)
+      this.element.off("click", ".preview-return-button", this._closeHandler);
+
+    this._closeHandler = handler;
+
+    this.element.on("click", ".preview-return-button", this._closeHandler);
+
+    return this;
+  }
+
+  onSelect(handler) {
+    if (this._selectHandler)
+      this.element.off("click", ".preview-images > div", this._selectHandler);
+
+    this._selectHandler = (e) => {
+      const type = $(e.target).index() ? "next" : "prev";
+      handler(type);
+    };
+
+    this.element.on("click", ".preview-images > div", this._selectHandler);
+
+    return this;
+  }
 }
 
 class Preview2 extends component {
@@ -1739,796 +1795,6 @@ class Preview2 extends component {
     await new Promise((resolve) => {
       this._timelines.show.eventCallback("onReverseComplete", resolve);
     });
-
-    return this;
-  }
-}
-
-//
-// WIP
-//
-//
-//
-
-// 合併至Preview
-/**
- * 這個類別用於創建和管理預覽選單組件。
- */
-class PreviewButtons extends component {
-  constructor() {
-    super();
-
-    this._timelines = {};
-    this.url = "";
-    this._onSelectHandler = null;
-
-    this.isShow = false;
-
-    this.element = this._createPreviewButtons();
-    this._createTimelines();
-  }
-
-  /**
-   * 創建包含預覽按鈕的容器元素。
-   * @private @returns {jQuery} - 預覽按鈕容器元素的 jQuery 物件。
-   */
-  _createPreviewButtons() {
-    const container = $("<div>").addClass("preview-buttons-container");
-
-    const button1 = this._createReturnButton();
-    const button2 = this._createFullscreenButton();
-
-    container.append(button1, button2);
-
-    return container;
-  }
-
-  /**
-   * 創建返回按鈕元素。
-   * @private @returns {jQuery} - 返回按鈕元素的 jQuery 物件。
-   */
-  _createReturnButton() {
-    const button = $("<button>").addClass("return-button");
-
-    const iconContainer = $("<div>").addClass("return-icon-container");
-
-    const makeImg = () => {
-      return $("<img>")
-        .attr("src", "images/icons/return.png")
-        .addClass("return-img")
-        .appendTo(iconContainer);
-    };
-    const makeGif = () => {
-      const timestamp = $.now();
-      return $("<img>")
-        .attr("src", `images/icons/return.gif?timestamp=${timestamp}`)
-        .addClass("return-gif")
-        .appendTo(iconContainer);
-    };
-
-    button.append(iconContainer);
-    makeImg();
-
-    button.on("mouseenter", () => {
-      const imgs = button.find(".return-img");
-      const gif = makeGif().hide();
-      gif[0].onload = () => {
-        imgs.remove();
-        gif.show();
-      };
-    });
-    button.on("mouseleave", () => {
-      const gifs = button.find(".return-gif");
-      gifs.hide(500, () => gifs.remove());
-      makeImg().hide().show(500);
-    });
-
-    this._bindTimeline(button);
-
-    return button;
-  }
-
-  /**
-   * 創建全螢幕按鈕元素。
-   * @private @returns {jQuery} - 全螢幕按鈕元素的 jQuery 物件。
-   */
-  _createFullscreenButton() {
-    const button = $("<button>").addClass("fullscreen-button");
-
-    const icon = new FullscreenIcon();
-
-    button.append(icon.element);
-
-    button.on("mouseenter", () => icon.timeline.play());
-    button.on("mouseleave", () => icon.timeline.reverse());
-
-    this._bindTimeline(button);
-
-    return button;
-  }
-
-  /**
-   * 綁定按鈕的時間軸效果。
-   * @private @param {jQuery} button - 按鈕元素的 jQuery 物件。
-   */
-  _bindTimeline(button) {
-    const hoverT1 = createScaleTl(button, 1, 1.1);
-    const hoverT2 = createBackgroundColorTl(button, "#ea81af");
-    const clickTl = createScaleYoyoTl(button, 0.75);
-
-    const hoverPlay = () => {
-      hoverT1.play();
-      hoverT2.play();
-    };
-    const hoverReverse = () => {
-      hoverT1.reverse();
-      hoverT2.reverse();
-    };
-
-    button.on("mouseenter", hoverPlay);
-    button.on("mouseleave", hoverReverse);
-    button.on("click", () => clickTl.restart());
-  }
-
-  /**
-   * 創建並初始化按鈕的時間軸效果。
-   * @private
-   */
-  _createTimelines() {
-    this._timelines.show = gsap
-      .timeline({ defaults: { ease: "set1" }, paused: true })
-      .from(this.element, { autoAlpha: 0, duration: 0.05 })
-      .from(this.element.children(), {
-        autoAlpha: 0,
-        scale: 0.5,
-        ease: "back.out(4)",
-        stagger: 0.1,
-      });
-
-    return this;
-  }
-
-  /**
-   * 顯示預覽按鈕。
-   */
-  show() {
-    if (this.isShow) return this;
-
-    this.isShow = true;
-    this._timelines.show.play();
-
-    return this;
-  }
-
-  /**
-   * 隱藏預覽按鈕。
-   */
-  async hide() {
-    if (!this.isShow) return this;
-
-    this.isShow = false;
-    this._timelines.show.reverse();
-
-    this._timelines.show.eventCallback("onReverseComplete", null);
-
-    await new Promise((resolve) => {
-      this._timelines.show.eventCallback("onReverseComplete", resolve);
-    });
-
-    return this;
-  }
-
-  /**
-   * 設置選擇按鈕時的處理程序。
-   * @param {function} handler - 選擇按鈕時的處理程序。
-   */
-  onSelect(handler) {
-    if (this._onSelectHandler)
-      this.element.off("click", "button", this._onSelectHandler);
-
-    this._onSelectHandler = handler;
-
-    this.element.on("click", "button", this._onSelectHandler);
-    return this;
-  }
-}
-
-// 改名與移動至sidebar
-/**
- * 這個類別用於創建和管理投影片選單組件。
- */
-class LightBox extends component {
-  constructor() {
-    super();
-
-    this.isShow = false;
-    this._timelines = {};
-    this._handlers = {};
-  }
-
-  /**
-   * 非同步方式創建投影片。
-   * @private @param {number} index - 目前投影片的索引。
-   * @param {string[]} list - 包含所有圖片URL的列表。
-   * @returns {Promise<jQuery>} - 包含創建的投影片內容的jQuery對象。
-   */
-  async _createLightBox(index, list) {
-    this.list = list;
-    this.index = index;
-
-    const container = $("<div>").addClass("light-boxes-container");
-    const buttons = this._createButtons();
-
-    container.append(buttons.prevButton);
-
-    const urls = getArraySegment(index, list);
-    const imgs = await Promise.all(urls.map((url) => this._createImage(url)));
-    this.imgs = imgs;
-
-    imgs.forEach((img) => img.appendTo(container));
-
-    container.append(buttons.nextButton);
-
-    return container;
-  }
-
-  /**
-   * 創建單個圖片元素。
-   * @private @param {string} url - 圖片的 URL。
-   * @returns {Promise<jQuery>} - 創建的圖片容器元素。
-   */
-  async _createImage(url) {
-    const container = $("<div>").addClass("light-box-container");
-
-    const imageContainer = $("<div>").addClass("image-container");
-    const image = $("<img>")
-      .attr("src", url)
-      .attr("decoding", "async")
-      .addClass("light-box-image");
-
-    const reflexContainer = $("<div>").addClass("reflex-container");
-    $("<div>").addClass("reflex-plane").appendTo(reflexContainer);
-
-    imageContainer.append(reflexContainer, image);
-
-    await decode(image[0]);
-
-    this._bindImageTimeline(imageContainer);
-
-    const filter = $("<img>").addClass("image-filter").attr("src", url);
-    container.append(filter, imageContainer);
-
-    this._bindFilterTimeline(container);
-
-    return container;
-  }
-
-  /**
-   * 綁定圖片元素的時間軸。
-   * @private
-   * @param {jQuery} imageContainer - 圖片容器的jQuery對象。
-   */
-  _bindImageTimeline(imageContainer) {
-    const image = imageContainer.find("img");
-    const element = image.add(imageContainer.find(".reflex-plane"));
-    const t1 = createImageHoverTl(imageContainer);
-    const t2 = createScaleYoyoTl(imageContainer, 0.9);
-    const mousemoveHandler = this._createMousemoveHandler(element);
-
-    image.on("mouseenter", () => {
-      t1.play();
-
-      image.on("mousemove", mousemoveHandler);
-    });
-    image.on("mouseleave", () => {
-      t1.reverse();
-
-      image.off("mousemove", mousemoveHandler);
-
-      gsap.to(element, {
-        overwrite: "auto",
-        ease: "set1",
-        duration: 0.5,
-        rotateX: 0,
-        rotateY: 0,
-      });
-    });
-    image.on("click", () => t2.restart());
-  }
-
-  /**
-   * 綁定背景濾鏡元素的時間軸。
-   * @private
-   * @param {jQuery} container - 整個容器的jQuery對象。
-   */
-  _bindFilterTimeline(container) {
-    const filter = container.find(".image-filter");
-
-    const tl = gsap
-      .timeline({ defaults: { ease: "set1" }, paused: true })
-      .from(filter, { autoAlpha: 0, duration: 0.2 });
-
-    container.on("mouseenter", ".light-box-image", () => tl.play());
-    container.on("mouseleave", ".light-box-image", () => tl.reverse());
-  }
-
-  /**
-   * 創建滑鼠移動事件處理器。
-   * @private
-   * @param {jQuery} element - 被處理的元素。
-   * @returns {Function} - 滑鼠移動事件處理器函式。
-   */
-  _createMousemoveHandler(element) {
-    return (e) => {
-      const centerX = element.offset().left + element.width() / 2;
-      const centerY = element.offset().top + element.height() / 2;
-      const offsetX = e.pageX - centerX;
-      const offsetY = e.pageY - centerY;
-
-      // 計算響應式的旋轉角度，根據元素的寬度和高度進行調整
-      const base = { x: 520, y: 290 };
-      const scale = {
-        x: element.width() / base.x,
-        y: element.height() / base.y,
-      };
-      const responsiveRotateX = -offsetY / (9 * scale.x);
-      const responsiveRotateY = offsetX / (15 * scale.y);
-
-      gsap.to(element, {
-        overwrite: "auto",
-        ease: "back.out(10)",
-        duration: 0.5,
-        rotateX: responsiveRotateX,
-        rotateY: responsiveRotateY,
-      });
-    };
-  }
-
-  /**
-   * 創建上下按鈕。
-   * @private @returns {{prevButton: jQuery, nextButton: jQuery}}
-   */
-  _createButtons() {
-    const prevButton = $("<button>").addClass("prev-button");
-    const nextButton = $("<button>").addClass("next-button");
-
-    const buttons = [prevButton, nextButton];
-
-    buttons.forEach((button, index) => {
-      // 普通時間軸
-      const hoverTls = [
-        createBackgroundColorTl(button, "#ea81af"),
-        createScaleTl(button, 1, 1.05),
-      ];
-
-      const clickTl = createScaleYoyoTl(button, 0.9);
-
-      button.on("mouseenter", () => {
-        hoverTls.forEach((tl) => {
-          tl.play();
-        });
-      });
-      button.on("mouseleave", () => {
-        hoverTls.forEach((tl) => {
-          tl.reverse();
-        });
-      });
-      button.on("click", () => clickTl.restart());
-
-      // GIF動畫
-      const iconContainer = $("<div>").addClass("animated-up-icon-container");
-
-      if (index === 1) gsap.set(iconContainer, { rotate: 180 });
-
-      const makeImg = () => {
-        return $("<img>")
-          .attr("src", "images/icons/up (white).png")
-          .addClass("up-img")
-          .appendTo(iconContainer);
-      };
-      const makeGif = () => {
-        const timestamp = $.now();
-        return $("<img>")
-          .attr("src", `images/icons/top (animated).gif?timestamp=${timestamp}`)
-          .addClass("animated-up-gif")
-          .appendTo(iconContainer);
-      };
-
-      button.append(iconContainer);
-      makeImg();
-
-      button.on("mouseenter", () => {
-        const imgs = button.find(".up-img");
-        const gif = makeGif().hide();
-        gif[0].onload = () => {
-          imgs.remove();
-          gif.show();
-        };
-      });
-      button.on("mouseleave", () => {
-        const gifs = button.find(".animated-up-gif");
-        gifs.hide(500, () => gifs.remove());
-        makeImg().hide().show(500);
-      });
-    });
-
-    return { prevButton, nextButton };
-  }
-
-  /**
-   * 創建並初始化投影片的時間軸效果。
-   * @private
-   */
-  _createShowTimelines() {
-    const elements = this.element.children();
-    this._timelines.show = gsap
-      .timeline({ defaults: { ease: "set1" }, paused: true })
-      .from(this.element, { autoAlpha: 0, duration: 0.05 })
-      .from(
-        elements,
-        {
-          autoAlpha: 0,
-          scale: 0.5,
-          ease: "back.out(2)",
-          stagger: { from: "random", amount: 0.35 },
-        },
-        "<"
-      );
-
-    return this;
-  }
-
-  /**
-   * 創建投影片隱藏的時間軸效果。
-   * @private
-   */
-  _createHideTimelines() {
-    const elements = this.element.children();
-    this._timelines.hide = gsap
-      .timeline({ defaults: { ease: "set1" }, paused: true })
-      .to(elements, {
-        autoAlpha: 0,
-        scale: 0.5,
-        ease: "back.in(2)",
-        stagger: { from: "random", amount: 0.35 },
-      })
-      .to(this.element, { autoAlpha: 0, duration: 0.05 });
-
-    return this;
-  }
-
-  /**
-   * 顯示投影片。
-   */
-  async show(index, list, category) {
-    if (this.isShow) return this;
-
-    this.category = category;
-    this.element = await this._createLightBox(index, list);
-    this._createShowTimelines().appendTo("#sidebar");
-
-    // 註冊事件
-    if (this._handlers.next)
-      this.element.on("click", ".next-button", this._handlers.next);
-    if (this._handlers.prev)
-      this.element.on("click", ".prev-button", this._handlers.prev);
-    if (this._handlers.select)
-      this.element.on("click", ".light-box-image", this._handlers.select);
-
-    this.isShow = true;
-    this._timelines.show.play();
-
-    return this;
-  }
-
-  /**
-   * 隱藏投影片。
-   */
-  async hide() {
-    if (!this.isShow) return this;
-
-    this.isShow = false;
-
-    this._createHideTimelines();
-    this._timelines.hide.play();
-
-    this._timelines.hide.eventCallback("onComplete", null);
-
-    await new Promise((resolve) => {
-      this._timelines.hide.eventCallback("onComplete", resolve);
-    });
-
-    this.element.off();
-    this.element.remove();
-    this.element = null;
-    this.list = [];
-    this.index = -1;
-    this.imgs = [];
-    this._isAppendTo = false;
-
-    return this;
-  }
-
-  /**
-   * 投影片切換至下張圖片。
-   * @param {number} offset - 偏移張數。
-   * @returns {Promise<void>} - 表示異步操作完成的 Promise 物件。
-   */
-  async toNext(offset = 1) {
-    // 提取變數
-    const length = this.list.length;
-    const newIndex = (this.index + offset) % length; // 新的中間位置在this.list中的指標
-    const nextButton = this.element.children(".next-button");
-
-    // 準備新圖片
-    const urls = Array.from(
-      { length: offset },
-      (_, i) => this.list[(newIndex + 2 - i) % length]
-    ).reverse();
-    const promises = urls.map((url) => this._createImage(url));
-    const imgs = await Promise.all(promises);
-
-    // 創建與"初始化"時間軸
-    const tl = gsap
-      .timeline({
-        defaults: { ease: "power2.out", duration: 0.5 },
-        paused: true,
-      })
-      .to(this.imgs.slice(0, offset), { autoAlpha: 0, height: 0, margin: 0 })
-      .from(imgs, { autoAlpha: 0, height: 0, margin: 0 }, "<");
-
-    imgs.forEach((img) => img.insertBefore(nextButton));
-
-    // 投影片切換
-    await new Promise((resolve) => {
-      tl.play();
-      tl.eventCallback("onComplete", resolve);
-    });
-
-    // 更新屬性
-    this.index = newIndex;
-    this.imgs.slice(0, offset).forEach((img) => img.remove());
-    this.imgs.splice(0, offset);
-    this.imgs.push(...imgs);
-  }
-
-  /**
-   * 投影片切換至上張圖片。
-   * @async
-   * @param {number} offset - 偏移張數。
-   * @returns {Promise<void>} - 表示異步操作完成的 Promise 物件。
-   */
-  async toPrev(offset = 1) {
-    // 提取變數
-    const length = this.list.length;
-    const newIndex = (this.index - offset + length) % length; // 新的中間位置在this.list中的指標
-    const prevButton = this.element.children(".prev-button");
-
-    // 準備新圖片
-    const urls = Array.from(
-      { length: offset },
-      (_, i) => this.list[(newIndex - 2 + i + length) % length]
-    ).reverse();
-    const promises = urls.map((url) => this._createImage(url));
-    const imgs = await Promise.all(promises);
-
-    // 創建與"初始化"時間軸
-    const tl = gsap
-      .timeline({
-        defaults: { ease: "power2.out", duration: 0.5 },
-        paused: true,
-      })
-      .to(this.imgs.slice(5 - offset, 5), {
-        autoAlpha: 0,
-        height: 0,
-        margin: 0,
-      })
-      .from(imgs, { autoAlpha: 0, height: 0, margin: 0 }, "<");
-
-    imgs.forEach((img) => img.insertAfter(prevButton));
-
-    // 投影片切換
-    await new Promise((resolve) => {
-      tl.play();
-      tl.eventCallback("onComplete", resolve);
-    });
-
-    // 更新屬性
-    this.index = newIndex;
-    this.imgs.slice(5 - offset, 5).forEach((img) => img.remove());
-    this.imgs.splice(-offset);
-    imgs.reverse(); // 確保順序正確
-    this.imgs.unshift(...imgs);
-  }
-
-  /**
-   * 註冊下一張圖片事件處理程序。
-   * @param {Function} handler - 處理程序函數，接收新圖片的 URL 作為參數。
-   * @returns {LightBox} - 返回 LightBox 實例，支持鏈式調用。
-   */
-  onNext(handler) {
-    // 記錄至屬性
-    if (this._handlers.next) {
-      console.error("lightBox: 已註冊onNext");
-      return;
-    }
-
-    this._handlers.next = () => {
-      const index = (this.index + 1) % this.list.length;
-      const url = this.list[index];
-
-      handler(url);
-    };
-
-    return this;
-  }
-
-  /**
-   * 註冊上一張圖片事件處理程序。
-   * @param {Function} handler - 處理程序函數，接收新圖片的 URL 作為參數。
-   * @returns {LightBox} - 返回 LightBox 實例，支持鏈式調用。
-   */
-  onPrev(handler) {
-    // 記錄至屬性
-    if (this._handlers.prev) {
-      console.error("lightBox: 已註冊onPrev");
-      return;
-    }
-
-    this._handlers.prev = () => {
-      const index = (this.index - 1 + this.list.length) % this.list.length;
-      const url = this.list[index];
-
-      handler(url);
-    };
-
-    return this;
-  }
-
-  /**
-   * 註冊選擇圖片事件處理程序。
-   * @param {Function} handler - 處理程序函數，接收選擇圖片的 URL 和索引作為參數。
-   * @returns {LightBox} - 返回 LightBox 實例，支持鏈式調用。
-   */
-  onSelect(handler) {
-    // 記錄至屬性
-    if (this._handlers.select) {
-      console.error("lightBox: 已註冊onPrev");
-      return;
-    }
-
-    this._handlers.select = (e) => {
-      const url = e.target.src.replace("/thumbnail/", "/jpg/");
-      const index = $(e.target).parents(".light-box-container").index();
-
-      handler(url, index);
-    };
-
-    return this;
-  }
-}
-
-// 改名為FileName與移動至header
-/**
- * 這個類別用於創建和管理預覽圖片檔名組件。
- */
-class ImageName extends component {
-  constructor() {
-    super();
-
-    this.isShow = false;
-    this._timelines = {};
-
-    const container = $("<div>")
-      .addClass("file-name-container")
-      .append(
-        $("<p>").addClass("file-name"),
-        $("<button>")
-          .addClass("extend-button")
-          .append($("<label>").text(".jpg"))
-      );
-
-    this.element = container;
-
-    this._bindTimeline(container)._createTimelines();
-  }
-
-  /**
-   * 綁定元素的時間軸效果。
-   * @private @param {jQuery} container - 元素的 jQuery 物件。
-   */
-  _bindTimeline(container) {
-    const button = container.find(".extend-button");
-
-    const t1 = createScaleTl(button, 1, 1.1);
-    const t2 = createBackgroundColorTl(button, "#ea81af", 0.2);
-    const t3 = gsap
-      .timeline({ defaults: { ease: "set1", duration: 0.2 }, paused: true })
-      .to(button.find("label"), {
-        color: "hsl(225, 10%, 23%)",
-        fontWeight: "bold",
-      });
-
-    const t4 = createScaleYoyoTl(button, 0.8);
-
-    button.on("mouseenter", () => {
-      t1.play();
-      t2.play();
-      t3.play();
-    });
-    button.on("mouseleave", () => {
-      t1.reverse();
-      t2.reverse();
-      t3.reverse();
-    });
-    button.on("click", () => t4.restart());
-
-    return this;
-  }
-
-  /**
-   * 創建並初始化時間軸效果。
-   * @private
-   */
-  _createTimelines() {
-    this._timelines.show = gsap
-      .timeline({ defaults: { ease: "set1" }, paused: true })
-      .from(this.element, { autoAlpha: 0, duration: 0.05 })
-      .from(this.element.children(), {
-        autoAlpha: 0,
-        scale: 0.5,
-        ease: "back.out(4)",
-        stagger: 0.1,
-      });
-
-    return this;
-  }
-
-  /**
-   * 顯示組件並設置圖片名稱。
-   * @param {string} name - 圖片的名稱。
-   */
-  show(name) {
-    if (this.isShow) return this;
-
-    this.element.find(".file-name").text(name);
-    this.isShow = true;
-    this._timelines.show.play();
-
-    return this;
-  }
-
-  /**
-   * 隱藏組件。
-   */
-  async hide() {
-    if (!this.isShow) return this;
-
-    this.isShow = false;
-    this._timelines.show.reverse();
-
-    this._timelines.show.eventCallback("onReverseComplete", null);
-
-    await new Promise((resolve) => {
-      this._timelines.show.eventCallback("onReverseComplete", resolve);
-    });
-
-    this.element.find(".file-name").text("");
-
-    return this;
-  }
-
-  /**
-   * 修改元素的名稱。
-   * @param {string} name - 新的名稱。
-   */
-  changeName(name) {
-    const nameElement = this.element.find(".file-name");
-    const oldName = nameElement.text();
-
-    if (name === oldName) return this;
-
-    nameElement.text(name);
 
     return this;
   }

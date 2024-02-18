@@ -7,9 +7,9 @@ function createBackground() {
   loadingIcon.appendTo("body");
 
   const maskbackground = {
-    show: () => {
+    show: (blur = 5, brightness = 0.9) => {
       $("#mask-background").css({
-        "backdrop-filter": "blur(5px) brightness(0.9)",
+        "backdrop-filter": `blur(${blur}px) brightness(${brightness})`,
         "pointer-events": "all",
       });
     },
@@ -109,7 +109,11 @@ function createGallery() {
   return { gallery, scrollButtons };
 }
 
-function createPreview(category, index) {}
+function createPreview() {
+  const preview = new Preview();
+  preview.appendTo("body");
+  return { preview };
+}
 
 $(document).ready(async function () {
   //
@@ -140,10 +144,15 @@ $(document).ready(async function () {
     },
   });
 
-  const { gallery, scrollButtons } = createGallery();
   const { mainButtons, addImagePopup, deleteImagePopup, headerBulb, intro } =
     createIndex();
 
+  const { gallery, scrollButtons } = createGallery();
+
+  const { preview } = createPreview();
+
+  //
+  // 註冊組件間的交互邏輯
   intro.onSelect(async (e) => {
     if (inTransition) {
       console.log("停止執行了 intro.onSelect");
@@ -348,7 +357,10 @@ $(document).ready(async function () {
 
     inTransition = false;
   });
-  gallery.onSelect((e) => {
+
+  let index;
+
+  gallery.onSelect(async (selectedIndex) => {
     if (inTransition) {
       console.log("停止執行了 gallery.onSelect");
       return;
@@ -356,171 +368,74 @@ $(document).ready(async function () {
 
     inTransition = true;
 
-    console.log(e);
+    await delay(200);
+    maskbackground.show(15, 0.5);
+
+    const category = intro.category;
+
+    const list = await images.getList();
+    const length = list[category].length;
+
+    index = selectedIndex;
+    const prev = (length + index - 1) % length;
+    const next = (length + index + 1) % length;
+
+    await preview.show(
+      images.getImage(category, prev),
+      images.getImage(category, index),
+      images.getImage(category, next),
+      list[category][index].replace(".webp", "")
+    );
 
     inTransition = false;
   });
+  preview.onClose(async () => {
+    if (inTransition) {
+      console.log("停止執行了 preview.onClose");
+      return;
+    }
 
-  //
-  // 創建預覽以及全螢幕
-  // const previewImage = new PreviewImage();
-  // previewImage.appendTo("#content").onClose(async () => {
-  //   if (inTransition) {
-  //     console.log("停止執行了previewImage.onClose");
-  //     return;
-  //   }
-  //   inTransition = true;
+    inTransition = true;
 
-  //   await Promise.all([delay(100), previewImage.switchMode()]);
-  //   await previewImage.hideCloseButton();
+    await preview.hide();
+    maskbackground.hide();
 
-  //   showFullContentsTl.reverse();
+    inTransition = false;
+  });
+  preview.onSelect(async (type) => {
+    if (inTransition) {
+      console.log("停止執行了 gallery.onSelect");
+      return;
+    }
 
-  //   inTransition = false;
-  // });
+    inTransition = true;
 
-  //
-  // 創建預覽時的選單按鈕
-  // const previewButtons = new PreviewButtons();
-  // previewButtons.appendTo("#sidebar").onSelect(async (e) => {
-  //   if (inTransition) {
-  //     console.log("停止執行了previewButtons.onSelect");
-  //     return;
-  //   }
+    const category = intro.category;
 
-  //   inTransition = true;
+    const list = await images.getList();
+    const length = list[category].length;
 
-  //   const targetClass = $(e.target).attr("class");
-  //   const category = previewImage.category;
+    let prev, next;
 
-  //   if (targetClass === "return-button") {
-  //     await previewImage.hide();
-  //     await Promise.all([
-  //       previewButtons.hide(),
-  //       imageName.hide(),
-  //       lightBox.hide(),
-  //     ]);
-  //     await gallery[category].show();
+    if (type == "next") {
+      index = (length + index + 1) % length;
+      prev = (length + index - 1) % length;
+      next = (length + index + 1) % length;
+    } else {
+      index = (length + index - 1) % length;
+      prev = (length + index - 1) % length;
+      next = (length + index + 1) % length;
+    }
 
-  //     scrollButtons.show();
+    preview.reset(
+      images.getImage(category, prev),
+      images.getImage(category, index),
+      images.getImage(category, next),
+      list[category][index].replace(".webp", "")
+    );
 
-  //     scrollButtons.scrollElement = gallery[category].element;
-  //   }
-
-  //   if (targetClass === "fullscreen-button") {
-  //     showFullContentsTl.play();
-  //     showFullContentsTl.eventCallback("onComplete", null);
-  //     await new Promise((resolve) => {
-  //       showFullContentsTl.eventCallback("onComplete", resolve);
-  //     });
-
-  //     previewImage.switchMode();
-  //     previewImage.showCloseButton();
-  //   }
-
-  //   inTransition = false;
-  // });
-
-  //
-  // 創建內容
-  // const lightBox = new LightBox();
-  // lightBox
-  //   .onNext(async (url) => {
-  //     if (inTransition) {
-  //       console.log("停止執行了lightBox.onNext");
-  //       return;
-  //     }
-  //     inTransition = true;
-
-  //     await previewImage.hide();
-
-  //     // 更新圖片名字
-  //     const info = loadManager.findImageInfo(url);
-  //     imageName.changeName(info.name);
-
-  //     await Promise.all([
-  //       lightBox.toNext(1),
-  //       previewImage.show(info.origin, lightBox.category),
-  //     ]);
-
-  //     inTransition = false;
-  //   })
-  //   .onPrev(async (url) => {
-  //     if (inTransition) {
-  //       console.log("停止執行了lightBox.onPrev");
-  //       return;
-  //     }
-  //     inTransition = true;
-
-  //     await previewImage.hide();
-
-  //     // 更新圖片名字
-  //     const info = loadManager.findImageInfo(url);
-  //     imageName.changeName(info.name);
-
-  //     await Promise.all([
-  //       lightBox.toPrev(1),
-  //       previewImage.show(info.origin, lightBox.category),
-  //     ]);
-
-  //     inTransition = false;
-  //   })
-  //   .onSelect(async (url, index) => {
-  //     if (inTransition) {
-  //       console.log("停止執行了lightBox.onSelect");
-  //       return;
-  //     }
-  //     inTransition = true;
-
-  //     // 相同圖片不做處理
-  //     if (index === 3) {
-  //       console.log("lightBox: 按下了相同圖片");
-  //       inTransition = false;
-  //       return;
-  //     }
-
-  //     // 傳遞至previewImage
-  //     await previewImage.hide();
-
-  //     // 更新圖片名字
-  //     const info = loadManager.findImageInfo(url);
-  //     imageName.changeName(info.name);
-
-  //     const pendingTasks = [previewImage.show(info.origin, lightBox.category)];
-
-  //     // 傳遞至自身
-  //     switch (index) {
-  //       // 上兩張
-  //       case 1:
-  //         pendingTasks.push(lightBox.toPrev(2));
-  //         break;
-  //       // 上一張
-  //       case 2:
-  //         pendingTasks.push(lightBox.toPrev(1));
-  //         break;
-  //       // 下一張
-  //       case 4:
-  //         pendingTasks.push(lightBox.toNext(1));
-  //         break;
-  //       // 下兩張
-  //       case 5:
-  //         pendingTasks.push(lightBox.toNext(2));
-  //         break;
-  //       // 不存在
-  //       default:
-  //         console.error(`lightBox: 指標錯誤，index不應該為${index}`);
-  //         break;
-  //     }
-
-  //     await Promise.all(pendingTasks);
-
-  //     inTransition = false;
-  //   });
-
-  //
-  // 創建內容
-  // const imageName = new ImageName();
-  // imageName.appendTo("#header");
+    inTransition = false;
+  });
 
   //
   // 載入完成
@@ -530,28 +445,20 @@ $(document).ready(async function () {
   loadingIcon.hide();
 
   //
-  // 全局動畫
-  const showFullContentsTl = gsap
-    .timeline({ defaults: { ease: "set1", duration: 0.75 }, paused: true })
-    .to("#content", { top: 0, left: 0 })
-    .to("#header", { y: -110 }, "<")
-    .to("#sidebar", { x: -300 }, "<")
-    .to("#version-display", { y: 60 }, "<");
+  // 開場動畫
+  await delay(500);
 
-  const showMenuTl = gsap
-    .timeline({ defaults: { ease: "power2.out", duration: 0.6 } })
+  const opening = gsap
+    .timeline({ defaults: { ease: "power2.out", duration: 0.6 }, paused: true })
     .to("#header, #sidebar, #version-display", { x: 0, y: 0, stagger: 0.35 });
 
-  const opening = gsap.timeline({
-    onComplete: () => {
-      headerBulb.switchLight("Scene");
-      intro.show();
-
-      inTransition = false;
-    },
-    delay: 1,
-    paused: true,
+  opening.play();
+  await new Promise((resolve) => {
+    opening.eventCallback("onComplete", resolve);
   });
 
-  opening.add(showMenuTl).play();
+  headerBulb.switchLight("Scene");
+  intro.show();
+
+  inTransition = false;
 });

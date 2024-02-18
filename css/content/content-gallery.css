@@ -33,10 +33,6 @@
   border-radius: 5px;
   cursor: pointer;
   box-shadow: rgba(0, 0, 0, 0.75) 0px 3px 4px,
-    rgba(0, 0, 0, 0.35) 10px 12px 3px -3px,
-    rgba(0, 0, 0, 0.45) 0px -5px 0px inset,
-    rgba(255, 255, 255, 0.1) 2px 5px 10px -3px inset;
-  box-shadow: rgba(0, 0, 0, 0.75) 0px 3px 4px,
     rgba(0, 0, 0, 0.35) 5px 8px 3px -3px, rgba(0, 0, 0, 0.45) 0px -2px 0px inset,
     rgba(255, 255, 255, 0.3) 2px 5px 3px -3px inset;
 }

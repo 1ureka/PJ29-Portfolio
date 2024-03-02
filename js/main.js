@@ -133,16 +133,28 @@ $(document).ready(async function () {
 
   //
   // 創建首頁與圖片牆
+  const backgroundImages = await Promise.all([
+    images.getImage("Scene", 0),
+    images.getImage("Props", 0),
+    images.getImage("Nature", 3),
+  ]);
+
+  const thumbnailImages = await Promise.all([
+    images.getThumbnail("Scene", 0),
+    images.getThumbnail("Props", 0),
+    images.getThumbnail("Nature", 3),
+  ]);
+
   Intro.createURLStyle({
     background: {
-      Scene: images.getImage("Scene", 0),
-      Props: images.getImage("Props", 0),
-      Nature: images.getImage("Nature", 3),
+      Scene: backgroundImages[0],
+      Props: backgroundImages[1],
+      Nature: backgroundImages[2],
     },
     card: {
-      Scene: images.getThumbnail("Scene", 0),
-      Props: images.getThumbnail("Props", 0),
-      Nature: images.getThumbnail("Nature", 3),
+      Scene: thumbnailImages[0],
+      Props: thumbnailImages[1],
+      Nature: thumbnailImages[2],
     },
   });
 
@@ -170,11 +182,17 @@ $(document).ready(async function () {
       //
     } else {
       //
+      maskbackground.show();
+      loadingIcon.show();
+
       const category = e.target;
       const fileList = await images.getList();
-      const urls = fileList[category].map((name) =>
-        images.getThumbnail(category, name)
+      const urls = await Promise.all(
+        fileList[category].map((name) => images.getThumbnail(category, name))
       );
+
+      maskbackground.hide();
+      loadingIcon.hide();
 
       await intro.hide();
 
@@ -200,8 +218,8 @@ $(document).ready(async function () {
 
     const category = intro.category;
     const fileList = await images.getList();
-    const urls = fileList[category].map((name) =>
-      images.getThumbnail(category, name)
+    const urls = await Promise.all(
+      fileList[category].map((name) => images.getThumbnail(category, name))
     );
 
     await Promise.all([mainButtons.hide(), gallery.hide()]);
@@ -232,8 +250,8 @@ $(document).ready(async function () {
       //
       const category = intro.category;
       const fileList = await images.getList();
-      const urls = fileList[category].map((name) =>
-        images.getThumbnail(category, name)
+      const urls = await Promise.all(
+        fileList[category].map((name) => images.getThumbnail(category, name))
       );
 
       await preview.hide();

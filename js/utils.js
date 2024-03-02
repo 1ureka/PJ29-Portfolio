@@ -3,8 +3,36 @@
  */
 class Images {
   constructor() {
+    /**
+     * @typedef {Object.<string, string[]>} ImageCollectionByCategory
+     * @description 代表一個按類別分組的圖像集合，其中每個鍵是類別名稱，值是圖像名稱的數組。
+     */
+
+    /**
+     * @type {ImageCollectionByCategory}
+     */
     this._fileList = null;
-    this._images = null;
+
+    /**
+     * @typedef {Object} ImageDetails
+     * @property {string} thumbnail - 縮略圖像的 URL 或資料 URL。
+     * @property {string} origin - 原始圖像的 URL 或資料 URL。
+     */
+
+    /**
+     * @typedef {Object.<string, ImageDetails>} ImageCategory
+     * @description 代表一個圖像類別的物件，其中每個鍵是圖像名稱，值是 ImageDetails 物件。
+     */
+
+    /**
+     * @typedef {Object.<string, ImageCategory>} ImageCollection
+     * @description 代表一個按類別分組的圖像集合，其中每個鍵是類別名稱，值是 ImageCategory 物件。
+     */
+
+    /**
+     * @type {ImageCollection}
+     */
+    this._images = {};
     this._initialTitle = document.title;
   }
 
@@ -97,73 +125,18 @@ class Images {
   }
 
   /**
-   * 從資料庫讀取圖片。
-   * @param {Object[]} manifest - 包含多個物件的數組。
-   * @param {string} manifest[].category - 目標分類。
-   * @param {string} manifest[].name - 檔名。
-   */
-  async loadImages(manifest) {
-    const promises = manifest.map(async (info) => {
-      const { category, name } = info;
-
-      const thumbnail = await loadFile(`PJ29/thumbnail/${category}/${name}`);
-      const origin = await loadFile(`PJ29/origin/${category}/${name}`);
-
-      return {
-        name,
-        url1: base64ToDataUrl(thumbnail, "webp"),
-        url2: base64ToDataUrl(origin, "webp"),
-      };
-    });
-
-    const list = await Promise.all(promises);
-
-    return list;
-  }
-
-  /**
-   * 同步資料庫圖片。
+   * 利用dict.json同步資料庫圖片。
    */
   async syncImages() {
     let fileList = await this.getList();
+    const categories = Object.keys(fileList);
 
-    const categories = ["Nature", "Props", "Scene"];
-    let manifest = this._images;
-    if (!manifest) manifest = { Nature: {}, Props: {}, Scene: {} };
-
-    for (const category of categories) {
-      const list = fileList[category];
-
-      const chunks = Array.from(
-        { length: Math.ceil(list.length / 25) },
-        (_, index) => list.slice(index * 25, (index + 1) * 25)
-      );
-
-      for (const chunk of chunks) {
-        console.log("正在載入", chunk);
-
-        const result = await this.loadImages(
-          chunk
-            .filter((name) => !manifest[category][name])
-            .map((name) => {
-              return { category, name };
-            })
-        );
-
-        result.forEach((info) => {
-          let { name, url1, url2 } = info;
-          url1 = url1.replace(/\n/g, "");
-          url2 = url2.replace(/\n/g, "");
-          manifest[category][name] = { url1, url2 };
-        });
-
-        console.log("載入完成", chunk);
-      }
-
-      manifest[category] = sortByKey(manifest[category]);
-    }
-
-    this._images = manifest;
+    categories.forEach((category) => {
+      this._images[category] = {};
+      fileList[category].forEach((fileName) => {
+        this._images[category][fileName] = {};
+      });
+    });
 
     this._setState(false);
   }
@@ -172,44 +145,54 @@ class Images {
    * 根據類別和識別符號獲取縮圖。
    * @param {string} category - 圖片類別。
    * @param {number|string} identifier - 圖片索引或名稱。
-   * @returns {string | null} 圖片dataUrl，如果不存在則返回null。
    */
-  getThumbnail(category, identifier) {
-    if (!this._images[category]) return null;
+  async getThumbnail(category, identifier) {
+    const fileList = this._images[category];
 
-    let dataUrl;
+    if (!fileList) return null;
 
+    let fileName;
     if (typeof identifier === "number") {
-      // 如果第二個參數是數字，視為索引
-      dataUrl = Object.values(this._images[category])[identifier].url1;
+      fileName = Object.keys(fileList)[identifier];
     } else if (typeof identifier === "string") {
-      // 如果第二個參數是字串，視為名稱
-      dataUrl = this._images[category][identifier].url1;
+      fileName = identifier;
+    } else {
+      return null;
     }
 
-    return dataUrl;
+    if (!fileList[fileName].thumbnail) {
+      const dataUrl = await loadFile(`PJ29/thumbnail/${category}/${fileName}`);
+      fileList[fileName].thumbnail = base64ToDataUrl(dataUrl, "webp");
+    }
+
+    return fileList[fileName].thumbnail;
   }
 
   /**
    * 根據類別和識別符號獲取原圖。
    * @param {string} category - 圖片類別。
    * @param {number|string} identifier - 圖片索引或名稱。
-   * @returns {string | null} 圖片dataUrl，如果不存在則返回null。
    */
-  getImage(category, identifier) {
-    if (!this._images[category]) return null;
+  async getImage(category, identifier) {
+    const fileList = this._images[category];
 
-    let dataUrl;
+    if (!fileList) return null;
 
+    let fileName;
     if (typeof identifier === "number") {
-      // 如果第二個參數是數字，視為索引
-      dataUrl = Object.values(this._images[category])[identifier].url2;
+      fileName = Object.keys(fileList)[identifier];
     } else if (typeof identifier === "string") {
-      // 如果第二個參數是字串，視為名稱
-      dataUrl = this._images[category][identifier].url2;
+      fileName = identifier;
+    } else {
+      return null;
     }
 
-    return dataUrl;
+    if (!fileList[fileName].origin) {
+      const dataUrl = await loadFile(`PJ29/origin/${category}/${fileName}`);
+      fileList[fileName].origin = base64ToDataUrl(dataUrl, "webp");
+    }
+
+    return fileList[fileName].origin;
   }
 }
 
@@ -476,24 +459,6 @@ async function decode(image) {
 }
 
 /**
- * 獲取以給定索引為中心，上下共五個元素的陣列片段，考慮環狀狀態。
- * @param {number} index - 陣列中的索引，用作片段的中心。
- * @param {Array} list - 目標陣列。
- * @returns {Array} - 以給定索引為中心的五個元素的陣列片段。
- */
-function getArraySegment(index, list) {
-  const length = list.length;
-  const result = [];
-
-  for (let i = index - 2; i <= index + 2; i++) {
-    const nIndex = (i + length) % length;
-    result.push(list[nIndex]);
-  }
-
-  return result;
-}
-
-/**
  * 壓縮圖片並返回 base64 編碼的數據 URL。
  * @param {File} file - 要壓縮的圖片檔案。
  * @param {number} width - 壓縮後圖片的寬度。
@@ -657,5 +622,5 @@ function dataUrlToBase64(dataUrl) {
  * @returns {string} - 返回轉換後的 Data URL。
  */
 function base64ToDataUrl(string, fileType) {
-  return `data:image/${fileType};base64,${string}`;
+  return `data:image/${fileType};base64,${string.replace(/\n/g, "")}`;
 }

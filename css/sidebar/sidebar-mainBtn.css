@@ -1,7 +1,3 @@
-:root {
-  --is-main-button-show: 1;
-}
-
 .main-buttons-container {
   display: flex;
   flex-direction: column;
@@ -12,14 +8,12 @@
   padding-left: 25px;
   gap: 20px;
   transition: all 0.35s cubic-bezier(0.645, 0.045, 0.355, 1);
-  translate: calc(-120px + var(--is-main-button-show) * 120px);
-  opacity: var(--is-main-button-show);
 }
 
 .main-button {
   position: relative;
   padding: 6px 15px;
-  transition: all 0.2s ease;
+  transition: scale 0.2s ease;
   border: none;
   background: none;
   cursor: pointer;
@@ -87,5 +81,5 @@
 }
 
 .main-button:active {
-  transform: scale(0.92);
+  scale: 0.92;
 }

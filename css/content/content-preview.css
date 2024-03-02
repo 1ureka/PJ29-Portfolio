@@ -144,6 +144,7 @@
   justify-content: flex-start;
   align-items: flex-start;
   gap: 15px;
+  z-index: 1;
 }
 .preview-intro > h1 {
   margin: 0;

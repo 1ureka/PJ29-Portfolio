@@ -205,6 +205,7 @@ class ScrollButtons extends component {
     return this;
   }
 }
+
 /**
  * 這個類別用於創建和管理在header的燈泡元素
  */
@@ -278,6 +279,120 @@ class HeaderBulb extends component {
 }
 
 /**
+ * 這個類別用於創建和管理在header的返回按鈕元素
+ */
+class HeaderButton extends component {
+  constructor() {
+    super();
+
+    const iconContainer = $("<div>").addClass("return-button-icon");
+
+    const makeImg = () => {
+      return $("<img>")
+        .attr("src", "images/icons/return.png")
+        .addClass("return-img")
+        .appendTo(iconContainer);
+    };
+    const makeGif = () => {
+      const timestamp = $.now();
+      return $("<img>")
+        .attr("src", `images/icons/return.gif?timestamp=${timestamp}`)
+        .addClass("return-gif")
+        .appendTo(iconContainer);
+    };
+
+    makeImg();
+
+    const button = $("<button>")
+      .addClass("return-button")
+      .append(
+        iconContainer,
+        $("<span>").addClass("return-button-tip").text("返回")
+      );
+
+    button.on("mouseenter", () => {
+      const imgs = button.find(".return-img");
+      const gif = makeGif().hide();
+      gif[0].onload = () => {
+        imgs.remove();
+        gif.show();
+      };
+    });
+    button.on("mouseleave", () => {
+      const gifs = button.find(".return-gif");
+      gifs.hide(500, () => gifs.remove());
+      makeImg().hide().show(500);
+    });
+
+    this.element = button;
+
+    this._tl = this._createTimeline();
+  }
+
+  _createTimeline() {
+    return gsap
+      .timeline({ defaults: { ease: "back.out(2)" }, paused: true })
+      .fromTo(
+        this.element,
+        {
+          autoAlpha: 0,
+          y: -30,
+          scale: 1.2,
+        },
+        {
+          autoAlpha: 1,
+          y: 0,
+          scale: 1,
+        }
+      );
+  }
+
+  async show() {
+    if (this._inAnimate || this._isShow) return;
+    this._inAnimate = true;
+    this._isShow = true;
+
+    this._tl.play();
+    this._tl.eventCallback("onComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onComplete", resolve);
+    });
+
+    this._inAnimate = false;
+
+    return this;
+  }
+
+  async hide() {
+    if (this._inAnimate || !this._isShow) return;
+    this._inAnimate = true;
+    this._isShow = false;
+
+    this._tl.reverse();
+    this._tl.eventCallback("onReverseComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onReverseComplete", resolve);
+    });
+
+    this._inAnimate = false;
+
+    return this;
+  }
+
+  onClick(handler) {
+    if (this._handler) this.element.off("click", this._handler);
+
+    this._handler = function () {
+      handler($(this));
+    };
+
+    this.element.on("click", this._handler);
+
+    return this;
+  }
+}
+
+/**
  * sidebar, modal
  */
 
@@ -305,6 +420,8 @@ class MainButtons extends component {
     );
 
     this.element = container;
+
+    this._tl = this._createTimeline();
   }
 
   onSelect(handler) {
@@ -317,15 +434,58 @@ class MainButtons extends component {
     return this;
   }
 
-  show() {
-    $(":root").css("--is-main-button-show", "1");
+  _createTimeline() {
+    const options = this.element.find("button");
+    return gsap
+      .timeline({ defaults: { ease: "back.out(2)" }, paused: true })
+      .fromTo(
+        options,
+        {
+          autoAlpha: 0,
+          x: -100,
+        },
+        {
+          autoAlpha: 1,
+          x: 0,
+          stagger: { from: "start", amount: 0.6 },
+          duration: 1,
+        }
+      );
+  }
+
+  async show() {
+    if (this._inAnimate || this._isShow) return this;
+    this._inAnimate = true;
+    this._isShow = true;
+
+    this._tl.play();
+    this._tl.eventCallback("onComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onComplete", resolve);
+    });
+
+    this._inAnimate = false;
+
     $(".main-buttons-container").css("pointerEvents", "auto");
+
     return this;
   }
 
-  hide() {
-    $(":root").css("--is-main-button-show", "0");
+  async hide() {
+    if (this._inAnimate || !this._isShow) return this;
+    this._inAnimate = true;
+    this._isShow = false;
+
+    this._tl.reverse();
+    this._tl.eventCallback("onReverseComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onReverseComplete", resolve);
+    });
+
+    this._inAnimate = false;
+
     $(".main-buttons-container").css("pointerEvents", "none");
+
     return this;
   }
 }
@@ -1043,55 +1203,6 @@ class Intro extends component {
 class Gallery extends component {
   constructor() {
     super();
-
-    this._isRegisterOnSelect = false;
-  }
-
-  /**
-   * 創建返回按鈕。 @private
-   * @returns {jQuery} - 返回按鈕。
-   */
-  _createButton() {
-    const iconContainer = $("<div>").addClass("close-button-icon");
-
-    const makeImg = () => {
-      return $("<img>")
-        .attr("src", "images/icons/return.png")
-        .addClass("return-img")
-        .appendTo(iconContainer);
-    };
-    const makeGif = () => {
-      const timestamp = $.now();
-      return $("<img>")
-        .attr("src", `images/icons/return.gif?timestamp=${timestamp}`)
-        .addClass("return-gif")
-        .appendTo(iconContainer);
-    };
-
-    makeImg();
-
-    const button = $("<button>")
-      .addClass("gallery-close-button")
-      .append(
-        iconContainer,
-        $("<span>").addClass("gallery-close-tip").text("返回")
-      );
-
-    button.on("mouseenter", () => {
-      const imgs = button.find(".return-img");
-      const gif = makeGif().hide();
-      gif[0].onload = () => {
-        imgs.remove();
-        gif.show();
-      };
-    });
-    button.on("mouseleave", () => {
-      const gifs = button.find(".return-gif");
-      gifs.hide(500, () => gifs.remove());
-      makeImg().hide().show(500);
-    });
-
-    return button;
   }
 
   /**
@@ -1222,26 +1333,18 @@ class Gallery extends component {
    */
   _createTimelines() {
     const images = this.element.find(".image-container");
-    const button = this._button;
-    return gsap
-      .timeline({ defaults: { ease: "set1" }, paused: true })
-      .fromTo(
-        button,
-        { autoAlpha: 0, scaleX: 0 },
-        { autoAlpha: 1, scaleX: 1, duration: 0.35 }
-      )
-      .fromTo(
-        images,
-        {
-          autoAlpha: 0,
-          filter: "blur(30px)",
-        },
-        {
-          autoAlpha: 1,
-          filter: "",
-          stagger: { from: "random", amount: 0.35 },
-        }
-      );
+    return gsap.timeline({ defaults: { ease: "set1" }, paused: true }).fromTo(
+      images,
+      {
+        autoAlpha: 0,
+        filter: "blur(30px)",
+      },
+      {
+        autoAlpha: 1,
+        filter: "",
+        stagger: { from: "random", amount: 0.35 },
+      }
+    );
   }
 
   /**
@@ -1250,15 +1353,11 @@ class Gallery extends component {
    */
   async _reset(urls) {
     this.element = await this._createGallery(urls);
-    this._button = this._createButton();
 
     if (this._selectHandler)
       this.element.on("click", "img", this._selectHandler);
 
-    if (this._closeHandler) this._button.on("click", this._closeHandler);
-
     this._tl = this._createTimelines();
-    this._button.appendTo("#header");
     this.appendTo("#content");
   }
 
@@ -1303,9 +1402,7 @@ class Gallery extends component {
       this._tl.eventCallback("onReverseComplete", resolve);
     });
 
-    this._button.remove();
     this.element.remove();
-    this._button = null;
     this.element = null;
     this._isAppendTo = false;
     this._inAnimate = false;
@@ -1329,180 +1426,112 @@ class Gallery extends component {
 
     return this;
   }
-
-  /**
-   * 設定圖片庫返回事件的處理函數。
-   * @param {Function} handler - 選擇事件的處理函數。
-   * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
-   */
-  onClose(handler) {
-    if (this._closeHandler) this._button.off("click", this._closeHandler);
-
-    this._closeHandler = function () {
-      handler($(this));
-    };
-
-    return this;
-  }
 }
 
 /**
- * 這個類別用於創建和管理預覽圖片組件。
+ * 這個類別用於創建和管理預覽圖片組件(包含lightBox)。
  */
 class Preview extends component {
   constructor() {
     super();
-
-    this.element = $("<div>")
-      .addClass("preview-container")
-      .css("pointerEvents", "none");
   }
 
-  async _create(prev, current, next, fileName) {
-    const header = $("<section>").addClass("preview-header");
-    const images = $("<section>").addClass("preview-images");
+  async _create(urls, index) {
+    this.elements = {};
 
-    header.append(
-      this._createReturnButton(),
-      $("<p>").addClass("preview-file-name").text(fileName),
-      this._createFullscreenButton()
+    this.elements.lightBox = this._createLightBox(urls, index).appendTo(
+      "#sidebar"
     );
 
-    this._prevImg = $("<img>")
-      .addClass("preview-image")
-      .attr("src", prev)
-      .attr("decoding", "async");
-    this._currentImg = $("<img>")
-      .attr("src", current)
-      .attr("decoding", "async");
-    this._nextImg = $("<img>")
-      .addClass("preview-image")
-      .attr("src", next)
-      .attr("decoding", "async");
+    // this.elements.content = $("<div>")
+    //   .addClass("preview-container")
+    //   .append(this._createIntro(), this._createImage(urls[index]))
+    //   .appendTo("#content");
 
-    images.append(
-      $("<div>").append(
-        this._prevImg,
-        $("<span>").addClass("icon-arrow").append(this._createSVG())
-      ),
-      this._currentImg,
-      $("<div>").append(
-        this._nextImg,
-        $("<span>").addClass("icon-arrow").append(this._createSVG())
-      )
-    );
-
-    gsap.set(images.find(".icon-arrow").first(), {
-      scale: 0.6,
-      rotateY: 180,
-    });
-
-    await Promise.all([
-      decode(this._prevImg[0]),
-      decode(this._currentImg[0]),
-      decode(this._nextImg[0]),
-    ]);
-
-    this.element.append(header, images);
+    this._bindEvents();
 
     this._tl = this._createTimeline();
   }
 
-  reset(prev, current, next, fileName) {
-    const urls = [prev, current, next];
-    const images = [this._prevImg, this._currentImg, this._nextImg];
+  _createLightBox(urls, index) {
+    const section = $("<section>").addClass("light-box");
+    const scroller = $("<div>").addClass("light-box-scroller");
+    const mask = $("<div>").addClass("light-box-mask");
+    section.append(scroller, mask);
 
-    urls.forEach((url, index) => images[index].attr("src", url));
+    const container = $("<div>")
+      .addClass("light-box-images-container")
+      .appendTo(scroller);
 
-    this.element.find(".preview-file-name").text(fileName);
+    urls.forEach((url, i) => {
+      const imageContainer = $("<figure>")
+        .addClass("light-box-image-container")
+        .append(
+          $("<img>")
+            .addClass("light-box-image-back")
+            .attr("src", url)
+            .attr("decoding", "async"),
+          $("<img>")
+            .addClass("light-box-image")
+            .attr("src", url)
+            .attr("decoding", "async")
+        );
+
+      if (i === index) imageContainer.addClass("light-box-active");
+
+      imageContainer.appendTo(container);
+    });
+
+    const styleTag = document.createElement("style");
+    document.head.appendChild(styleTag);
+    styleTag.sheet.insertRule(`
+    .light-box-active::after {
+      background: url("images/icons/play.png");
+      background-size: 20px 20px;
+    }
+    `);
+
+    return section;
   }
 
-  _createReturnButton() {
-    return $("<button>")
-      .addClass("preview-return-button")
-      .append(
-        $("<img>").attr("src", "images/icons/up (white).png"),
-        $("<img>").attr("src", "images/icons/up (dark).png"),
-        $("<span>").addClass("preview-button-tip").text("關閉預覽")
-      );
-  }
+  _createIntro() {}
 
-  _createFullscreenButton() {
-    const button = $("<button>").addClass("preview-fullscreen-button");
-    const icon = new FullscreenIcon();
-
-    button.append(
-      icon.element,
-      $("<span>").addClass("preview-button-tip").text("進入全螢幕")
-    );
-
-    button.on("mouseenter", () => icon.timeline.play());
-    button.on("mouseleave", () => icon.timeline.reverse());
-    return button;
-  }
-
-  _createSVG() {
-    return $(`
-  <svg
-    width="66px"
-    height="43px"
-    viewBox="0 0 66 43"
-    version="1.1"
-    xmlns="http://www.w3.org/2000/svg"
-    xmlns:xlink="http://www.w3.org/1999/xlink"
-  >
-    <g
-      class="arrow"
-      stroke="none"
-      stroke-width="1"
-      fill="none"
-      fill-rule="evenodd"
-    >
-      <path
-        class="arrow-icon-one"
-        d="M40.1543933,3.89485454 L43.9763149,0.139296592 C44.1708311,-0.0518420739 44.4826329,-0.0518571125 44.6771675,0.139262789 L65.6916134,20.7848311 C66.0855801,21.1718824 66.0911863,21.8050225 65.704135,22.1989893 C65.7000188,22.2031791 65.6958657,22.2073326 65.6916762,22.2114492 L44.677098,42.8607841 C44.4825957,43.0519059 44.1708242,43.0519358 43.9762853,42.8608513 L40.1545186,39.1069479 C39.9575152,38.9134427 39.9546793,38.5968729 40.1481845,38.3998695 C40.1502893,38.3977268 40.1524132,38.395603 40.1545562,38.3934985 L56.9937789,21.8567812 C57.1908028,21.6632968 57.193672,21.3467273 57.0001876,21.1497035 C56.9980647,21.1475418 56.9959223,21.1453995 56.9937605,21.1432767 L40.1545208,4.60825197 C39.9574869,4.41477773 39.9546013,4.09820839 40.1480756,3.90117456 C40.1501626,3.89904911 40.1522686,3.89694235 40.1543933,3.89485454 Z"
-        fill="#FFFFFF"
-      ></path>
-      <path
-        class="arrow-icon-two"
-        d="M20.1543933,3.89485454 L23.9763149,0.139296592 C24.1708311,-0.0518420739 24.4826329,-0.0518571125 24.6771675,0.139262789 L45.6916134,20.7848311 C46.0855801,21.1718824 46.0911863,21.8050225 45.704135,22.1989893 C45.7000188,22.2031791 45.6958657,22.2073326 45.6916762,22.2114492 L24.677098,42.8607841 C24.4825957,43.0519059 24.1708242,43.0519358 23.9762853,42.8608513 L20.1545186,39.1069479 C19.9575152,38.9134427 19.9546793,38.5968729 20.1481845,38.3998695 C20.1502893,38.3977268 20.1524132,38.395603 20.1545562,38.3934985 L36.9937789,21.8567812 C37.1908028,21.6632968 37.193672,21.3467273 37.0001876,21.1497035 C36.9980647,21.1475418 36.9959223,21.1453995 36.9937605,21.1432767 L20.1545208,4.60825197 C19.9574869,4.41477773 19.9546013,4.09820839 20.1480756,3.90117456 C20.1501626,3.89904911 20.1522686,3.89694235 20.1543933,3.89485454 Z"
-        fill="#FFFFFF"
-      ></path>
-      <path
-        class="arrow-icon-three"
-        d="M0.154393339,3.89485454 L3.97631488,0.139296592 C4.17083111,-0.0518420739 4.48263286,-0.0518571125 4.67716753,0.139262789 L25.6916134,20.7848311 C26.0855801,21.1718824 26.0911863,21.8050225 25.704135,22.1989893 C25.7000188,22.2031791 25.6958657,22.2073326 25.6916762,22.2114492 L4.67709797,42.8607841 C4.48259567,43.0519059 4.17082418,43.0519358 3.97628526,42.8608513 L0.154518591,39.1069479 C-0.0424848215,38.9134427 -0.0453206733,38.5968729 0.148184538,38.3998695 C0.150289256,38.3977268 0.152413239,38.395603 0.154556228,38.3934985 L16.9937789,21.8567812 C17.1908028,21.6632968 17.193672,21.3467273 17.0001876,21.1497035 C16.9980647,21.1475418 16.9959223,21.1453995 16.9937605,21.1432767 L0.15452076,4.60825197 C-0.0425130651,4.41477773 -0.0453986756,4.09820839 0.148075568,3.90117456 C0.150162624,3.89904911 0.152268631,3.89694235 0.154393339,3.89485454 Z"
-        fill="#FFFFFF"
-      ></path>
-    </g>
-  </svg>
-  `);
-  }
+  // 記得用decode: async
+  _createImage(url) {}
 
   _createTimeline() {
-    return gsap
-      .timeline({ paused: true })
-      .fromTo(
-        this.element.find(".preview-images"),
-        { autoAlpha: 0, y: 250 },
-        { autoAlpha: 1, y: 0, duration: 1 }
-      )
-      .fromTo(
-        this.element.find(".preview-header"),
-        { autoAlpha: 0, y: -100 },
-        { autoAlpha: 1, y: 0 },
-        "<0.3"
-      );
+    return (
+      gsap
+        .timeline({ paused: true })
+        // .fromTo(
+        //   this.elements.content,
+        //   { autoAlpha: 0, y: 250 },
+        //   { autoAlpha: 1, y: 0, duration: 1 }
+        // )
+        .fromTo(
+          this.elements.lightBox,
+          { autoAlpha: 0, x: -100 },
+          { autoAlpha: 1, x: 0 },
+          "<0.3"
+        )
+    );
   }
 
-  // 用於進出全螢幕
+  // 用於進出全螢幕, 選擇lightBox
   _bindEvents() {}
 
-  async show(prev, current, next, fileName) {
+  async show(urls, index) {
     if (this._inAnimate || this._isShow) return this;
     this._inAnimate = true;
     this._isShow = true;
 
-    await this._create(prev, current, next, fileName);
+    await this._create(urls, index);
+
+    const targetElement = this.elements.lightBox.find(".light-box-active")[0];
+    targetElement.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
 
     this._tl.play();
     this._tl.eventCallback("onComplete", null);
@@ -1510,7 +1539,6 @@ class Preview extends component {
       this._tl.eventCallback("onComplete", resolve);
     });
 
-    this.element.css("pointerEvents", "auto");
     this._inAnimate = false;
 
     return this;
@@ -1527,35 +1555,14 @@ class Preview extends component {
       this._tl.eventCallback("onReverseComplete", resolve);
     });
 
-    this.element.children().remove();
-    this.element.css("pointerEvents", "none");
+    Object.values(this.elements).forEach((element) => element.remove());
     this._inAnimate = false;
 
     return this;
   }
 
-  onClose(handler) {
-    if (this._closeHandler)
-      this.element.off("click", ".preview-return-button", this._closeHandler);
-
-    this._closeHandler = handler;
-
-    this.element.on("click", ".preview-return-button", this._closeHandler);
-
-    return this;
-  }
-
-  onSelect(handler) {
-    if (this._selectHandler)
-      this.element.off("click", ".preview-images > div", this._selectHandler);
-
-    this._selectHandler = (e) => {
-      const type = $(e.target).index() ? "next" : "prev";
-      handler(type);
-    };
-
-    this.element.on("click", ".preview-images > div", this._selectHandler);
-
+  appendTo(selector) {
+    console.log("此組件在show與hide時會自動載入");
     return this;
   }
 }

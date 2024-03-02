@@ -222,6 +222,8 @@ $(document).ready(async function () {
       fileList[category].map((name) => images.getThumbnail(category, name))
     );
 
+    scrollButtons.hide();
+
     await Promise.all([mainButtons.hide(), gallery.hide()]);
     await preview.show(urls, index);
 
@@ -255,7 +257,10 @@ $(document).ready(async function () {
       );
 
       await preview.hide();
+      scrollButtons.show();
       await Promise.all([mainButtons.show(), gallery.show(urls)]);
+
+      scrollButtons.scrollElement = gallery.element;
       //
     } else {
       //

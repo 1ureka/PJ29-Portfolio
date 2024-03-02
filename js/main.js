@@ -157,6 +157,7 @@ $(document).ready(async function () {
       Nature: thumbnailImages[2],
     },
   });
+  Preview.referenceImages(images);
 
   const { mainButtons, addImagePopup, deleteImagePopup, header, intro } =
     createIndex();
@@ -216,16 +217,10 @@ $(document).ready(async function () {
 
     inTransition = true;
 
-    const category = intro.category;
-    const fileList = await images.getList();
-    const urls = await Promise.all(
-      fileList[category].map((name) => images.getThumbnail(category, name))
-    );
-
     scrollButtons.hide();
 
     await Promise.all([mainButtons.hide(), gallery.hide()]);
-    await preview.show(urls, index);
+    await preview.show(intro.category, index, images);
 
     inTransition = false;
   });

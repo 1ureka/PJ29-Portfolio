@@ -1463,6 +1463,8 @@ class Preview extends component {
     this._bindEvents();
 
     this._tl = this._createTimeline();
+
+    this._zoom = new ImageZoom(preview.find("figure"));
   }
 
   async _createLightBox() {
@@ -1560,6 +1562,9 @@ class Preview extends component {
       "click",
       ".light-box-image-container",
       async (e) => {
+        this._zoom.off();
+        await this._zoom.reset();
+
         const { target } = e;
         const index = $(target).index();
 
@@ -1578,6 +1583,8 @@ class Preview extends component {
           .find(".light-box-image-container")
           .eq(index)
           .addClass("light-box-active");
+
+        this._zoom.on();
       }
     );
   }
@@ -1601,6 +1608,8 @@ class Preview extends component {
       this._tl.eventCallback("onComplete", resolve);
     });
 
+    this._zoom.on();
+
     this._inAnimate = false;
 
     return this;
@@ -1610,6 +1619,10 @@ class Preview extends component {
     if (this._inAnimate || !this._isShow) return this;
     this._inAnimate = true;
     this._isShow = false;
+
+    this._zoom.off();
+    await this._zoom.reset();
+    this._zoom = null;
 
     this._tl.reverse();
     this._tl.eventCallback("onReverseComplete", null);

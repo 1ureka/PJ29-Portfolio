@@ -202,11 +202,11 @@ class Images {
 class ImageZoom {
   /**
    * ImageZoom 類別的建構函數。
-   * @param {jQuery} image - jQuery 對象，代表要進行縮放與拖曳的圖片。
+   * @param {jQuery} imageContainer - jQuery 對象，代表要進行縮放與拖曳的圖片容器。
    */
-  constructor(image) {
-    this._image = image;
-    this._container = image.parent();
+  constructor(imageContainer) {
+    this._image = imageContainer.find("img");
+    this._container = imageContainer;
 
     this._isDrag = false;
     this._isBind = false;
@@ -360,10 +360,10 @@ class ImageZoom {
 
     this._isBind = true;
 
-    $(document).on("contextmenu", (e) => e.preventDefault());
+    this._container.on("contextmenu", (e) => e.preventDefault());
 
     Object.keys(this._handlers).forEach((eventType) => {
-      $(document).on(eventType, this._handlers[eventType]);
+      this._container.on(eventType, this._handlers[eventType]);
     });
   }
 
@@ -375,10 +375,10 @@ class ImageZoom {
 
     this._isBind = false;
 
-    $(document).off("contextmenu");
+    this._container.off("contextmenu");
 
     Object.keys(this._handlers).forEach((eventType) => {
-      $(document).off(eventType, this._handlers[eventType]);
+      this._container.off(eventType, this._handlers[eventType]);
     });
   }
 

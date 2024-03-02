@@ -73,6 +73,7 @@
   align-items: flex-start;
   gap: 10px;
   left: 18px;
+  text-shadow: black 0px 0px 20px, black 0px 0px 50px;
 }
 .content-intro-info p,
 .content-intro-info h1,
@@ -185,7 +186,8 @@
   bottom: 0;
   padding: 12px 0; /* 0.75rem * 16px = 12px */
   margin: 0 0 0 29.6px; /* 1.85rem * 16px = 29.6px */
-  color: rgba(255, 255, 255, 0.5);
+  color: white;
+  text-shadow: black 0px 0px 20px, black 0px 0px 50px;
   font-weight: 700;
   line-height: 1.6;
   display: flex;
@@ -195,9 +197,6 @@
 .content-intro-learnmore:hover > .circle {
   width: 100%;
   background-color: #ea81af;
-}
-.content-intro-learnmore:hover > .button-text {
-  transform: translate(-27.2px, 0); /* -1.7rem * 16px = -27.2px */
 }
 .content-intro-learnmore:hover > .circle .icon.arrow::before {
   border-top: 2px solid rgb(10 10 10); /* 0.125rem * 16px = 2px */
@@ -216,7 +215,9 @@
   transition: all 0.1s;
 }
 .content-intro-learnmore:hover > .button-text {
+  transform: translate(-27.2px, 0); /* -1.7rem * 16px = -27.2px */
   color: rgb(10 10 10);
+  text-shadow: none;
   font-weight: bold;
 }
 
@@ -238,6 +239,7 @@
   backdrop-filter: blur(10px);
   border-radius: 8px;
   transition: all 0.2s cubic-bezier(0.65, 0.05, 0.36, 1);
+  box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
 }
 .content-intro-card * {
   pointer-events: none;

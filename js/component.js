@@ -1372,7 +1372,6 @@ class Gallery extends component {
     this._isShow = true;
 
     await this._reset(urls);
-    await delay(100);
 
     this._tl.play();
     this._tl.eventCallback("onComplete", null);
@@ -1436,24 +1435,44 @@ class Preview extends component {
     super();
   }
 
-  async _create(urls, index) {
-    this.elements = {};
+  /**
+   *
+   * @param {Images} imagesInstanceRef
+   */
+  static referenceImages(imagesInstanceRef) {
+    Preview._images = imagesInstanceRef;
+  }
 
-    this.elements.lightBox = this._createLightBox(urls, index).appendTo(
-      "#sidebar"
-    );
+  async _create(category, index) {
+    //
+    this.category = category;
+    this.index = index;
 
-    // this.elements.content = $("<div>")
-    //   .addClass("preview-container")
-    //   .append(this._createIntro(), this._createImage(urls[index]))
-    //   .appendTo("#content");
+    const lightBox = await this._createLightBox();
+    const intro = await this._createIntro();
+    const preview = await this._createImage();
+
+    this.elements = {
+      lightBox: lightBox.appendTo("#sidebar"),
+      content: $("<div>")
+        .addClass("preview-container")
+        .append(intro, preview)
+        .appendTo("#content"),
+    };
 
     this._bindEvents();
 
     this._tl = this._createTimeline();
   }
 
-  _createLightBox(urls, index) {
+  async _createLightBox() {
+    const fileList = await Preview._images.getList();
+    const urls = await Promise.all(
+      fileList[this.category].map((name) =>
+        Preview._images.getThumbnail(this.category, name)
+      )
+    );
+
     const section = $("<section>").addClass("light-box");
     const scroller = $("<div>").addClass("light-box-scroller");
     const mask = $("<div>").addClass("light-box-mask");
@@ -1477,7 +1496,7 @@ class Preview extends component {
             .attr("decoding", "async")
         );
 
-      if (i === index) imageContainer.addClass("light-box-active");
+      if (i === this.index) imageContainer.addClass("light-box-active");
 
       imageContainer.appendTo(container);
     });
@@ -1494,38 +1513,81 @@ class Preview extends component {
     return section;
   }
 
-  _createIntro() {}
+  async _createIntro() {
+    const fileList = await Preview._images.getList();
+    const title = fileList[this.category][this.index];
 
-  // 記得用decode: async
-  _createImage(url) {}
+    return $("<section>")
+      .addClass("preview-intro")
+      .append($("<div>").addClass("line"), $("<h1>").text(title));
+  }
+
+  async _createImage() {
+    const url = await Preview._images.getImage(this.category, this.index);
+
+    const img = $("<img>").attr("src", url).attr("decoding", "async");
+    await decode(img[0]);
+
+    return $("<section>")
+      .addClass("preview-image-container")
+      .append(
+        $("<figure>").append(
+          img.clone().addClass("preview-image-back"),
+          img.clone().addClass("preview-image")
+        )
+      );
+  }
 
   _createTimeline() {
-    return (
-      gsap
-        .timeline({ paused: true })
-        // .fromTo(
-        //   this.elements.content,
-        //   { autoAlpha: 0, y: 250 },
-        //   { autoAlpha: 1, y: 0, duration: 1 }
-        // )
-        .fromTo(
-          this.elements.lightBox,
-          { autoAlpha: 0, x: -100 },
-          { autoAlpha: 1, x: 0 },
-          "<0.3"
-        )
-    );
+    return gsap
+      .timeline({ paused: true })
+      .fromTo(
+        this.elements.content,
+        { autoAlpha: 0, y: 250 },
+        { autoAlpha: 1, y: 0 }
+      )
+      .fromTo(
+        this.elements.lightBox,
+        { autoAlpha: 0, x: -100 },
+        { autoAlpha: 1, x: 0 },
+        "<0.3"
+      );
   }
 
   // 用於進出全螢幕, 選擇lightBox
-  _bindEvents() {}
+  _bindEvents() {
+    this.elements.lightBox.on(
+      "click",
+      ".light-box-image-container",
+      async (e) => {
+        const { target } = e;
+        const index = $(target).index();
 
-  async show(urls, index) {
+        const title = (await Preview._images.getList())[this.category][index];
+        const url = await Preview._images.getImage(this.category, index);
+
+        this.elements.content.find("h1").text(title);
+        this.elements.content
+          .find(".preview-image, .preview-image-back")
+          .attr("src", url);
+
+        this.elements.lightBox
+          .find(".light-box-active")
+          .removeClass("light-box-active");
+        this.elements.lightBox
+          .find(".light-box-image-container")
+          .eq(index)
+          .addClass("light-box-active");
+      }
+    );
+  }
+
+  async show(category, index) {
     if (this._inAnimate || this._isShow) return this;
     this._inAnimate = true;
     this._isShow = true;
 
-    await this._create(urls, index);
+    await this._create(category, index);
 
     const targetElement = this.elements.lightBox.find(".light-box-active")[0];
     targetElement.scrollIntoView({

@@ -1,0 +1,5 @@
+@import url("global.css");
+@import url("sidebar/sidebar.css");
+@import url("content/content.css");
+@import url("other/other.css");
+@import url("popup/popup.css");

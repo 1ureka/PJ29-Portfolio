@@ -3,46 +3,102 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/png" href="images/icons/favicon.png" />
+    <link
+      rel="icon"
+      type="image/png"
+      href="images/icons/favicon (circle).png"
+    />
     <title>1ureka's CG</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@600&family=Noto+Sans+TC:wght@300&display=swap"
       rel="stylesheet"
     />
-    <!-- 載入動畫 -->
-    <link rel="preload" href="images/icons/loading.gif" as="image" />
+
     <!-- CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/compressorjs"></script>
     <script
       src="https://code.jquery.com/jquery-3.7.1.min.js"
       integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
       crossorigin="anonymous"
     ></script>
+
+    <!-- GSAP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/CustomEase.min.js"></script>
-    <script src="https://code.createjs.com/1.0.0/preloadjs.min.js"></script>
+    <script>
+      gsap.registerPlugin(CustomEase);
+
+      CustomEase.create("set1", "0.455, 0.03, 0.515, 0.955");
+    </script>
+
     <!-- 樣式表 -->
-    <link rel="stylesheet" href="style.css" />
-    <!-- 點擊效果 -->
-    <link rel="stylesheet" href="lib/clickParticle.css" />
+    <link rel="stylesheet" href="css/style.css" />
+
+    <!-- lib -->
     <script src="lib/clickParticle.js"></script>
+    <script src="lib/loadingIcon.js"></script>
+    <script src="lib/waveBG.js"></script>
+    <script type="module" src="lib/repo.mjs"></script>
   </head>
   <body>
-    <div id="header">
-      <img id="favicon" src="images/icons/favicon.png" />
-      <h1>1ureka's CG</h1>
+    <div id="login-container">
+      <form id="login-form">
+        <img src="images/icons/user.png" />
+        <div
+          style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+          "
+        >
+          <div class="wave-group">
+            <input
+              required="true"
+              type="text"
+              class="input"
+              autocomplete="off"
+            />
+            <span class="bar"></span>
+            <label class="label">
+              <span class="label-char" style="--index: 0">名</span>
+              <span class="label-char" style="--index: 1">稱</span>
+            </label>
+          </div>
+          <div class="wave-group">
+            <input
+              required="true"
+              type="password"
+              class="input"
+              autocomplete="off"
+            />
+            <span class="bar"></span>
+            <label class="label">
+              <span class="label-char" style="--index: 0">密</span>
+              <span class="label-char" style="--index: 1">碼</span>
+            </label>
+          </div>
+        </div>
+        <button type="submit" id="login-submit">登入</button>
+      </form>
     </div>
-    <div id="sidebar"></div>
+
+    <div id="header"></div>
+
+    <div id="sidebar">
+      <div id="title">
+        <img id="favicon" src="images/icons/favicon.png" />
+        <h1 lang="en">1ureka's CG</h1>
+      </div>
+    </div>
+
     <div id="version-display"><p>版本： @0.3.0</p></div>
+
     <div id="content"><!-- 項目將在這裡動態顯示 --></div>
-    <div id="loading-container">
-      <img src="images/icons/loading.gif" />
-      <p id="loading-message">準備開始載入 . . .</p>
-    </div>
-    <div id="progress-bar"></div>
-    <div id="particle-container"></div>
+
+    <div id="mask-background"></div>
 
     <!-- 組件、時間軸、全局函數... -->
     <script src="js/utils.js"></script>
@@ -51,6 +107,6 @@
     <script src="js/component.js"></script>
 
     <!-- main記得放在最後 -->
-    <script src="main.js"></script>
+    <script src="js/main.js"></script>
   </body>
 </html>

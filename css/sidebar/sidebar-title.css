@@ -1,0 +1,23 @@
+#title {
+  display: flex;
+  position: relative;
+}
+
+#title > #favicon {
+  position: relative;
+  width: 85px;
+  height: 85px;
+  filter: drop-shadow(3px 3px 1px rgba(0, 0, 0, 0.5))
+    drop-shadow(6px 6px 1px rgba(0, 0, 0, 0.35));
+  border-radius: 50%;
+}
+
+#title > h1 {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  margin: 0;
+  font-size: 35px;
+  text-shadow: 3px 3px 1px rgba(0, 0, 0, 0.5), 6px 6px 1px rgba(0, 0, 0, 0.35);
+}

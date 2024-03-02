@@ -1,0 +1,247 @@
+.popup.delete-image-container {
+  flex-direction: column;
+  align-items: flex-start;
+  width: 320px;
+  padding: 15px;
+  gap: 15px;
+}
+.delete-image-container > span {
+  font-size: 18px;
+}
+
+#delete-image-categories {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  height: 35px;
+}
+#delete-image-categories > input {
+  display: none;
+}
+#delete-image-categories > label {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: calc(100% / 3 - 10px);
+  height: 100%;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.65, 0.05, 0.36, 1);
+}
+#delete-image-categories > label::before {
+  content: "";
+  /* transform-origin: top right; */
+  scale: 0 0.5;
+  opacity: 0;
+  border-radius: 5px;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.25);
+  transition: all 0.2s cubic-bezier(0.65, 0.05, 0.36, 1);
+}
+#delete-image-categories > label:hover::before {
+  scale: 1;
+  opacity: 1;
+}
+#delete-image-categories > label:active {
+  translate: 0px 3px;
+  scale: 0.9;
+}
+#delete-image-categories > div {
+  position: absolute;
+  width: calc(100% / 3 - 10px);
+  height: 35px;
+  background-color: aquamarine;
+  border-radius: 5px;
+  scale: 0.95 0.9;
+}
+#delete-image-Scene:checked + label {
+  color: black;
+}
+#delete-image-Props:checked + label {
+  color: black;
+}
+#delete-image-Nature:checked + label {
+  color: black;
+}
+#delete-image-categories > div {
+  transition: all 0.35s cubic-bezier(0.65, 0.05, 0.36, 1);
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 3px 0px inset,
+    rgba(0, 0, 0, 0.15) 0px 3px 7px 3px inset;
+}
+#delete-image-categories:has(#delete-image-Scene:checked) > div {
+  left: 0;
+  background-color: #92e9ff;
+}
+#delete-image-categories:has(#delete-image-Props:checked) div {
+  left: calc(100% / 3 + 5px);
+  background-color: #ffff7a;
+}
+#delete-image-categories:has(#delete-image-Nature:checked) div {
+  left: calc(200% / 3 + 10px);
+  background-color: #8ce197;
+}
+
+.delete-imgae-content-overflow {
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
+  width: 100%;
+  max-height: 300px;
+  padding: 5px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  border: 2px solid white;
+}
+.delete-imgae-content-overflow::-webkit-scrollbar {
+  width: 0px;
+}
+.delete-image-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1px;
+}
+.delete-image-content > article {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  position: relative;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.1s cubic-bezier(0.65, 0.05, 0.36, 1);
+}
+.delete-image-content > article:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+.delete-image-content > article * {
+  pointer-events: none;
+}
+.delete-image-content > article > p {
+  margin: 0;
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+}
+.delete-image-button {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background-color: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+  box-shadow: none;
+}
+.delete-image-button svg {
+  width: 44%;
+}
+.delete-image-content > article:hover .delete-image-button {
+  background-color: rgb(237, 56, 56);
+  overflow: visible;
+}
+.delete-image-button svg path {
+  transition: all 0.2s;
+}
+.delete-image-content > article:hover .delete-image-button svg path {
+  fill: #fff;
+}
+.delete-image-button:active {
+  transform: scale(0.98);
+}
+.delete-image-tip {
+  --tooltip-color: rgb(41, 41, 41);
+  position: absolute;
+  left: -40px;
+  background-color: var(--tooltip-color);
+  color: white;
+  border-radius: 5px;
+  font-size: 12px;
+  padding: 8px 12px;
+  font-weight: 600;
+  box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.105);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.5s;
+}
+.delete-image-tip::before {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  transform: rotate(45deg);
+  content: "";
+  background-color: var(--tooltip-color);
+  right: -10%;
+}
+.delete-image-content > article:hover .delete-image-tip {
+  opacity: 1;
+}
+
+.delete-image-scroll-icons {
+  position: sticky;
+  width: 0;
+  height: 0;
+  top: calc(100% - 45px);
+  left: calc(50% - 22.5px);
+  left: calc(100% - 45px);
+  display: flex;
+  flex-direction: column;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.delete-image-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  opacity: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.65, 0.05, 0.36, 1);
+}
+.delete-image-close > img {
+  width: 25px;
+  height: 25px;
+  pointer-events: none;
+}
+.delete-image-container:hover .delete-image-close {
+  opacity: 1;
+}
+.delete-image-close:hover {
+  rotate: 90deg;
+  background-color: hsl(240, 5%, 15%);
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 0px 2px,
+    rgba(0, 0, 0, 0.8) 0px 4px 6px -1px,
+    rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
+}
+.delete-image-close:active {
+  scale: 0.95;
+  background-color: hsl(240, 5%, 20%);
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 3px 0px inset,
+    rgba(0, 0, 0, 0.15) 0px 3px 7px 3px inset;
+}

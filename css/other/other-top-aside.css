@@ -1,0 +1,121 @@
+#header {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  height: 50px;
+  min-width: 120px;
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 40px;
+  box-shadow: rgba(0, 0, 0, 0.75) 0px 3px 4px,
+    rgba(0, 0, 0, 0.35) 5px 8px 3px -3px, rgba(0, 0, 0, 0.45) 0px -2px 0px inset,
+    rgba(255, 255, 255, 0.3) 2px 5px 3px -3px inset;
+  z-index: 10;
+
+  /* opening */
+  translate: 0px -110px;
+}
+
+/* headerBulb */
+#header > .bulb-container {
+  position: relative;
+  scale: 0.8;
+}
+.bulb-container,
+.bulb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.bulb {
+  background-color: #00000000;
+  box-shadow: 0px 0px 20px #00000000;
+  border-radius: 50%;
+}
+.bulb-filter {
+  background: radial-gradient(
+    circle at 5px 5px,
+    hsla(240, 0%, 0%, 0),
+    hsla(240, 0%, 0%, 0.35),
+    hsla(240, 0%, 0%, 0.9)
+  );
+  filter: blur(0.5px);
+  border-radius: 50%;
+}
+
+/* headerButton */
+.return-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 0;
+  margin: 0px 15px;
+  border-radius: 50%;
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 0px 2px,
+    rgba(0, 0, 0, 0.8) 0px 4px 6px -1px,
+    rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
+  transition: background-color 0.2s ease-in-out,
+    scale 0.1s cubic-bezier(0.645, 0.045, 0.355, 1);
+  scale: 0.9;
+  translate: 0px 2px;
+}
+.return-button:active {
+  scale: 0.8;
+}
+.return-button:hover {
+  background-color: #ea81af;
+}
+.return-button > * {
+  pointer-events: none;
+}
+.return-button-tip {
+  --tooltip-color: rgb(41, 41, 41);
+  position: absolute;
+  bottom: -65px;
+  background-color: var(--tooltip-color);
+  color: white;
+  border-radius: 5px;
+  font-size: 12px;
+  padding: 8px 12px;
+  font-weight: bold;
+  box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.105);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.5s;
+}
+.return-button-tip::before {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  transform: rotate(45deg);
+  content: "";
+  background-color: var(--tooltip-color);
+  top: -10%;
+}
+.return-button:hover .return-button-tip {
+  opacity: 1;
+}
+.return-button .return-button-icon {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  outline: none;
+  background-color: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  scale: 0.85;
+  transition: opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1) 80ms,
+    transform 0.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) 80ms;
+}
+.return-button .return-button-icon img {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+}

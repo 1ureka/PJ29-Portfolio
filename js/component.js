@@ -20,6 +20,10 @@ class component {
 }
 
 /**
+ * header, aside
+ */
+
+/**
  * 這個類別提供創建和控制上下滾動按鈕的功能。
  */
 class ScrollButtons extends component {
@@ -203,785 +207,6 @@ class ScrollButtons extends component {
 }
 
 /**
- * 這個類別提供創建和控制搜尋列的功能，包含搜尋圖示、文字輸入框和橡皮擦圖示。
- */
-class SearchBar extends component {
-  /**
-   * 建構一個新的 `SearchBar` 實例。@constructor
-   */
-  constructor() {
-    super();
-    this._timelines = {};
-    this._handlers = {};
-    this.isShow = true;
-
-    /** 包含搜尋列的 jQuery 物件。 @type {jQuery} */
-    this.element = this._createSearchBar();
-    this._createTimelines();
-  }
-
-  /**
-   * 創建搜尋列，包含搜尋圖示、文字輸入框和橡皮擦圖示。
-   * @private
-   * @returns {jQuery} 整個搜尋欄。
-   */
-  _createSearchBar() {
-    const container = $("<div>").addClass("search-bar");
-
-    const searchIcon = new SearchIcon();
-    const eraserIcon = new EraserIcon();
-
-    const inputContainer = $("<div>")
-      .css({ width: 410, height: 40 })
-      .addClass("text-input-container");
-    const input = $("<input>")
-      .attr("type", "text")
-      .attr("placeholder", "搜尋")
-      .css({ width: 410, height: 40 })
-      .addClass("text-input")
-      .appendTo(inputContainer);
-
-    container.append(searchIcon.element, inputContainer, eraserIcon.element);
-
-    const hoverTls = [createOutlineTl(input), ...searchIcon.timeline];
-
-    this._bindTimeline(container, hoverTls);
-    this._bindEvents(container, eraserIcon.element);
-
-    return container;
-  }
-
-  /**
-   * 綁定搜尋列的時間軸動畫。
-   * @private
-   */
-  _bindTimeline(container, hover) {
-    const input = container.find("input");
-
-    container.on("mouseenter", () => {
-      hover.forEach((tl) => {
-        tl.play();
-      });
-    });
-    container.on("mouseleave", () => {
-      hover.forEach((tl) => {
-        if (!input.is(":focus")) tl.reverse();
-      });
-    });
-    container.on("focus", "input", () => {
-      hover.forEach((tl) => {
-        tl.play();
-      });
-    });
-    container.on("blur", "input", () => {
-      hover.forEach((tl) => {
-        tl.reverse();
-      });
-    });
-  }
-
-  /**
-   * 綁定搜尋列的邏輯事件。
-   * @private
-   */
-  _bindEvents(container, eraser) {
-    container.on("click", ".eraser-icon-container", () => {
-      this.input = "";
-    });
-    container.on("keyup", "input", () => {
-      if (this.input) {
-        eraser.show(350);
-        return;
-      }
-      eraser.hide(350);
-    });
-  }
-
-  /**
-   * 創建搜尋列的時間軸動畫。
-   * @private
-   * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
-   */
-  _createTimelines() {
-    this._timelines.hide = gsap
-      .timeline({ defaults: { ease: "set1" }, paused: true })
-      .to(this.element, { autoAlpha: 0, y: -100 });
-
-    return this;
-  }
-
-  /**
-   * 顯示搜尋列。
-   */
-  show() {
-    if (this.isShow) return this;
-
-    this.isShow = true;
-    this._timelines.hide.reverse();
-
-    return this;
-  }
-
-  /**
-   * 隱藏搜尋列。
-   */
-  async hide() {
-    if (!this.isShow) return this;
-
-    this.isShow = false;
-    this._timelines.hide.play();
-
-    this._timelines.hide.eventCallback("onComplete", null);
-
-    await new Promise((resolve) => {
-      this._timelines.hide.eventCallback("onComplete", resolve);
-    });
-
-    return this;
-  }
-
-  /**
-   * 註冊輸入事件處理程序。
-   * @param {Function} handler - 輸入事件的處理程序。
-   * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
-   */
-  onInput(handler) {
-    if (this._handlers.input) console.error("已經註冊過onInput");
-
-    this._handlers.input = () => {
-      if (this.input) handler();
-    };
-
-    this.element.on("keyup", "input", this._handlers.input);
-
-    return this;
-  }
-
-  /**
-   * 註冊清除事件處理程序。
-   * @param {Function} handler - 清除事件的處理程序。
-   * @returns {SearchBar} - 回傳 `SearchBar` 實例，以便進行方法鏈結。
-   */
-  onClear(handler) {
-    if (this._handlers.clear) console.error("已經註冊過onClear");
-
-    this._handlers.clear = handler;
-
-    this.element.on("keyup", "input", () => {
-      if (!this.input) this._handlers.clear();
-    });
-
-    return this;
-  }
-
-  /**
-   * 取得輸入框的內容。
-   * @type {string}
-   * @name SearchBar#input
-   */
-  get input() {
-    return this.element.find("input").val();
-  }
-
-  /**
-   * 設定輸入框的內容。
-   * @param {string} value - 要設定的內容。
-   * @type {string}
-   * @name SearchBar#input
-   */
-  set input(value) {
-    this.element.find("input").val(value);
-
-    if (value !== "" && this._handlers.input) {
-      this._handlers.input();
-    } else if (this._handlers.clear) {
-      this._handlers.clear();
-    }
-
-    return this;
-  }
-}
-
-/**
- * 這個類別用於創建和管理在sidebar的資料夾選單元素
- */
-class FolderSelect extends component {
-  /**
-   * 建構一個新的 `FolderSelect` 實例。
-   * @constructor
-   * @param {Object[]} configs - 用於配置選單的物件。
-   */
-  constructor(configs) {
-    super();
-
-    /** 表示選單是否已關閉。  */
-    this.isClosed = true;
-
-    this._timelines = {};
-    this.isShow = true;
-
-    /** 包含選單的 jQuery 物件。 @type {jQuery} */
-    this.element = this._createFolderSelect(configs);
-    this._createTimelines();
-  }
-
-  /**
-   * 創建資料夾選單，包含主按鈕、水平分隔線和多個資料夾按鈕。
-   * @private
-   * @returns {jQuery} 資料夾選擇器的容器。
-   */
-  _createFolderSelect(configs) {
-    const select = $("<div>").addClass("folder-select");
-
-    if (configs.length < 1) {
-      console.log("初始化FolderSelect錯誤：沒有資料夾");
-      return;
-    }
-
-    const main = this._createFolderButton(
-      configs[0].label,
-      configs[0].category
-    );
-    const hr = new HorizontalSeparator({ margin: 8 });
-    select.append(main, hr.element);
-
-    configs.slice(1).forEach((config) => {
-      this._createFolderButton(config.label, config.category).appendTo(select);
-    });
-
-    // 製作時間軸也包括初始化收起狀態
-    this._timelines.open = createSelectOpenTl(select);
-
-    main.on("click", () => {
-      if (this.isClosed) {
-        this.open();
-      } else {
-        this.close();
-      }
-    });
-
-    return select;
-  }
-
-  /**
-   * 創建資料夾按鈕，包含多個圖層。
-   * @private
-   * @param {string} name - 資料夾名稱。
-   * @returns {jQuery} 資料夾按鈕。
-   */
-  _createFolderButton(name, category) {
-    const icons = new FolderIcon("hsl(240, 5%, 10%)");
-
-    const button = $("<button>")
-      .addClass("folder-button")
-      .data("category", category);
-
-    const configs = [
-      { separator: { margin: 8 } },
-      { separator: { margin: 8, backgroundColor: "hsl(240, 5%, 10%)" } },
-    ];
-
-    configs.forEach((config, index) => {
-      const layer = $("<div>").addClass(`folder-button-layer${index + 1}`);
-      const vs = new VerticalSeparator(config.separator);
-      const label = $("<label>").addClass("folder-button-label").text(name);
-
-      layer.append(icons.element[index], vs.element, label).appendTo(button);
-    });
-
-    const hoverTls = [createFolderButtonHoverTl(button), ...icons.timeline];
-
-    const clickTl = createScaleYoyoTl(button, 0.9);
-
-    this._bindTimeline(button, hoverTls, clickTl);
-
-    return button;
-  }
-
-  /**
-   * 將時間軸綁定到按鈕的不同事件。
-   * @param {jQuery} button - 要綁定的按鈕元素。
-   * @param {TimelineMax[]} hover - 滑鼠進入時觸發的時間軸陣列。
-   * @param {TimelineMax} click - 按鈕點擊時觸發的時間軸。
-   */
-  _bindTimeline(button, hover, click) {
-    button.on("mouseenter", () => {
-      hover.forEach((tl) => {
-        tl.play();
-      });
-    });
-    button.on("mouseleave", () => {
-      hover.forEach((tl) => {
-        tl.reverse();
-      });
-    });
-    button.on("click", () => click.restart());
-  }
-
-  /**
-   * 創建並初始化選單的時間軸效果。
-   * @private
-   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
-   */
-  _createTimelines() {
-    this._timelines.hide = gsap
-      .timeline({ defaults: { ease: "set1" }, paused: true })
-      .to(this.element, { autoAlpha: 0, x: -100 });
-
-    return this;
-  }
-
-  /**
-   * 顯示選單。
-   */
-  show() {
-    if (this.isShow) return this;
-
-    this.isShow = true;
-    this._timelines.hide.reverse();
-
-    return this;
-  }
-
-  /**
-   * 隱藏選單。
-   */
-  async hide() {
-    if (!this.isShow) return this;
-
-    this.isShow = false;
-    this._timelines.hide.play();
-
-    this._timelines.hide.eventCallback("onComplete", null);
-
-    await new Promise((resolve) => {
-      this._timelines.hide.eventCallback("onComplete", resolve);
-    });
-
-    return this;
-  }
-
-  /**
-   * 設定選單選擇事件的處理函數。
-   * @param {Function} handler - 選擇事件的處理函數。
-   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
-   */
-  onSelect(handler) {
-    if (this._onSelectHandler)
-      this.element.off("click", ".folder-button", this._onSelectHandler);
-
-    this._onSelectHandler = function (e) {
-      const category = $(e.target).data("category");
-      handler(category);
-    };
-
-    this.element.on("click", ".folder-button", this._onSelectHandler);
-    return this;
-  }
-
-  /**
-   * 開啟選單。
-   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
-   */
-  open() {
-    if (!this.isClosed) return this;
-    this._timelines.open.play();
-    this.isClosed = false;
-    return this;
-  }
-
-  /**
-   * 關閉選單。
-   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
-   */
-  close() {
-    if (this.isClosed) return this;
-    this._timelines.open.reverse();
-    this.isClosed = true;
-    return this;
-  }
-
-  /**
-   * 暫時移除選單選擇事件的處理函數。
-   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
-   */
-  off() {
-    if (this._onSelectHandler) {
-      this.element.off("click", ".folder-button", this._onSelectHandler);
-    }
-    return this;
-  }
-
-  /**
-   * 重新註冊選單選擇事件的處理函數。
-   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
-   */
-  on() {
-    if (this._onSelectHandler) {
-      this.element.on("click", ".folder-button", this._onSelectHandler);
-    }
-    return this;
-  }
-}
-
-/**
- * 這個類別用於創建和管理在sidebar的排序選單元素
- */
-class SortSelect extends component {
-  constructor() {
-    super();
-
-    this._timelines = {};
-    this.isClosed = true;
-    this.isShow = true;
-
-    this.icons = {
-      name: new NameIcon(),
-      date: new DateIcon(),
-      size: new SizeIcon(),
-    };
-    this.element = this._createSortSelect();
-    this._createTimelines();
-  }
-
-  /**
-   * 創建排序選單的元素。
-   * @private @returns {jQuery} 排序選單的元素。
-   */
-  _createSortSelect() {
-    const select = $("<div>").addClass("sort-select");
-
-    const main = this._createMainButton();
-    const hr = new HorizontalSeparator({ margin: 8 });
-    const toggler = this._createReverseToggler();
-
-    select.append(main, hr.element, toggler);
-
-    const options = [
-      this._createOptionButton("name", "依名稱排序"),
-      this._createOptionButton("date", "依日期排序"),
-      this._createOptionButton("size", "依大小排序"),
-    ];
-    options.forEach((button) => select.append(button));
-
-    this._timelines.open = createSelectOpenTl(select);
-
-    main.on("click", () => {
-      if (this.isClosed) {
-        this.open();
-      } else {
-        this.close();
-      }
-    });
-
-    return select;
-  }
-
-  /**
-   * 創建主按鈕，包含排序圖示，並綁定相應的動畫效果。
-   * @private @returns {jQuery} 主按鈕的容器。
-   */
-  _createMainButton() {
-    const button = $("<button>").addClass("sort-button");
-
-    const icons = new SortIcon();
-
-    icons.element.forEach((icon) => {
-      icon.appendTo(button);
-    });
-
-    const hoverTls = [
-      ...icons.timeline,
-      createScaleTl(button, 1, 1.05),
-      createBackgroundColorTl(button, "#ea81af"),
-      createTranslateTl(button, 0, 0, 0, -5),
-      createZIndexTl(button, 5, 6),
-    ];
-
-    const clickTl = createScaleYoyoTl(button, 0.8);
-
-    this._bindTimeline(button, hoverTls, clickTl);
-
-    return button;
-  }
-
-  /**
-   * 創建反轉按鈕，包含標籤和切換器，並綁定相應的動畫效果。
-   * @private @returns {jQuery} 反轉按鈕的容器。
-   */
-  _createReverseToggler() {
-    const container = $("<button>")
-      .addClass("reverse-container")
-      .css("cursor", "default");
-
-    const label = $("<label>").addClass("sort-button-label").text("反轉排序");
-    const toggler = new ToggleButton();
-    gsap.set(toggler.element, { scale: 0.8 });
-
-    container.append(label, toggler.element);
-
-    return container;
-  }
-
-  /**
-   * 創建選項按鈕，包含指定類型的圖示和標籤，並綁定相應的動畫效果。
-   * @private
-   * @param {string} type - 圖示的類型。
-   * @param {string} name - 按鈕的標籤名稱。
-   * @returns {jQuery} 選項按鈕的容器。
-   */
-  _createOptionButton(type, name) {
-    const icons = this.icons[type];
-
-    const button = $("<button>").addClass("sort-button");
-
-    const configs = [
-      { separator: { margin: 8 } },
-      { separator: { margin: 8, backgroundColor: "hsl(240, 5%, 10%)" } },
-    ];
-
-    configs.forEach((config, index) => {
-      const layer = $("<div>").addClass(`sort-button-layer${index + 1}`);
-      const vs = new VerticalSeparator(config.separator);
-      const label = $("<label>").addClass("sort-button-label").text(name);
-
-      layer.append(icons.element[index], vs.element, label).appendTo(button);
-    });
-
-    const hoverTls = [createSortButtonHoverTl(button), ...icons.timeline];
-
-    const clickTl = createScaleYoyoTl(button, 0.9);
-
-    this._bindTimeline(button, hoverTls, clickTl);
-
-    return button;
-  }
-
-  /**
-   * 綁定按鈕的動畫效果。
-   * @private
-   * @param {jQuery} button - 要綁定動畫的按鈕。
-   * @param {TimelineMax[]} hover - 進入時的動畫效果。
-   * @param {TimelineMax} click - 點擊時的動畫效果。
-   */
-  _bindTimeline(button, hover, click) {
-    button.on("mouseenter", () => {
-      hover.forEach((tl) => {
-        tl.play();
-      });
-    });
-    button.on("mouseleave", () => {
-      hover.forEach((tl) => {
-        tl.reverse();
-      });
-    });
-    button.on("click", () => click.restart());
-  }
-
-  /**
-   * 開啟選單。
-   * @returns {SortSelect} - 回傳 `SortSelect` 實例，以便進行方法鏈結。
-   */
-  open() {
-    if (!this.isClosed) return this;
-    this._timelines.open.play();
-    this.isClosed = false;
-    return this;
-  }
-
-  /**
-   * 關閉選單。
-   * @returns {SortSelect} - 回傳 `SortSelect` 實例，以便進行方法鏈結。
-   */
-  close() {
-    if (this.isClosed) return this;
-    this._timelines.open.reverse();
-    this.isClosed = true;
-    return this;
-  }
-
-  /**
-   * 創建並初始化選單的時間軸效果。
-   * @private
-   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
-   */
-  _createTimelines() {
-    this._timelines.hide = gsap
-      .timeline({ defaults: { ease: "set1" }, paused: true })
-      .to(this.element, { autoAlpha: 0, x: -100 });
-
-    return this;
-  }
-
-  /**
-   * 顯示選單。
-   */
-  show() {
-    if (this.isShow) return this;
-
-    this.isShow = true;
-    this._timelines.hide.reverse();
-
-    return this;
-  }
-
-  /**
-   * 隱藏選單。
-   */
-  async hide() {
-    if (!this.isShow) return this;
-
-    this.isShow = false;
-    this._timelines.hide.play();
-
-    this._timelines.hide.eventCallback("onComplete", null);
-
-    await new Promise((resolve) => {
-      this._timelines.hide.eventCallback("onComplete", resolve);
-    });
-
-    return this;
-  }
-}
-
-/**
- * 這個類別用於創建和管理sidebar的設定選單元素
- */
-class SettingSelect extends component {
-  constructor() {
-    super();
-
-    this._timelines = {};
-    this.element = this._createMainButton().add(this._createSelect());
-    this._createTimelines();
-
-    this.isShow = true;
-  }
-
-  _createSelect() {
-    const container = $("<div>").addClass("setting-select");
-
-    return container;
-  }
-
-  _createMainButton() {
-    const button = $("<button>").addClass("setting-button");
-
-    const iconContainer = $("<div>")
-      .addClass("setting-icon-container")
-      .appendTo(button);
-
-    const settingIcon = new SettingIcon();
-    settingIcon.element.forEach((e) => e.appendTo(button));
-
-    const makeImg = () => {
-      return $("<img>")
-        .attr("src", "images/icons/setting.png")
-        .addClass("setting-img")
-        .appendTo(iconContainer);
-    };
-    const makeGif = () => {
-      const timestamp = $.now();
-      return $("<img>")
-        .attr("src", `images/icons/setting.gif?timestamp=${timestamp}`)
-        .addClass("setting-gif")
-        .appendTo(iconContainer);
-    };
-
-    makeImg();
-
-    button.on("mouseenter", () => {
-      const imgs = button.find(".setting-img");
-      const gif = makeGif().hide();
-      gif[0].onload = () => {
-        imgs.remove();
-        gif.show();
-      };
-    });
-    button.on("mouseleave", () => {
-      const gifs = button.find(".setting-gif");
-      gifs.hide(500, () => gifs.remove());
-      makeImg().hide().show(500);
-    });
-
-    const hoverTls = [
-      createScaleTl(iconContainer, 1, 1.2),
-      createScaleTl(button, 1, 1.05),
-      createBackgroundColorTl(button, "#ea81af"),
-      createTranslateTl(button, 0, 0, 0, -5),
-      createZIndexTl(button, 5, 6),
-      ...settingIcon.timeline,
-    ];
-
-    const clickTl = createScaleYoyoTl(button, 0.8);
-
-    this._bindTimeline(button, hoverTls, clickTl);
-
-    return button;
-  }
-
-  /**
-   * 綁定按鈕的時間軸效果。
-   */
-  _bindTimeline(button, hover, click) {
-    button.on("mouseenter", () => {
-      hover.forEach((tl) => {
-        tl.play();
-      });
-    });
-    button.on("mouseleave", () => {
-      hover.forEach((tl) => {
-        tl.reverse();
-      });
-    });
-    button.on("click", () => click.restart());
-  }
-
-  /**
-   * 創建並初始化選單的時間軸效果。
-   * @private
-   * @returns {FolderSelect} - 回傳 `FolderSelect` 實例，以便進行方法鏈結。
-   */
-  _createTimelines() {
-    this._timelines.hide = gsap
-      .timeline({ defaults: { ease: "set1" }, paused: true })
-      .fromTo(this.element, { autoAlpha: 1, x: 0 }, { autoAlpha: 0, x: -100 });
-
-    return this;
-  }
-
-  /**
-   * 顯示選單。
-   */
-  show() {
-    if (this.isShow) return this;
-
-    this.isShow = true;
-    this._timelines.hide.reverse();
-
-    return this;
-  }
-
-  /**
-   * 隱藏選單。
-   */
-  async hide() {
-    if (!this.isShow) return this;
-
-    this.isShow = false;
-    this._timelines.hide.play();
-
-    this._timelines.hide.eventCallback("onComplete", null);
-
-    await new Promise((resolve) => {
-      this._timelines.hide.eventCallback("onComplete", resolve);
-    });
-
-    return this;
-  }
-}
-
-/**
  * 這個類別用於創建和管理在header的燈泡元素
  */
 class HeaderBulb extends component {
@@ -1046,7 +271,7 @@ class HeaderBulb extends component {
   flickerLight() {
     this._killTimeline();
     this._timelines[this.currentColor] = this.bulb
-      .createTimeline(this.currentColor)
+      .createTimeline(this.currentColor, 2)
       .play();
 
     return this;
@@ -1054,696 +279,13 @@ class HeaderBulb extends component {
 }
 
 /**
- * 這個類別用於創建和管理具有特定特效的文件夾框元素。
+ * 這個類別用於創建和管理在header的返回按鈕元素
  */
-class FolderBoxes extends component {
-  /**
-   * 建構一個新的 `FolderBox` 實例。
-   * @constructor
-   * @param {Object[]} configs - 用於配置文件夾框的物件。
-   */
-  constructor(configs) {
-    super();
-
-    this._timelines = {};
-
-    this.isShow = false;
-
-    this.element = this._createFolderBoxes(configs);
-    this._createTimelines();
-  }
-
-  /**
-   * 創建文件夾框的容器元素。
-   * @private
-   * @returns {jQuery} - 文件夾框容器元素的 jQuery 物件。
-   */
-  _createFolderBoxes(configs) {
-    const container = $("<div>").addClass("folder-boxes-container");
-
-    configs.forEach((config) =>
-      this._createFolderBox(config).appendTo(container)
-    );
-
-    return container;
-  }
-
-  /**
-   * 創建文件夾框元素。
-   * @private
-   * @returns {jQuery} - 文件夾框元素的 jQuery 物件。
-   */
-  _createFolderBox(config) {
-    const container = $("<div>").addClass("folder-box-container");
-
-    const box = $("<div>")
-      .addClass("folder-box")
-      .data("category", config.category);
-
-    const folderIcon = new FolderIcon("hsl(225, 10%, 23%)");
-    const vs = new VerticalSeparator();
-    const bulb = new Bulb(20, 20);
-    const label = $("<label>").addClass("folder-box-label").text(config.label);
-
-    box.append(folderIcon.element[0], vs.element, label, bulb.element);
-
-    const img = $("<img>")
-      .attr("src", config.img.src)
-      .addClass("folder-box-img")
-      .css("width", "97.5%");
-    gsap.set(img, { y: 25 });
-
-    container.append(img, box);
-
-    const boxTl = this._createFolderBoxTl(box, img);
-    const bulbTl = bulb.createTimeline(config.bulbColor, config.bulbIntensity);
-
-    const hoverTls = [
-      folderIcon.timeline[0],
-      bulbTl,
-      boxTl.minWidthTl,
-      boxTl.openTl,
-    ];
-
-    const clickTl = createScaleYoyoTl(box, 0.9);
-
-    this._bindTimeline(container, hoverTls, clickTl, boxTl.openTl);
-
-    return container;
-  }
-
-  /**
-   * 製作box的時間軸動畫效果。
-   * @private
-   */
-  _createFolderBoxTl(box, img) {
-    const minWidthTl = gsap
-      .timeline({
-        defaults: { duration: 0.2, ease: "set1" },
-        paused: true,
-      })
-      .fromTo(box, { minWidth: "100%" }, { minWidth: "105%" });
-
-    const openTl = gsap
-      .timeline({
-        defaults: { duration: 0.2, ease: "set1" },
-        paused: true,
-      })
-      .from(img, {
-        y: 0,
-        autoAlpha: 0,
-      });
-
-    return { minWidthTl, openTl };
-  }
-
-  /**
-   * 綁定時間軸動畫效果。
-   * @private
-   */
-  _bindTimeline(element, hover, click, click2) {
-    element.on("mouseenter", () => {
-      hover.forEach((tl) => {
-        tl.play();
-      });
-    });
-    element.on("mouseleave", () => {
-      hover.forEach((tl) => {
-        tl.reverse();
-      });
-    });
-    element.on("click", () => {
-      click.restart();
-      click2.reverse();
-    });
-  }
-
-  /**
-   * 創建並初始化文件夾框的時間軸效果。
-   * @private
-   * @returns {FolderBoxes} - 回傳 `FolderBoxes` 實例，以便進行方法鏈結。
-   */
-  _createTimelines() {
-    this._timelines.show = gsap
-      .timeline({
-        defaults: { ease: "back.out(4)", duration: 0.35 },
-        paused: true,
-      })
-      .from(this.element.children(), { scale: 0.5, stagger: 0.15 })
-      .from(
-        this.element.children(),
-        { ease: "set1", autoAlpha: 0, stagger: 0.15 },
-        "<"
-      );
-
-    return this;
-  }
-
-  /**
-   * 顯示文件夾框。
-   * @returns {FolderBoxes} - 回傳 `FolderBoxes` 實例，以便進行方法鏈結。
-   */
-  show() {
-    if (this.isShow) return this;
-
-    this.isShow = true;
-    this._timelines.show.play();
-
-    return this;
-  }
-
-  /**
-   * 隱藏文件夾框。
-   */
-  async hide() {
-    if (!this.isShow) return this;
-
-    this.isShow = false;
-    this._timelines.show.reverse();
-
-    this._timelines.show.eventCallback("onReverseComplete", null);
-
-    await new Promise((resolve) => {
-      this._timelines.show.eventCallback("onReverseComplete", resolve);
-    });
-
-    return this;
-  }
-
-  /**
-   * 設定按鈕選擇事件的處理函數。
-   * @param {Function} handler - 選擇事件的處理函數。
-   * @returns {FolderBoxes} - 回傳 `FolderBoxes` 實例，以便進行方法鏈結。
-   */
-  onSelect(handler) {
-    if (this._onSelectHandler)
-      this.element.off("click", ".folder-box", this._onSelectHandler);
-
-    this._onSelectHandler = function (e) {
-      const category = $(e.target).data("category");
-      handler(category);
-    };
-
-    this.element.on("click", ".folder-box", this._onSelectHandler);
-    return this;
-  }
-}
-
-/**
- * 這個類別用於創建和管理圖片庫組件。
- */
-class Gallery extends component {
-  /** @param {string[]} urls - 圖片的 URL 陣列。 */
-  constructor(urls) {
-    super();
-    /** @type {string[]} */
-    this.urls = urls;
-    this.timelines = {};
-
-    this.isShow = false;
-    this._isRegisterOnSelect = false;
-  }
-
-  /**
-   * 創建圖片庫的主要元素。
-   * @private
-   * @returns {Promise<jQuery>} - 圖片庫的主要元素。
-   */
-  async _createGallery() {
-    const gallery = $("<div>").addClass("gallery");
-    const grid = $("<div>").addClass("images-grid");
-
-    const images = await Promise.all(
-      this.urls.map((url) => this._createImage(url))
-    );
-
-    grid.append(images).appendTo(gallery);
-
-    return gallery;
-  }
-
-  /**
-   * 創建單個圖片元素。
-   * @private
-   * @param {string} url - 圖片的 URL。
-   * @returns {Promise<jQuery>} - 創建的圖片容器元素。
-   */
-  async _createImage(url) {
-    const container = $("<div>").addClass("image-container");
-
-    const image = $("<img>").attr("src", url).attr("decoding", "async");
-    const reflexContainer = $("<div>").addClass("reflex-container");
-    $("<div>").addClass("reflex-plane").appendTo(reflexContainer);
-
-    container.append(reflexContainer, image);
-
-    await decode(image[0]);
-
-    this._bindTimeline(container);
-
-    return container;
-  }
-
-  /**
-   * 綁定圖片元素的時間軸。
-   * @private
-   * @param {jQuery} imageContainer - 圖片容器的jQuery對象。
-   */
-  _bindTimeline(imageContainer) {
-    const image = imageContainer.find("img");
-    const element = image.add(imageContainer.find(".reflex-plane"));
-    const t1 = createImageHoverTl(imageContainer);
-    const t2 = createScaleYoyoTl(imageContainer, 0.9);
-    const mousemoveHandler = this._createMousemoveHandler(element);
-
-    image.on("mouseenter", () => {
-      t1.play();
-
-      image.on("mousemove", mousemoveHandler);
-    });
-    image.on("mouseleave", () => {
-      t1.reverse();
-
-      image.off("mousemove", mousemoveHandler);
-
-      gsap.to(element, {
-        overwrite: "auto",
-        ease: "set1",
-        duration: 0.5,
-        rotateX: 0,
-        rotateY: 0,
-      });
-    });
-    image.on("click", () => t2.restart());
-  }
-
-  /**
-   * 創建滑鼠移動事件處理器。
-   * @private
-   * @param {jQuery} element - 被處理的元素。
-   * @returns {Function} - 滑鼠移動事件處理器函式。
-   */
-  _createMousemoveHandler(element) {
-    return (e) => {
-      const centerX = element.offset().left + element.width() / 2;
-      const centerY = element.offset().top + element.height() / 2;
-      const offsetX = e.pageX - centerX;
-      const offsetY = e.pageY - centerY;
-
-      // 計算響應式的旋轉角度，根據元素的寬度和高度進行調整
-      const base = { x: 520, y: 290 };
-      const scale = {
-        x: element.width() / base.x,
-        y: element.height() / base.y,
-      };
-      const responsiveRotateX = -offsetY / (9 * scale.x);
-      const responsiveRotateY = offsetX / (15 * scale.y);
-
-      gsap.to(element, {
-        overwrite: "auto",
-        ease: "back.out(10)",
-        duration: 0.5,
-        rotateX: responsiveRotateX,
-        rotateY: responsiveRotateY,
-      });
-    };
-  }
-
-  /**
-   * 創建並初始化圖片庫的時間軸效果。
-   * @private
-   * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
-   */
-  _createTimelines() {
-    const images = this.element.children().children();
-    this.timelines.show = gsap
-      .timeline({ defaults: { ease: "set1" }, paused: true })
-      .from(this.element, { autoAlpha: 0, duration: 0.05 })
-      .from(
-        images,
-        {
-          autoAlpha: 0,
-          scale: 0.5,
-          ease: "back.out(2)",
-          stagger: { from: "random", amount: 0.35 },
-        },
-        "<"
-      );
-
-    return this;
-  }
-
-  /**
-   * 顯示圖片庫。
-   * @returns {Promise<Gallery>} - 回傳 `Gallery` 實例，以便進行方法鏈結。
-   */
-  async show() {
-    if (this.isShow) return this;
-
-    this.element = await this._createGallery();
-    this._createTimelines().appendTo("#content");
-    this.element.on("click", "img", this._onSelectHandler);
-    await delay(100);
-
-    this.isShow = true;
-    this.timelines.show.play();
-
-    return this;
-  }
-
-  /**
-   * 隱藏圖片庫。
-   * @returns {Promise<Gallery>} - 回傳 `Gallery` 實例，以便進行方法鏈結。
-   */
-  async hide() {
-    if (!this.isShow) return this;
-
-    this.isShow = false;
-    this.element.find(".image-container").off();
-    this.timelines.show.reverse();
-
-    this.timelines.show.eventCallback("onReverseComplete", null);
-
-    await new Promise((resolve) => {
-      this.timelines.show.eventCallback("onReverseComplete", resolve);
-    });
-    this.element.remove();
-    this.element = null;
-    this._isAppendTo = false;
-
-    return this;
-  }
-
-  /**
-   * 切換圖片庫的顯示/隱藏狀態。
-   * @param {boolean} e - 顯示為 `true`，隱藏為 `false`。
-   * @returns {Promise<Gallery>} - 回傳 `Gallery` 實例，以便進行方法鏈結。
-   */
-  async toggle(e) {
-    return e ? await this.show() : await this.hide();
-  }
-
-  /**
-   * 設定圖片庫選擇事件的處理函數。
-   * @param {Function} handler - 選擇事件的處理函數。
-   * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
-   */
-  onSelect(handler) {
-    if (this._isRegisterOnSelect && this.element)
-      this.element.off("click", "img", this._onSelectHandler);
-
-    this._isRegisterOnSelect = true;
-    this._onSelectHandler = function () {
-      handler($(this));
-    };
-
-    return this;
-  }
-}
-
-/**
- * 這個類別用於創建和管理預覽圖片組件。
- */
-class PreviewImage extends component {
+class HeaderButton extends component {
   constructor() {
     super();
 
-    this.category = "";
-    this.url = "";
-    this._timelines = {};
-
-    this.isFullscreen = false;
-    this._handlers = {};
-
-    this.element = this._createImageContainer();
-    this._createTimelines();
-  }
-
-  /**
-   * 創建包含圖片的容器元素。
-   * @private @returns {jQuery} - 圖片容器元素的 jQuery 物件。
-   */
-  _createImageContainer() {
-    const container = $("<div>").addClass("preview-container");
-    const image = $("<img>").attr("src", "").attr("decoding", "async");
-
-    image.appendTo(container);
-
-    this.closeBtn = this._createCloseButton();
-
-    this.closeBtn.appendTo("body");
-
-    return container;
-  }
-
-  /**
-   * 創建關閉按鈕元素。
-   * @private @returns {jQuery} - 關閉按鈕元素的 jQuery 物件。
-   */
-  _createCloseButton() {
-    const closeBtn = $("<button>").addClass("close-button");
-
-    const hoverTls = [
-      createBackgroundColorTl(closeBtn, "#ea81af"),
-      createScaleTl(closeBtn, 1, 1.05),
-    ];
-
-    const clickTl = createScaleYoyoTl(closeBtn, 0.75);
-
-    closeBtn.on("mouseenter", () => {
-      hoverTls.forEach((tl) => {
-        tl.play();
-      });
-    });
-    closeBtn.on("mouseleave", () => {
-      hoverTls.forEach((tl) => {
-        tl.reverse();
-      });
-    });
-    closeBtn.on("click", () => clickTl.restart());
-
-    // GIF動畫
-    const iconContainer = $("<div>").addClass("close-icon-container");
-
-    const makeImg = () => {
-      return $("<img>")
-        .attr("src", "images/icons/close.png")
-        .addClass("close-img")
-        .appendTo(iconContainer);
-    };
-    const makeGif = () => {
-      const timestamp = $.now();
-      return $("<img>")
-        .attr("src", `images/icons/close.gif?timestamp=${timestamp}`)
-        .addClass("close-gif")
-        .appendTo(iconContainer);
-    };
-
-    closeBtn.append(iconContainer);
-    makeImg();
-
-    closeBtn.on("mouseenter", () => {
-      const imgs = closeBtn.find(".close-img");
-      const gif = makeGif().hide();
-      gif[0].onload = () => {
-        imgs.remove();
-        gif.show();
-      };
-    });
-    closeBtn.on("mouseleave", () => {
-      const gifs = closeBtn.find(".close-gif");
-      gifs.hide(500, () => gifs.remove());
-      makeImg().hide().show(500);
-    });
-
-    return closeBtn;
-  }
-
-  /**
-   * 設置關閉事件處理程序。
-   * @param {Function} handler - 關閉事件的處理函數。
-   */
-  onClose(handler) {
-    const closeBtn = this.closeBtn;
-
-    if (this._handlers.close) {
-      closeBtn.off("click", this._handlers.close);
-      this._handlers.close = null;
-    }
-
-    this._handlers.close = handler;
-    closeBtn.on("click", this._handlers.close);
-
-    return this;
-  }
-
-  /**
-   * 切換可操作模式。
-   */
-  async switchMode() {
-    const image = this.element.children("img");
-
-    if (this.isFullscreen === false) {
-      this._imageZoom = new ImageZoom(image);
-      this._imageZoom.on();
-
-      this.isFullscreen = true;
-    } else {
-      this._imageZoom.off();
-
-      await this._imageZoom.reset();
-      this._imageZoom = null;
-
-      this.isFullscreen = false;
-    }
-
-    return this;
-  }
-
-  /**
-   * 創建時間軸效果。
-   * @private
-   */
-  _createTimelines() {
-    const image = this.element.children("img");
-    this._timelines.show = gsap
-      .timeline({ defaults: { ease: "set1", duration: 0.35 }, paused: true })
-      .from(this.element, { autoAlpha: 0, duration: 0.05 })
-      .from(image, {
-        autoAlpha: 0,
-        scale: 0.5,
-        y: -100,
-        ease: "back.out(2)",
-      });
-
-    const closeBtn = this.closeBtn;
-    this._timelines.showClose = gsap
-      .timeline({ defaults: { ease: "set1", duration: 0.35 }, paused: true })
-      .from(closeBtn, {
-        autoAlpha: 0,
-        scale: 0.5,
-        ease: "back.out(4)",
-      });
-  }
-
-  /**
-   * 顯示關閉按鈕。
-   */
-  async showCloseButton() {
-    this._timelines.showClose.play();
-
-    this._timelines.showClose.eventCallback("onComplete", null);
-
-    await new Promise((resolve) => {
-      this._timelines.showClose.eventCallback("onComplete", resolve);
-    });
-
-    return this;
-  }
-
-  /**
-   * 隱藏關閉按鈕。
-   */
-  async hideCloseButton() {
-    this._timelines.showClose.reverse();
-
-    this._timelines.showClose.eventCallback("onReverseComplete", null);
-
-    await new Promise((resolve) => {
-      this._timelines.showClose.eventCallback("onReverseComplete", resolve);
-    });
-
-    return this;
-  }
-
-  /**
-   * 顯示預覽圖片。
-   * @param {string} url - 圖片的 URL。
-   * @param {string} category - 圖片的類別。
-   * @returns {Promise<PreviewImage>} - 回傳 `PreviewImage` 實例，以便進行方法鏈結。
-   */
-  async show(url, category) {
-    this.url = url;
-    this.category = category;
-
-    // 下載圖片
-    await new Promise((resolve) => {
-      const image = new Image();
-      image.onload = resolve;
-      image.src = this.url;
-    });
-
-    // 下載完成後更新圖片
-    const imgElement = this.element.children("img")[0];
-    imgElement.src = this.url;
-
-    // 更新圖片後開始解碼
-    await decode(imgElement);
-    await delay(50);
-
-    this._timelines.show.restart();
-
-    return this;
-  }
-
-  /**
-   * 隱藏預覽圖片。
-   * @async
-   * @returns {Promise<PreviewImage>} - 回傳一個 Promise，當隱藏動畫完成後解析。
-   */
-  async hide() {
-    this._timelines.show.reverse();
-
-    this._timelines.show.eventCallback("onReverseComplete", null);
-
-    await new Promise((resolve) => {
-      this._timelines.show.eventCallback("onReverseComplete", resolve);
-    });
-
-    return this;
-  }
-}
-
-/**
- * 這個類別用於創建和管理預覽選單組件。
- */
-class PreviewButtons extends component {
-  constructor() {
-    super();
-
-    this._timelines = {};
-    this.url = "";
-    this._onSelectHandler = null;
-
-    this.isShow = false;
-
-    this.element = this._createPreviewButtons();
-    this._createTimelines();
-  }
-
-  /**
-   * 創建包含預覽按鈕的容器元素。
-   * @private @returns {jQuery} - 預覽按鈕容器元素的 jQuery 物件。
-   */
-  _createPreviewButtons() {
-    const container = $("<div>").addClass("preview-buttons-container");
-
-    const button1 = this._createReturnButton();
-    const button2 = this._createFullscreenButton();
-
-    container.append(button1, button2);
-
-    return container;
-  }
-
-  /**
-   * 創建返回按鈕元素。
-   * @private @returns {jQuery} - 返回按鈕元素的 jQuery 物件。
-   */
-  _createReturnButton() {
-    const button = $("<button>").addClass("return-button");
-
-    const iconContainer = $("<div>").addClass("return-icon-container");
+    const iconContainer = $("<div>").addClass("return-button-icon");
 
     const makeImg = () => {
       return $("<img>")
@@ -1759,8 +301,14 @@ class PreviewButtons extends component {
         .appendTo(iconContainer);
     };
 
-    button.append(iconContainer);
     makeImg();
+
+    const button = $("<button>")
+      .addClass("return-button")
+      .append(
+        iconContainer,
+        $("<span>").addClass("return-button-tip").text("返回")
+      );
 
     button.on("mouseenter", () => {
       const imgs = button.find(".return-img");
@@ -1776,195 +324,955 @@ class PreviewButtons extends component {
       makeImg().hide().show(500);
     });
 
-    this._bindTimeline(button);
+    this.element = button;
 
-    return button;
+    this._tl = this._createTimeline();
   }
 
-  /**
-   * 創建全螢幕按鈕元素。
-   * @private @returns {jQuery} - 全螢幕按鈕元素的 jQuery 物件。
-   */
-  _createFullscreenButton() {
-    const button = $("<button>").addClass("fullscreen-button");
-
-    const icon = new FullscreenIcon();
-
-    button.append(icon.element);
-
-    button.on("mouseenter", () => icon.timeline.play());
-    button.on("mouseleave", () => icon.timeline.reverse());
-
-    this._bindTimeline(button);
-
-    return button;
+  _createTimeline() {
+    return gsap
+      .timeline({ defaults: { ease: "back.out(2)" }, paused: true })
+      .fromTo(
+        this.element,
+        {
+          autoAlpha: 0,
+          y: -30,
+          scale: 1.2,
+        },
+        {
+          autoAlpha: 1,
+          y: 0,
+          scale: 1,
+        }
+      );
   }
 
-  /**
-   * 綁定按鈕的時間軸效果。
-   * @private @param {jQuery} button - 按鈕元素的 jQuery 物件。
-   */
-  _bindTimeline(button) {
-    const hoverT1 = createScaleTl(button, 1, 1.1);
-    const hoverT2 = createBackgroundColorTl(button, "#ea81af");
-    const clickTl = createScaleYoyoTl(button, 0.75);
+  async show() {
+    if (this._inAnimate || this._isShow) return;
+    this._inAnimate = true;
+    this._isShow = true;
 
-    const hoverPlay = () => {
-      hoverT1.play();
-      hoverT2.play();
-    };
-    const hoverReverse = () => {
-      hoverT1.reverse();
-      hoverT2.reverse();
-    };
-
-    button.on("mouseenter", hoverPlay);
-    button.on("mouseleave", hoverReverse);
-    button.on("click", () => clickTl.restart());
-  }
-
-  /**
-   * 創建並初始化按鈕的時間軸效果。
-   * @private
-   */
-  _createTimelines() {
-    this._timelines.show = gsap
-      .timeline({ defaults: { ease: "set1" }, paused: true })
-      .from(this.element, { autoAlpha: 0, duration: 0.05 })
-      .from(this.element.children(), {
-        autoAlpha: 0,
-        scale: 0.5,
-        ease: "back.out(4)",
-        stagger: 0.1,
-      });
-
-    return this;
-  }
-
-  /**
-   * 顯示預覽按鈕。
-   */
-  show() {
-    if (this.isShow) return this;
-
-    this.isShow = true;
-    this._timelines.show.play();
-
-    return this;
-  }
-
-  /**
-   * 隱藏預覽按鈕。
-   */
-  async hide() {
-    if (!this.isShow) return this;
-
-    this.isShow = false;
-    this._timelines.show.reverse();
-
-    this._timelines.show.eventCallback("onReverseComplete", null);
-
+    this._tl.play();
+    this._tl.eventCallback("onComplete", null);
     await new Promise((resolve) => {
-      this._timelines.show.eventCallback("onReverseComplete", resolve);
+      this._tl.eventCallback("onComplete", resolve);
     });
 
+    this._inAnimate = false;
+
     return this;
   }
 
-  /**
-   * 設置選擇按鈕時的處理程序。
-   * @param {function} handler - 選擇按鈕時的處理程序。
-   */
-  onSelect(handler) {
-    if (this._onSelectHandler)
-      this.element.off("click", "button", this._onSelectHandler);
+  async hide() {
+    if (this._inAnimate || !this._isShow) return;
+    this._inAnimate = true;
+    this._isShow = false;
 
-    this._onSelectHandler = handler;
+    this._tl.reverse();
+    this._tl.eventCallback("onReverseComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onReverseComplete", resolve);
+    });
 
-    this.element.on("click", "button", this._onSelectHandler);
+    this._inAnimate = false;
+
+    return this;
+  }
+
+  onClick(handler) {
+    if (this._handler) this.element.off("click", this._handler);
+
+    this._handler = function () {
+      handler($(this));
+    };
+
+    this.element.on("click", this._handler);
+
     return this;
   }
 }
 
 /**
- * 這個類別用於創建和管理投影片選單組件。
+ * sidebar, modal
  */
-class LightBox extends component {
+
+/**
+ * 這個類別提供創建和控制主要按鈕的功能。
+ */
+class MainButtons extends component {
   constructor() {
     super();
 
-    this.isShow = false;
-    this._timelines = {};
-    this._handlers = {};
+    const container = $("<div>").addClass("main-buttons-container");
+    const options = ["新增", "刪除", "同步"];
+
+    options.forEach((option) =>
+      $("<button>")
+        .addClass("main-button")
+        .appendTo(container)
+        .append(`<span>${option}</span>`)
+        .append(
+          `<svg width="15px" height="10px" viewBox="0 0 13 10">
+            <path d="M1,5 L11,5"></path>
+            <polyline points="8 1 12 5 8 9"></polyline>
+          </svg>`
+        )
+    );
+
+    this.element = container;
+
+    this._tl = this._createTimeline();
   }
 
-  /**
-   * 非同步方式創建投影片。
-   * @private @param {number} index - 目前投影片的索引。
-   * @param {string[]} list - 包含所有圖片URL的列表。
-   * @returns {Promise<jQuery>} - 包含創建的投影片內容的jQuery對象。
-   */
-  async _createLightBox(index, list) {
-    this.list = list;
-    this.index = index;
+  onSelect(handler) {
+    if (this._handler) return this;
 
-    const container = $("<div>").addClass("light-boxes-container");
+    this._handler = (e) => handler($(e.target).find("span").text());
+
+    this.element.on("click", ".main-button", this._handler);
+
+    return this;
+  }
+
+  _createTimeline() {
+    const options = this.element.find("button");
+    return gsap
+      .timeline({ defaults: { ease: "back.out(2)" }, paused: true })
+      .fromTo(
+        options,
+        {
+          autoAlpha: 0,
+          x: -100,
+        },
+        {
+          autoAlpha: 1,
+          x: 0,
+          stagger: { from: "start", amount: 0.6 },
+          duration: 1,
+        }
+      );
+  }
+
+  async show() {
+    if (this._inAnimate || this._isShow) return this;
+    this._inAnimate = true;
+    this._isShow = true;
+
+    this._tl.play();
+    this._tl.eventCallback("onComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onComplete", resolve);
+    });
+
+    this._inAnimate = false;
+
+    $(".main-buttons-container").css("pointerEvents", "auto");
+
+    return this;
+  }
+
+  async hide() {
+    if (this._inAnimate || !this._isShow) return this;
+    this._inAnimate = true;
+    this._isShow = false;
+
+    this._tl.reverse();
+    this._tl.eventCallback("onReverseComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onReverseComplete", resolve);
+    });
+
+    this._inAnimate = false;
+
+    $(".main-buttons-container").css("pointerEvents", "none");
+
+    return this;
+  }
+}
+
+/**
+ * 這個類別提供創建和控制新增選單的功能。
+ */
+class AddImagePopup extends component {
+  constructor() {
+    super();
+
+    this._files = [];
+
+    const container = $("<div>")
+      .addClass("popup")
+      .addClass("add-image-container");
+
     const buttons = this._createButtons();
 
-    container.append(buttons.prevButton);
+    container.append(
+      $("<span>").text("• 目標資料夾"),
+      this._createSelect(),
+      $("<span>").text("• 檔案預覽"),
+      this._createContent(),
+      buttons.submit,
+      buttons.close
+    );
 
-    const urls = getArraySegment(index, list);
-    const imgs = await Promise.all(urls.map((url) => this._createImage(url)));
-    this.imgs = imgs;
+    this.element = container;
 
-    imgs.forEach((img) => img.appendTo(container));
+    this._tl = this._createTimeline();
+  }
 
-    container.append(buttons.nextButton);
+  _createSelect() {
+    return $("<form>")
+      .attr("id", "add-image-categories")
+      .append(
+        $("<div>"),
+        $("<input>").attr({
+          type: "radio",
+          id: "add-image-Scene",
+          name: "add-image-categories",
+          value: "Scene",
+          checked: true,
+        }),
+        $("<label>").attr("for", "add-image-Scene").text("場景"),
+        $("<input>").attr({
+          type: "radio",
+          id: "add-image-Props",
+          name: "add-image-categories",
+          value: "Props",
+        }),
+        $("<label>").attr("for", "add-image-Props").text("物件"),
+        $("<input>").attr({
+          type: "radio",
+          id: "add-image-Nature",
+          name: "add-image-categories",
+          value: "Nature",
+        }),
+        $("<label>").attr("for", "add-image-Nature").text("自然")
+      );
+  }
 
-    return container;
+  _createContent() {
+    return $("<div>")
+      .addClass("add-imgae-content-overflow")
+      .append(
+        $("<div>")
+          .addClass("add-image-scroll-icons")
+          .append(
+            $("<div>").addClass("scroll-down-icon").append(this._createSVG1())
+          ),
+        $("<div>").addClass("add-image-content")
+      );
+  }
+
+  _createArticle(imgUrl1, imgUrl2, title) {
+    return $("<article>").append(
+      $("<div>").append(
+        $("<img>").attr({ src: imgUrl1, decoding: "async" }),
+        $("<img>").attr({ src: imgUrl2, decoding: "async" })
+      ),
+      $("<p>").text(title)
+    );
+  }
+
+  _createSVG1() {
+    return $(`
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="none"></path>
+      <path d="M11.9997 13.1716L7.04996 8.22186L5.63574 9.63607L11.9997 16L18.3637 9.63607L16.9495 8.22186L11.9997 13.1716Z" fill="white">
+      </path>
+    </svg>
+    `);
+  }
+
+  _createSVG2() {
+    return $(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+      <path fill="none" d="M0 0h24v24H0z"></path>
+      <path fill="currentColor" d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.455.547-.679.045L12 14l6-8-8 6-8.054-2.685z"></path>
+    </svg>
+    `);
+  }
+
+  _createButtons() {
+    return {
+      submit: $("<div>")
+        .addClass("add-image-submit")
+        .append(
+          $("<button>").append(
+            $("<div>")
+              .addClass("svg-wrapper-1")
+              .append(
+                $("<div>").addClass("svg-wrapper").append(this._createSVG2())
+              ),
+            $("<span>").text("送出")
+          )
+        ),
+      close: $("<div>")
+        .addClass("add-image-close")
+        .append($("<img>").attr("src", "images/icons/close.png")),
+    };
+  }
+
+  _createTimeline() {
+    return gsap
+      .timeline({
+        defaults: { ease: "back.out(2)" },
+        paused: true,
+      })
+      .fromTo(
+        this.element,
+        { autoAlpha: 0, y: -200 },
+        { duration: 0.7, autoAlpha: 1, y: 0 }
+      );
+  }
+
+  onClose(handler) {
+    if (this._closeHandler) return;
+    this._closeHandler = handler;
+
+    this.element.on("click", ".add-image-close", this._closeHandler);
+
+    return this;
+  }
+
+  onSubmit(handler) {
+    if (this._submitHandler) return;
+    this._submitHandler = (e) => {
+      const container = $(e.target).parents(".add-image-container");
+      const category = container.find("input:checked").attr("id").split("-")[2];
+      handler({ category, files: this._files });
+    };
+
+    this.element.on("click", ".add-image-submit", this._submitHandler);
+
+    return this;
+  }
+
+  async show(items) {
+    if (this._inAnimate || this._isShow) return;
+    this._inAnimate = true;
+    this._isShow = true;
+
+    const content = this.element.find(".add-image-content");
+    content.find("article").remove();
+
+    this._files = [];
+
+    items.forEach((item) => {
+      this._createArticle(item.url1, item.url2, item.title).appendTo(content);
+      this._files.push(item);
+    });
+
+    this._tl.play();
+    this._tl.eventCallback("onComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onComplete", resolve);
+    });
+
+    this._inAnimate = false;
+  }
+
+  async hide() {
+    if (this._inAnimate || !this._isShow) return;
+    this._inAnimate = true;
+    this._isShow = false;
+
+    this._tl.reverse();
+    this._tl.eventCallback("onReverseComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onReverseComplete", resolve);
+    });
+
+    this._inAnimate = false;
+  }
+}
+
+/**
+ * 這個類別提供創建和控制刪除選單的功能。
+ */
+class DeleteImagePopup extends component {
+  constructor() {
+    super();
+
+    const container = $("<div>")
+      .addClass("popup")
+      .addClass("delete-image-container");
+
+    container.append(
+      $("<span>").text("• 目標資料夾"),
+      this._createSelect(),
+      $("<span>").text("• 選擇檔案"),
+      this._createContent(),
+      this._createButton()
+    );
+
+    this.element = container;
+
+    this._tl = this._createTimeline();
+  }
+
+  _createSelect() {
+    return $("<form>")
+      .attr("id", "delete-image-categories")
+      .append(
+        $("<div>"),
+        $("<input>").attr({
+          type: "radio",
+          id: "delete-image-Scene",
+          name: "delete-image-categories",
+          value: "Scene",
+          checked: true,
+        }),
+        $("<label>").attr("for", "delete-image-Scene").text("場景"),
+        $("<input>").attr({
+          type: "radio",
+          id: "delete-image-Props",
+          name: "delete-image-categories",
+          value: "Props",
+        }),
+        $("<label>").attr("for", "delete-image-Props").text("物件"),
+        $("<input>").attr({
+          type: "radio",
+          id: "delete-image-Nature",
+          name: "delete-image-categories",
+          value: "Nature",
+        }),
+        $("<label>").attr("for", "delete-image-Nature").text("自然")
+      );
+  }
+
+  _createContent() {
+    return $("<div>")
+      .addClass("delete-imgae-content-overflow")
+      .append(
+        $("<div>")
+          .addClass("delete-image-scroll-icons")
+          .append(
+            $("<div>").addClass("scroll-down-icon").append(this._createSVG1())
+          ),
+        $("<div>").addClass("delete-image-content")
+      );
+  }
+
+  _createArticle(name) {
+    return $("<article>").append(
+      $("<p>").text(name),
+      this._createDeleteButton()
+    );
+  }
+
+  _createDeleteButton() {
+    return $("<button>")
+      .addClass("delete-image-button")
+      .append(
+        this._createSVG3(),
+        $("<span>").addClass("delete-image-tip").text("刪除")
+      );
+  }
+
+  _createSVG1() {
+    return $(`
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0h24v24H0z" fill="none"></path>
+      <path d="M11.9997 13.1716L7.04996 8.22186L5.63574 9.63607L11.9997 16L18.3637 9.63607L16.9495 8.22186L11.9997 13.1716Z" fill="white">
+      </path>
+    </svg>
+    `);
+  }
+
+  _createSVG2() {
+    return $(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+      <path fill="none" d="M0 0h24v24H0z"></path>
+      <path fill="currentColor" d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.455.547-.679.045L12 14l6-8-8 6-8.054-2.685z"></path>
+    </svg>
+    `);
+  }
+
+  _createSVG3() {
+    return $(`
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 50 59"
+    ><path
+      fill="#B5BAC1"
+      d="M0 7.5C0 5.01472 2.01472 3 4.5 3H45.5C47.9853 3 50 5.01472 50 7.5V7.5C50 8.32843 49.3284 9 48.5 9H1.5C0.671571 9 0 8.32843 0 7.5V7.5Z"
+    ></path>
+    <path
+      fill="#B5BAC1"
+      d="M17 3C17 1.34315 18.3431 0 20 0H29.3125C30.9694 0 32.3125 1.34315 32.3125 3V3H17V3Z"
+    ></path>
+    <path
+      fill="#B5BAC1"
+      d="M2.18565 18.0974C2.08466 15.821 3.903 13.9202 6.18172 13.9202H43.8189C46.0976 13.9202 47.916 15.821 47.815 18.0975L46.1699 55.1775C46.0751 57.3155 44.314 59.0002 42.1739 59.0002H7.8268C5.68661 59.0002 3.92559 57.3155 3.83073 55.1775L2.18565 18.0974ZM18.0003 49.5402C16.6196 49.5402 15.5003 48.4209 15.5003 47.0402V24.9602C15.5003 23.5795 16.6196 22.4602 18.0003 22.4602C19.381 22.4602 20.5003 23.5795 20.5003 24.9602V47.0402C20.5003 48.4209 19.381 49.5402 18.0003 49.5402ZM29.5003 47.0402C29.5003 48.4209 30.6196 49.5402 32.0003 49.5402C33.381 49.5402 34.5003 48.4209 34.5003 47.0402V24.9602C34.5003 23.5795 33.381 22.4602 32.0003 22.4602C30.6196 22.4602 29.5003 23.5795 29.5003 24.9602V47.0402Z"
+      clip-rule="evenodd"
+      fill-rule="evenodd"
+    ></path>
+    <path fill="#B5BAC1" d="M2 13H48L47.6742 21.28H2.32031L2 13Z"></path>
+    </svg>
+    `);
+  }
+
+  _createButton() {
+    return $("<div>")
+      .addClass("delete-image-close")
+      .append($("<img>").attr("src", "images/icons/close.png"));
+  }
+
+  _createTimeline() {
+    return gsap
+      .timeline({
+        defaults: { ease: "back.out(2)" },
+        paused: true,
+      })
+      .fromTo(
+        this.element,
+        { autoAlpha: 0, y: -200 },
+        { duration: 0.7, autoAlpha: 1, y: 0 }
+      );
+  }
+
+  onClose(handler) {
+    if (this._closeHandler) return;
+    this._closeHandler = handler;
+
+    this.element.on("click", ".delete-image-close", this._closeHandler);
+
+    return this;
+  }
+
+  onSelect(handler) {
+    if (this._submitHandler) return;
+    this._submitHandler = (e) => {
+      const container = $(e.target).parents(".delete-image-container");
+      const category = container.find("input:checked").attr("id").split("-")[2];
+      const name = $(e.target).children("p").text();
+      handler({ category, name, element: $(e.target) });
+    };
+
+    this.element.on("click", "article", this._submitHandler);
+
+    return this;
+  }
+
+  async show(items) {
+    if (this._inAnimate || this._isShow) return;
+    this._inAnimate = true;
+    this._isShow = true;
+
+    $("#delete-image-Scene")[0].checked = true;
+
+    const content = this.element.find(".delete-image-content");
+    content.find("article").remove();
+
+    items["Scene"].forEach((name) =>
+      this._createArticle(name).appendTo(content)
+    );
+
+    this._innerHandler = (e) => {
+      content.find("article").remove();
+      const category = $(e.target).attr("for").split("-")[2];
+      items[category].forEach((name) =>
+        this._createArticle(name).appendTo(content)
+      );
+    };
+
+    this.element.on("click", "form > label", this._innerHandler);
+
+    this._tl.play();
+    this._tl.eventCallback("onComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onComplete", resolve);
+    });
+
+    this._inAnimate = false;
+  }
+
+  async hide() {
+    if (this._inAnimate || !this._isShow) return;
+    this._inAnimate = true;
+    this._isShow = false;
+
+    this.element.off("click", "form > label", this._innerHandler);
+
+    this._tl.reverse();
+    this._tl.eventCallback("onReverseComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onReverseComplete", resolve);
+    });
+
+    this._inAnimate = false;
+  }
+}
+
+/**
+ * content
+ */
+
+/**
+ * 這個類別提供創建和控制首頁內容的功能。
+ */
+class Intro extends component {
+  constructor() {
+    super();
+
+    this.category = "Scene";
+
+    this._map = {
+      Scene: {
+        h1: "場景",
+        h2: "Scene",
+        p: "將日本動畫與遊戲中的經典場景以現實風格重新詮釋的二創作品，同時也包含了以日本鄉村為靈感的原創作品。",
+        tags: {
+          Japan: "日本",
+          Country: "鄉間",
+          Sec: "二創",
+        },
+        mixMode: "normal",
+      },
+      Props: {
+        h1: "物件",
+        h2: "Props",
+        p: "收錄了各式各樣的模型，從微小的螺絲到建築物，以滿足戶外場景的需要。以實例為依據，提供包裝好的物件，並以模組化的概念幫助場景設計。",
+        tags: {
+          Instance: "實例",
+          Module: "模組化",
+        },
+        mixMode: "normal",
+      },
+      Nature: {
+        h1: "自然",
+        h2: "Nature",
+        p: "涵蓋了各種大小的植物，包括小型植物、灌木和樹木，對於複雜的物件提供了實例，同時還為草地等植被預置了調校過參數的粒子系統。",
+        tags: {
+          Instance: "實例",
+          Particle: "粒子系統",
+        },
+        mixMode: "normal",
+      },
+    };
+
+    const container = $("<section>")
+      .addClass("content-intro")
+      .addClass("Scene");
+
+    const left = $("<div>").addClass("content-intro-left");
+    const right = $("<div>").addClass("content-intro-right");
+
+    const info = this._createInfo();
+    const button = this._createButton();
+    left.append(info, button);
+
+    const cards = this._createCards();
+    cards.forEach((card) => card.appendTo(right));
+
+    container.append(left, right);
+    this.element = container;
+
+    gsap.set(this.element, { autoAlpha: 0 });
+  }
+
+  static createURLStyle(urlMap) {
+    const backgroundStyle = Object.keys(urlMap.background).map(
+      (key) =>
+        `.content-intro.${key}::before{background-image: url(${urlMap.background[key]});}`
+    );
+
+    const cardStyle = Object.keys(urlMap.card).map(
+      (key) =>
+        `.content-intro-card-container.${key} .card-image-container{background-image: url(${urlMap.card[key]});}`
+    );
+
+    $("<style>")
+      .text([...backgroundStyle, ...cardStyle].join(""))
+      .appendTo("head");
+  }
+
+  _createInfo() {
+    return $("<div>")
+      .addClass("content-intro-info")
+      .append(
+        $("<div>").addClass("line"),
+        $("<div>")
+          .addClass("content-intro-title")
+          .append(
+            $("<h1>").text(this._map.Scene.h1),
+            $("<h2>").attr("lang", "en").text(this._map.Scene.h2),
+            $("<div>").addClass("text-mask")
+          ),
+        $("<p>")
+          .text(this._map.Scene.p)
+          .append($("<div>").addClass("text-mask"))
+      );
+  }
+
+  _createButton() {
+    return $("<button>")
+      .addClass("content-intro-learnmore")
+      .append(
+        $("<span>")
+          .addClass("circle")
+          .append($("<span>").addClass("icon arrow")),
+        $("<span>").addClass("button-text").text("瀏覽圖片")
+      );
+  }
+
+  _createCards() {
+    return Object.keys(this._map).map((type) => {
+      const container = $("<div>")
+        .addClass("content-intro-card-container")
+        .addClass(type);
+
+      const background = $("<div>")
+        .append($("<div>").addClass("card-background"))
+        .appendTo(container);
+      const article = $("<article>")
+        .addClass("content-intro-card")
+        .appendTo(container);
+
+      const tags = $("<div>").addClass("card-project-tags");
+      Object.entries(this._map[type].tags).forEach((tag) =>
+        $("<span>").addClass(tag[0]).text(`• ${tag[1]}`).appendTo(tags)
+      );
+      const title = $("<div>").append(
+        $("<h2>").addClass("card-project-title").text(this._map[type].h1),
+        $("<div>").addClass("card-project-hover").append(this._createSVG())
+      );
+
+      $("<div>").addClass("card-image-container").appendTo(article);
+      $("<div>")
+        .addClass("card-project-info")
+        .append(title, tags)
+        .appendTo(article);
+
+      return container;
+    });
+  }
+
+  _createSVG() {
+    return $(
+      '<svg xmlns="http://www.w3.org/2000/svg" \
+      width="32px" \
+      height="32px" \
+      stroke-linejoin="round" \
+      stroke-linecap="round" \
+      viewBox="0 0 24 24" \
+      stroke-width="2" \
+      fill="none" \
+      stroke="currentColor"> \
+        <line y2="12" x2="19" y1="12" x1="5"></line> \
+        <polyline points="12 5 19 12 12 19"></polyline> \
+      </svg>'
+    );
+  }
+
+  _createTimeline() {
+    const currentTab = this.element.attr("class").split(" ")[1];
+    return gsap
+      .timeline({
+        defaults: { ease: "power2.out" },
+        paused: true,
+      })
+      .fromTo(
+        this.element,
+        { autoAlpha: 0, filter: "blur(5px)" },
+        { ease: "none", duration: 1, autoAlpha: 1, filter: "blur(0px)" }
+      )
+      .fromTo(
+        this.element.find(".content-intro-info").children(),
+        { scaleX: 0 },
+        { stagger: 0.2, duration: 1, scaleX: 1 },
+        "-=0.5"
+      )
+      .fromTo(
+        this.element.find(".content-intro-info").find(".text-mask"),
+        { left: 0 },
+        { ease: "power2.in", stagger: 0.4, duration: 1, left: "100%" },
+        "-=0.5"
+      )
+      .fromTo(
+        this.element.find(".content-intro-learnmore"),
+        { autoAlpha: 0, x: -100 },
+        { duration: 1, autoAlpha: 1, x: 0 },
+        "-=0.7"
+      )
+      .fromTo(
+        this.element
+          .find(".content-intro-card-container")
+          .not(`.${currentTab}`),
+        { x: 350 },
+        { stagger: 0.2, duration: 1, x: 0 },
+        "-=0.7"
+      );
+  }
+
+  onSelect(handler) {
+    if (this._handler) return;
+
+    const typeMap = {
+      "content-intro-learnmore": "learnMore",
+      "content-intro-card": "navigate",
+    };
+
+    this._handler = (e) => {
+      const type = typeMap[$(e.target).attr("class")];
+
+      if (type === "navigate") {
+        const target = $(e.target).parent().attr("class").split(" ")[1];
+        handler({ type, target });
+      } else {
+        const target = $(e.target)
+          .parents(".content-intro")
+          .attr("class")
+          .split(" ")[1];
+        handler({ type, target });
+      }
+    };
+
+    this.element.on(
+      "click",
+      ".content-intro-learnmore, .content-intro-card",
+      this._handler
+    );
+  }
+
+  async switchTab(type) {
+    //
+    // hide
+    await this.hide();
+
+    //
+    // background and blend mode
+    const originalClass = this.element.attr("class").split(" ")[0];
+    this.element
+      .attr("class", `${originalClass} ${type}`)
+      .find(".content-intro-left")
+      .css("mix-blend-mode", this._map[type].mixMode);
+
+    //
+    // info
+    this.element.find(".content-intro-info h1").text(this._map[type].h1);
+    this.element.find(".content-intro-info h2").text(this._map[type].h2);
+    this.element
+      .find(".content-intro-info p")
+      .text(this._map[type].p)
+      .append($("<div>").addClass("text-mask"));
+
+    //
+    // card
+    this.element.find(".content-intro-card-container").css({
+      opacity: 1,
+      margin: "15px 0px",
+      height: "auto",
+    });
+    this.element.find(`.content-intro-card-container.${type}`).css({
+      opacity: 0,
+      margin: 0,
+      height: 0,
+    });
+
+    await delay(100);
+
+    //
+    // show
+    await this.show();
+    this.category = type;
+  }
+
+  async show() {
+    this._tl = this._createTimeline();
+
+    this._tl.play();
+    this._tl.eventCallback("onComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onComplete", resolve);
+    });
+  }
+
+  async hide() {
+    this._tl.reverse();
+    this._tl.eventCallback("onReverseComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onReverseComplete", resolve);
+    });
+  }
+}
+
+/**
+ * 這個類別用於創建和管理圖片庫組件。
+ */
+class Gallery extends component {
+  constructor() {
+    super();
   }
 
   /**
-   * 創建單個圖片元素。
-   * @private @param {string} url - 圖片的 URL。
+   * 創建圖片庫的主要元素。 @private
+   * @param {string[]} urls - 所有要展示圖片的 URL。
+   * @returns {Promise<jQuery>} - 圖片庫的主要元素。
+   */
+  async _createGallery(urls) {
+    const gallery = $("<div>").addClass("gallery");
+    const grid = $("<div>").addClass("images-grid");
+
+    const images = await Promise.all(urls.map((url) => this._createImage(url)));
+
+    grid.append(images);
+    gallery.append(grid);
+
+    return gallery;
+  }
+
+  /**
+   * 創建單個圖片元素。 @private
+   * @param {string} url - 圖片的 URL。
    * @returns {Promise<jQuery>} - 創建的圖片容器元素。
    */
   async _createImage(url) {
-    const container = $("<div>").addClass("light-box-container");
+    const container = $("<div>").addClass("image-container");
 
-    const imageContainer = $("<div>").addClass("image-container");
-    const image = $("<img>")
-      .attr("src", url)
-      .attr("decoding", "async")
-      .addClass("light-box-image");
+    const image = $("<img>").attr("src", url).attr("decoding", "async");
+    const reflexContainer = $("<div>")
+      .addClass("reflex-container")
+      .append($("<div>").addClass("reflex-plane"));
 
-    const reflexContainer = $("<div>").addClass("reflex-container");
-    $("<div>").addClass("reflex-plane").appendTo(reflexContainer);
-
-    imageContainer.append(reflexContainer, image);
+    container.append(reflexContainer, image);
 
     await decode(image[0]);
 
-    this._bindImageTimeline(imageContainer);
-
-    const filter = $("<img>").addClass("image-filter").attr("src", url);
-    container.append(filter, imageContainer);
-
-    this._bindFilterTimeline(container);
+    this._bindTimeline(container);
 
     return container;
   }
 
   /**
-   * 綁定圖片元素的時間軸。
-   * @private
+   * 綁定圖片元素的時間軸。 @private
    * @param {jQuery} imageContainer - 圖片容器的jQuery對象。
    */
-  _bindImageTimeline(imageContainer) {
+  _bindTimeline(imageContainer) {
     const image = imageContainer.find("img");
     const element = image.add(imageContainer.find(".reflex-plane"));
-    const t1 = createImageHoverTl(imageContainer);
-    const t2 = createScaleYoyoTl(imageContainer, 0.9);
+
+    const t1 = gsap
+      .timeline({ paused: true })
+      .fromTo(
+        image,
+        { filter: "brightness(0.95)" },
+        { duration: 0.2, ease: "set1", filter: "brightness(1.12)" }
+      )
+      .fromTo(
+        imageContainer,
+        { scale: 1 },
+        { duration: 0.2, ease: "set1", scale: 1.02 },
+        "<"
+      );
+    const t2 = gsap.timeline({ paused: true }).to(imageContainer, {
+      duration: 0.15,
+      ease: "set1",
+      scale: 0.97,
+      repeat: 1,
+      yoyo: true,
+    });
+
     const mousemoveHandler = this._createMousemoveHandler(element);
 
     image.on("mouseenter", () => {
@@ -1989,24 +1297,7 @@ class LightBox extends component {
   }
 
   /**
-   * 綁定背景濾鏡元素的時間軸。
-   * @private
-   * @param {jQuery} container - 整個容器的jQuery對象。
-   */
-  _bindFilterTimeline(container) {
-    const filter = container.find(".image-filter");
-
-    const tl = gsap
-      .timeline({ defaults: { ease: "set1" }, paused: true })
-      .from(filter, { autoAlpha: 0, duration: 0.2 });
-
-    container.on("mouseenter", ".light-box-image", () => tl.play());
-    container.on("mouseleave", ".light-box-image", () => tl.reverse());
-  }
-
-  /**
-   * 創建滑鼠移動事件處理器。
-   * @private
+   * 創建滑鼠移動事件處理器。 @private
    * @param {jQuery} element - 被處理的元素。
    * @returns {Function} - 滑鼠移動事件處理器函式。
    */
@@ -2037,323 +1328,99 @@ class LightBox extends component {
   }
 
   /**
-   * 創建上下按鈕。
-   * @private @returns {{prevButton: jQuery, nextButton: jQuery}}
+   * 創建並初始化圖片庫的時間軸效果。 @private
+   * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
    */
-  _createButtons() {
-    const prevButton = $("<button>").addClass("prev-button");
-    const nextButton = $("<button>").addClass("next-button");
+  _createTimelines() {
+    const images = this.element.find(".image-container");
+    return gsap.timeline({ defaults: { ease: "set1" }, paused: true }).fromTo(
+      images,
+      {
+        autoAlpha: 0,
+        filter: "blur(30px)",
+      },
+      {
+        autoAlpha: 1,
+        filter: "",
+        stagger: { from: "random", amount: 0.35 },
+      }
+    );
+  }
 
-    const buttons = [prevButton, nextButton];
+  /**
+   * 初始化或重置整個gallery
+   * @param {string[]} urls - 所有要展示圖片的 URL。
+   */
+  async _reset(urls) {
+    this.element = await this._createGallery(urls);
 
-    buttons.forEach((button, index) => {
-      // 普通時間軸
-      const hoverTls = [
-        createBackgroundColorTl(button, "#ea81af"),
-        createScaleTl(button, 1, 1.05),
-      ];
+    if (this._selectHandler)
+      this.element.on("click", "img", this._selectHandler);
 
-      const clickTl = createScaleYoyoTl(button, 0.9);
+    this._tl = this._createTimelines();
+    this.appendTo("#content");
+  }
 
-      button.on("mouseenter", () => {
-        hoverTls.forEach((tl) => {
-          tl.play();
-        });
-      });
-      button.on("mouseleave", () => {
-        hoverTls.forEach((tl) => {
-          tl.reverse();
-        });
-      });
-      button.on("click", () => clickTl.restart());
+  /**
+   * 顯示圖片庫。 (包含創建元素)
+   * @param {string[]} urls - 所有要展示圖片的 URL。
+   * @returns {Promise<Gallery>} - 回傳 `Gallery` 實例，以便進行方法鏈結。
+   */
+  async show(urls) {
+    if (this._inAnimate || this._isShow) return;
+    this._inAnimate = true;
+    this._isShow = true;
 
-      // GIF動畫
-      const iconContainer = $("<div>").addClass("animated-up-icon-container");
+    await this._reset(urls);
 
-      if (index === 1) gsap.set(iconContainer, { rotate: 180 });
-
-      const makeImg = () => {
-        return $("<img>")
-          .attr("src", "images/icons/up (white).png")
-          .addClass("up-img")
-          .appendTo(iconContainer);
-      };
-      const makeGif = () => {
-        const timestamp = $.now();
-        return $("<img>")
-          .attr("src", `images/icons/top (animated).gif?timestamp=${timestamp}`)
-          .addClass("animated-up-gif")
-          .appendTo(iconContainer);
-      };
-
-      button.append(iconContainer);
-      makeImg();
-
-      button.on("mouseenter", () => {
-        const imgs = button.find(".up-img");
-        const gif = makeGif().hide();
-        gif[0].onload = () => {
-          imgs.remove();
-          gif.show();
-        };
-      });
-      button.on("mouseleave", () => {
-        const gifs = button.find(".animated-up-gif");
-        gifs.hide(500, () => gifs.remove());
-        makeImg().hide().show(500);
-      });
+    this._tl.play();
+    this._tl.eventCallback("onComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onComplete", resolve);
     });
 
-    return { prevButton, nextButton };
-  }
-
-  /**
-   * 創建並初始化投影片的時間軸效果。
-   * @private
-   */
-  _createShowTimelines() {
-    const elements = this.element.children();
-    this._timelines.show = gsap
-      .timeline({ defaults: { ease: "set1" }, paused: true })
-      .from(this.element, { autoAlpha: 0, duration: 0.05 })
-      .from(
-        elements,
-        {
-          autoAlpha: 0,
-          scale: 0.5,
-          ease: "back.out(2)",
-          stagger: { from: "random", amount: 0.35 },
-        },
-        "<"
-      );
+    this._inAnimate = false;
 
     return this;
   }
 
   /**
-   * 創建投影片隱藏的時間軸效果。
-   * @private
-   */
-  _createHideTimelines() {
-    const elements = this.element.children();
-    this._timelines.hide = gsap
-      .timeline({ defaults: { ease: "set1" }, paused: true })
-      .to(elements, {
-        autoAlpha: 0,
-        scale: 0.5,
-        ease: "back.in(2)",
-        stagger: { from: "random", amount: 0.35 },
-      })
-      .to(this.element, { autoAlpha: 0, duration: 0.05 });
-
-    return this;
-  }
-
-  /**
-   * 顯示投影片。
-   */
-  async show(index, list, category) {
-    if (this.isShow) return this;
-
-    this.category = category;
-    this.element = await this._createLightBox(index, list);
-    this._createShowTimelines().appendTo("#sidebar");
-
-    // 註冊事件
-    if (this._handlers.next)
-      this.element.on("click", ".next-button", this._handlers.next);
-    if (this._handlers.prev)
-      this.element.on("click", ".prev-button", this._handlers.prev);
-    if (this._handlers.select)
-      this.element.on("click", ".light-box-image", this._handlers.select);
-
-    this.isShow = true;
-    this._timelines.show.play();
-
-    return this;
-  }
-
-  /**
-   * 隱藏投影片。
+   * 隱藏圖片庫。
+   * @returns {Promise<Gallery>} - 回傳 `Gallery` 實例，以便進行方法鏈結。
    */
   async hide() {
-    if (!this.isShow) return this;
+    if (this._inAnimate || !this._isShow) return;
+    this._inAnimate = true;
+    this._isShow = false;
 
-    this.isShow = false;
+    this.element.find(".image-container").off();
 
-    this._createHideTimelines();
-    this._timelines.hide.play();
-
-    this._timelines.hide.eventCallback("onComplete", null);
-
+    this._tl.reverse();
+    this._tl.eventCallback("onReverseComplete", null);
     await new Promise((resolve) => {
-      this._timelines.hide.eventCallback("onComplete", resolve);
+      this._tl.eventCallback("onReverseComplete", resolve);
     });
 
-    this.element.off();
     this.element.remove();
     this.element = null;
-    this.list = [];
-    this.index = -1;
-    this.imgs = [];
     this._isAppendTo = false;
+    this._inAnimate = false;
 
     return this;
   }
 
   /**
-   * 投影片切換至下張圖片。
-   * @param {number} offset - 偏移張數。
-   * @returns {Promise<void>} - 表示異步操作完成的 Promise 物件。
-   */
-  async toNext(offset = 1) {
-    // 提取變數
-    const length = this.list.length;
-    const newIndex = (this.index + offset) % length; // 新的中間位置在this.list中的指標
-    const nextButton = this.element.children(".next-button");
-
-    // 準備新圖片
-    const urls = Array.from(
-      { length: offset },
-      (_, i) => this.list[(newIndex + 2 - i) % length]
-    ).reverse();
-    const promises = urls.map((url) => this._createImage(url));
-    const imgs = await Promise.all(promises);
-
-    // 創建與"初始化"時間軸
-    const tl = gsap
-      .timeline({
-        defaults: { ease: "power2.out", duration: 0.5 },
-        paused: true,
-      })
-      .to(this.imgs.slice(0, offset), { autoAlpha: 0, height: 0, margin: 0 })
-      .from(imgs, { autoAlpha: 0, height: 0, margin: 0 }, "<");
-
-    imgs.forEach((img) => img.insertBefore(nextButton));
-
-    // 投影片切換
-    await new Promise((resolve) => {
-      tl.play();
-      tl.eventCallback("onComplete", resolve);
-    });
-
-    // 更新屬性
-    this.index = newIndex;
-    this.imgs.slice(0, offset).forEach((img) => img.remove());
-    this.imgs.splice(0, offset);
-    this.imgs.push(...imgs);
-  }
-
-  /**
-   * 投影片切換至上張圖片。
-   * @async
-   * @param {number} offset - 偏移張數。
-   * @returns {Promise<void>} - 表示異步操作完成的 Promise 物件。
-   */
-  async toPrev(offset = 1) {
-    // 提取變數
-    const length = this.list.length;
-    const newIndex = (this.index - offset + length) % length; // 新的中間位置在this.list中的指標
-    const prevButton = this.element.children(".prev-button");
-
-    // 準備新圖片
-    const urls = Array.from(
-      { length: offset },
-      (_, i) => this.list[(newIndex - 2 + i + length) % length]
-    ).reverse();
-    const promises = urls.map((url) => this._createImage(url));
-    const imgs = await Promise.all(promises);
-
-    // 創建與"初始化"時間軸
-    const tl = gsap
-      .timeline({
-        defaults: { ease: "power2.out", duration: 0.5 },
-        paused: true,
-      })
-      .to(this.imgs.slice(5 - offset, 5), {
-        autoAlpha: 0,
-        height: 0,
-        margin: 0,
-      })
-      .from(imgs, { autoAlpha: 0, height: 0, margin: 0 }, "<");
-
-    imgs.forEach((img) => img.insertAfter(prevButton));
-
-    // 投影片切換
-    await new Promise((resolve) => {
-      tl.play();
-      tl.eventCallback("onComplete", resolve);
-    });
-
-    // 更新屬性
-    this.index = newIndex;
-    this.imgs.slice(5 - offset, 5).forEach((img) => img.remove());
-    this.imgs.splice(-offset);
-    imgs.reverse(); // 確保順序正確
-    this.imgs.unshift(...imgs);
-  }
-
-  /**
-   * 註冊下一張圖片事件處理程序。
-   * @param {Function} handler - 處理程序函數，接收新圖片的 URL 作為參數。
-   * @returns {LightBox} - 返回 LightBox 實例，支持鏈式調用。
-   */
-  onNext(handler) {
-    // 記錄至屬性
-    if (this._handlers.next) {
-      console.error("lightBox: 已註冊onNext");
-      return;
-    }
-
-    this._handlers.next = () => {
-      const index = (this.index + 1) % this.list.length;
-      const url = this.list[index];
-
-      handler(url);
-    };
-
-    return this;
-  }
-
-  /**
-   * 註冊上一張圖片事件處理程序。
-   * @param {Function} handler - 處理程序函數，接收新圖片的 URL 作為參數。
-   * @returns {LightBox} - 返回 LightBox 實例，支持鏈式調用。
-   */
-  onPrev(handler) {
-    // 記錄至屬性
-    if (this._handlers.prev) {
-      console.error("lightBox: 已註冊onPrev");
-      return;
-    }
-
-    this._handlers.prev = () => {
-      const index = (this.index - 1 + this.list.length) % this.list.length;
-      const url = this.list[index];
-
-      handler(url);
-    };
-
-    return this;
-  }
-
-  /**
-   * 註冊選擇圖片事件處理程序。
-   * @param {Function} handler - 處理程序函數，接收選擇圖片的 URL 和索引作為參數。
-   * @returns {LightBox} - 返回 LightBox 實例，支持鏈式調用。
+   * 設定圖片庫選擇事件的處理函數。
+   * @param {Function} handler - 選擇事件的處理函數。
+   * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
    */
   onSelect(handler) {
-    // 記錄至屬性
-    if (this._handlers.select) {
-      console.error("lightBox: 已註冊onPrev");
-      return;
-    }
+    if (this._selectHandler)
+      this.element.off("click", "img", this._selectHandler);
 
-    this._handlers.select = (e) => {
-      const url = e.target.src.replace("/thumbnail/", "/jpg/");
-      const index = $(e.target).parents(".light-box-container").index();
-
-      handler(url, index);
+    this._selectHandler = function () {
+      const index = $(this).parent().index();
+      handler(index);
     };
 
     return this;
@@ -2361,126 +1428,211 @@ class LightBox extends component {
 }
 
 /**
- * 這個類別用於創建和管理預覽圖片檔名組件。
+ * 這個類別用於創建和管理預覽圖片組件(包含lightBox)。
  */
-class ImageName extends component {
+class Preview extends component {
   constructor() {
     super();
+  }
 
-    this.isShow = false;
-    this._timelines = {};
+  static referenceImages(imagesInstanceRef) {
+    Preview._images = imagesInstanceRef;
+  }
+
+  async _create(category, index) {
+    //
+    this.category = category;
+    this.index = index;
+
+    const lightBox = await this._createLightBox();
+    const intro = await this._createIntro();
+    const preview = await this._createImage();
+
+    this.elements = {
+      lightBox: lightBox.appendTo("#sidebar"),
+      content: $("<div>")
+        .addClass("preview-container")
+        .append(intro, preview)
+        .appendTo("#content"),
+    };
+
+    this._bindEvents();
+
+    this._tl = this._createTimeline();
+
+    this._zoom = new ImageZoom(preview.find("figure"));
+  }
+
+  async _createLightBox() {
+    const fileList = await Preview._images.getList();
+    const urls = await Promise.all(
+      fileList[this.category].map((name) =>
+        Preview._images.getThumbnail(this.category, name)
+      )
+    );
+
+    const section = $("<section>").addClass("light-box");
+    const scroller = $("<div>").addClass("light-box-scroller");
+    const mask = $("<div>").addClass("light-box-mask");
+    section.append(scroller, mask);
 
     const container = $("<div>")
-      .addClass("file-name-container")
+      .addClass("light-box-images-container")
+      .appendTo(scroller);
+
+    urls.forEach((url, i) => {
+      const imageContainer = $("<figure>")
+        .addClass("light-box-image-container")
+        .append(
+          $("<img>")
+            .addClass("light-box-image-back")
+            .attr("src", url)
+            .attr("decoding", "async"),
+          $("<img>")
+            .addClass("light-box-image")
+            .attr("src", url)
+            .attr("decoding", "async")
+        );
+
+      if (i === this.index) imageContainer.addClass("light-box-active");
+
+      imageContainer.appendTo(container);
+    });
+
+    const styleTag = document.createElement("style");
+    document.head.appendChild(styleTag);
+    styleTag.sheet.insertRule(`
+    .light-box-active::after {
+      background: url("images/icons/play.png");
+      background-size: 20px 20px;
+    }
+    `);
+
+    return section;
+  }
+
+  async _createIntro() {
+    const fileList = await Preview._images.getList();
+    const title = fileList[this.category][this.index];
+
+    return $("<section>")
+      .addClass("preview-intro")
+      .append($("<div>").addClass("line"), $("<h1>").text(title));
+  }
+
+  async _createImage() {
+    const url = await Preview._images.getImage(this.category, this.index);
+
+    const img = $("<img>").attr("src", url).attr("decoding", "async");
+    await decode(img[0]);
+
+    return $("<section>")
+      .addClass("preview-image-container")
       .append(
-        $("<p>").addClass("file-name"),
-        $("<button>")
-          .addClass("extend-button")
-          .append($("<label>").text(".jpg"))
+        $("<figure>").append(
+          img.clone().addClass("preview-image-back"),
+          img.clone().addClass("preview-image")
+        )
       );
-
-    this.element = container;
-
-    this._bindTimeline(container)._createTimelines();
   }
 
-  /**
-   * 綁定元素的時間軸效果。
-   * @private @param {jQuery} container - 元素的 jQuery 物件。
-   */
-  _bindTimeline(container) {
-    const button = container.find(".extend-button");
+  _createTimeline() {
+    return gsap
+      .timeline({ paused: true })
+      .fromTo(
+        this.elements.content,
+        { autoAlpha: 0, y: 250 },
+        { autoAlpha: 1, y: 0 }
+      )
+      .fromTo(
+        this.elements.lightBox,
+        { autoAlpha: 0, x: -100 },
+        { autoAlpha: 1, x: 0 },
+        "<0.3"
+      );
+  }
 
-    const t1 = createScaleTl(button, 1, 1.1);
-    const t2 = createBackgroundColorTl(button, "#ea81af", 0.2);
-    const t3 = gsap
-      .timeline({ defaults: { ease: "set1", duration: 0.2 }, paused: true })
-      .to(button.find("label"), {
-        color: "hsl(225, 10%, 23%)",
-        fontWeight: "bold",
-      });
+  _bindEvents() {
+    this.elements.lightBox.on(
+      "click",
+      ".light-box-image-container",
+      async (e) => {
+        this._zoom.off();
+        await this._zoom.reset();
 
-    const t4 = createScaleYoyoTl(button, 0.8);
+        const { target } = e;
+        const index = $(target).index();
 
-    button.on("mouseenter", () => {
-      t1.play();
-      t2.play();
-      t3.play();
+        const title = (await Preview._images.getList())[this.category][index];
+        const url = await Preview._images.getImage(this.category, index);
+
+        this.elements.content.find("h1").text(title);
+        this.elements.content
+          .find(".preview-image, .preview-image-back")
+          .attr("src", url);
+
+        this.elements.lightBox
+          .find(".light-box-active")
+          .removeClass("light-box-active");
+        this.elements.lightBox
+          .find(".light-box-image-container")
+          .eq(index)
+          .addClass("light-box-active");
+
+        this._zoom.on();
+      }
+    );
+  }
+
+  async show(category, index) {
+    if (this._inAnimate || this._isShow) return this;
+    this._inAnimate = true;
+    this._isShow = true;
+
+    await this._create(category, index);
+
+    const targetElement = this.elements.lightBox.find(".light-box-active")[0];
+    targetElement.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
     });
-    button.on("mouseleave", () => {
-      t1.reverse();
-      t2.reverse();
-      t3.reverse();
-    });
-    button.on("click", () => t4.restart());
 
-    return this;
-  }
-
-  /**
-   * 創建並初始化時間軸效果。
-   * @private
-   */
-  _createTimelines() {
-    this._timelines.show = gsap
-      .timeline({ defaults: { ease: "set1" }, paused: true })
-      .from(this.element, { autoAlpha: 0, duration: 0.05 })
-      .from(this.element.children(), {
-        autoAlpha: 0,
-        scale: 0.5,
-        ease: "back.out(4)",
-        stagger: 0.1,
-      });
-
-    return this;
-  }
-
-  /**
-   * 顯示組件並設置圖片名稱。
-   * @param {string} name - 圖片的名稱。
-   */
-  show(name) {
-    if (this.isShow) return this;
-
-    this.element.find(".file-name").text(name);
-    this.isShow = true;
-    this._timelines.show.play();
-
-    return this;
-  }
-
-  /**
-   * 隱藏組件。
-   */
-  async hide() {
-    if (!this.isShow) return this;
-
-    this.isShow = false;
-    this._timelines.show.reverse();
-
-    this._timelines.show.eventCallback("onReverseComplete", null);
-
+    this._tl.play();
+    this._tl.eventCallback("onComplete", null);
     await new Promise((resolve) => {
-      this._timelines.show.eventCallback("onReverseComplete", resolve);
+      this._tl.eventCallback("onComplete", resolve);
     });
 
-    this.element.find(".file-name").text("");
+    this._zoom.on();
+
+    this._inAnimate = false;
 
     return this;
   }
 
-  /**
-   * 修改元素的名稱。
-   * @param {string} name - 新的名稱。
-   */
-  changeName(name) {
-    const nameElement = this.element.find(".file-name");
-    const oldName = nameElement.text();
+  async hide() {
+    if (this._inAnimate || !this._isShow) return this;
+    this._inAnimate = true;
+    this._isShow = false;
 
-    if (name === oldName) return this;
+    this._zoom.off();
+    await this._zoom.reset();
+    this._zoom = null;
 
-    nameElement.text(name);
+    this._tl.reverse();
+    this._tl.eventCallback("onReverseComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onReverseComplete", resolve);
+    });
 
+    Object.values(this.elements).forEach((element) => element.remove());
+    this._inAnimate = false;
+
+    return this;
+  }
+
+  appendTo(selector) {
+    console.log("此組件在show與hide時會自動載入");
     return this;
   }
 }

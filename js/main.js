@@ -94,11 +94,14 @@ function createIndex() {
     Scene: "#92e9ff",
   });
   headerBulb.appendTo("#header");
+  const headerButton = new HeaderButton();
+  headerButton.appendTo("#header");
+  const header = { bulb: headerBulb, button: headerButton };
 
   const intro = new Intro();
   intro.appendTo("#content");
 
-  return { mainButtons, addImagePopup, deleteImagePopup, headerBulb, intro };
+  return { mainButtons, addImagePopup, deleteImagePopup, header, intro };
 }
 
 function createGallery() {
@@ -111,7 +114,6 @@ function createGallery() {
 
 function createPreview() {
   const preview = new Preview();
-  preview.appendTo("body");
   return { preview };
 }
 
@@ -144,7 +146,7 @@ $(document).ready(async function () {
     },
   });
 
-  const { mainButtons, addImagePopup, deleteImagePopup, headerBulb, intro } =
+  const { mainButtons, addImagePopup, deleteImagePopup, header, intro } =
     createIndex();
 
   const { gallery, scrollButtons } = createGallery();
@@ -164,13 +166,12 @@ $(document).ready(async function () {
     if (e.type === "navigate") {
       //
       await intro.switchTab(e.target);
-      headerBulb.switchLight(e.target);
+      header.bulb.switchLight(e.target);
       //
     } else {
       //
       const category = e.target;
       const fileList = await images.getList();
-      console.log(fileList);
       const urls = fileList[category].map((name) =>
         images.getThumbnail(category, name)
       );
@@ -182,9 +183,65 @@ $(document).ready(async function () {
 
       await delay(100);
 
-      await gallery.show(urls);
+      await Promise.all([gallery.show(urls), header.button.show()]);
 
       scrollButtons.scrollElement = gallery.element;
+    }
+
+    inTransition = false;
+  });
+  gallery.onSelect(async (index) => {
+    if (inTransition) {
+      console.log("停止執行了 gallery.onSelect");
+      return;
+    }
+
+    inTransition = true;
+
+    const category = intro.category;
+    const fileList = await images.getList();
+    const urls = fileList[category].map((name) =>
+      images.getThumbnail(category, name)
+    );
+
+    await Promise.all([mainButtons.hide(), gallery.hide()]);
+    await preview.show(urls, index);
+
+    inTransition = false;
+  });
+  header.button.onClick(async () => {
+    if (inTransition) {
+      console.log("停止執行了 mainButtons.onSelect");
+      return;
+    }
+
+    inTransition = true;
+
+    if (gallery._isShow) {
+      $(".gallery .image-container").css("pointerEvents", "none");
+
+      await delay(100);
+
+      scrollButtons.hide();
+      waveBackground.hide();
+
+      await Promise.all([header.button.hide(), gallery.hide()]);
+      await intro.show();
+      //
+    } else if (preview._isShow) {
+      //
+      const category = intro.category;
+      const fileList = await images.getList();
+      const urls = fileList[category].map((name) =>
+        images.getThumbnail(category, name)
+      );
+
+      await preview.hide();
+      await Promise.all([mainButtons.show(), gallery.show(urls)]);
+      //
+    } else {
+      //
+      console.log("現在不應該按到返回按鈕才對啊");
     }
 
     inTransition = false;
@@ -337,105 +394,6 @@ $(document).ready(async function () {
 
     inTransition = false;
   });
-  gallery.onClose(async () => {
-    if (inTransition) {
-      console.log("停止執行了 gallery.onClose");
-      return;
-    }
-
-    inTransition = true;
-
-    $(".gallery .image-container").css("pointerEvents", "none");
-
-    await delay(100);
-
-    scrollButtons.hide();
-    waveBackground.hide();
-
-    await gallery.hide();
-    await intro.show();
-
-    inTransition = false;
-  });
-
-  let index;
-
-  gallery.onSelect(async (selectedIndex) => {
-    if (inTransition) {
-      console.log("停止執行了 gallery.onSelect");
-      return;
-    }
-
-    inTransition = true;
-
-    await delay(200);
-    maskbackground.show(15, 0.5);
-
-    const category = intro.category;
-
-    const list = await images.getList();
-    const length = list[category].length;
-
-    index = selectedIndex;
-    const prev = (length + index - 1) % length;
-    const next = (length + index + 1) % length;
-
-    await preview.show(
-      images.getImage(category, prev),
-      images.getImage(category, index),
-      images.getImage(category, next),
-      list[category][index].replace(".webp", "")
-    );
-
-    inTransition = false;
-  });
-  preview.onClose(async () => {
-    if (inTransition) {
-      console.log("停止執行了 preview.onClose");
-      return;
-    }
-
-    inTransition = true;
-
-    await preview.hide();
-    maskbackground.hide();
-
-    inTransition = false;
-  });
-  preview.onSelect(async (type) => {
-    if (inTransition) {
-      console.log("停止執行了 gallery.onSelect");
-      return;
-    }
-
-    inTransition = true;
-
-    const category = intro.category;
-
-    const list = await images.getList();
-    const length = list[category].length;
-
-    let prev, next;
-
-    if (type == "next") {
-      index = (length + index + 1) % length;
-      prev = (length + index - 1) % length;
-      next = (length + index + 1) % length;
-    } else {
-      index = (length + index - 1) % length;
-      prev = (length + index - 1) % length;
-      next = (length + index + 1) % length;
-    }
-
-    preview.reset(
-      images.getImage(category, prev),
-      images.getImage(category, index),
-      images.getImage(category, next),
-      list[category][index].replace(".webp", "")
-    );
-
-    inTransition = false;
-  });
 
   //
   // 載入完成
@@ -457,8 +415,9 @@ $(document).ready(async function () {
     opening.eventCallback("onComplete", resolve);
   });
 
-  headerBulb.switchLight("Scene");
-  intro.show();
+  header.bulb.switchLight("Scene");
+
+  await Promise.all([intro.show(), mainButtons.show()]);
 
   inTransition = false;
 });

@@ -486,20 +486,6 @@ async function compressImage(file, width, height) {
 }
 
 /**
- * 排序物件中的鍵按字母順序排序。
- * @param {Object} unordered 未排序的物件。
- * @returns {Object} 排序後的物件。
- */
-function sortByKey(unordered) {
-  return Object.keys(unordered)
-    .sort()
-    .reduce((obj, key) => {
-      obj[key] = unordered[key];
-      return obj;
-    }, {});
-}
-
-/**
  * 用於驗證身份，自動從session拿取資料
  * @returns {Promise<boolean>} 驗證是否通過
  */

@@ -466,15 +466,25 @@ async function decode(image) {
  * @returns {Promise<string>} 返回壓縮後圖片的 base64 編碼的數據 URL。
  */
 async function compressImage(file, width, height) {
-  const blob = await new Promise((resolve) => {
-    new Compressor(file, {
-      width,
-      height,
-      mimeType: "image/webp",
-      convertSize: Infinity,
-      success: resolve,
+  let quality = 1.0;
+  let retryCount = 0;
+  let blob = { size: 1024 * 1024 * 2 };
+
+  while (blob.size > 1024 * 1024 && retryCount < 8) {
+    console.log(`第${retryCount + 1}次壓縮圖片中`);
+    quality -= 0.1 * (retryCount + 1); // Adjust quality based on retry count
+    blob = await new Promise((resolve) => {
+      new Compressor(file, {
+        width,
+        height,
+        mimeType: "image/webp",
+        convertSize: Infinity,
+        quality,
+        success: resolve,
+      });
     });
-  });
+    retryCount++;
+  }
 
   const dataUrl = await new Promise((resolve) => {
     const reader = new FileReader();

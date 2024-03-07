@@ -1456,7 +1456,8 @@ class Preview extends component {
         .appendTo("#content"),
     };
 
-    this._bindEvents();
+    this._bindSwitchEvents();
+    this._bindHoverEvents();
 
     this._tl = this._createTimeline();
 
@@ -1480,21 +1481,19 @@ class Preview extends component {
       .addClass("light-box-images-container")
       .appendTo(scroller);
 
-    urls.forEach((url, i) => {
+    const images = await Promise.all(
+      urls.map((url) => this._createImage1(url, "light-box-image"))
+    );
+    const imagesBack = await Promise.all(
+      urls.map((url) => this._createImage1(url, "light-box-image-back"))
+    );
+
+    images.forEach((_, index) => {
       const imageContainer = $("<figure>")
         .addClass("light-box-image-container")
-        .append(
-          $("<img>")
-            .addClass("light-box-image-back")
-            .attr("src", url)
-            .attr("decoding", "async"),
-          $("<img>")
-            .addClass("light-box-image")
-            .attr("src", url)
-            .attr("decoding", "async")
-        );
+        .append($("<div>").append(imagesBack[index], images[index]));
 
-      if (i === this.index) imageContainer.addClass("light-box-active");
+      if (index === this.index) imageContainer.addClass("light-box-active");
 
       imageContainer.appendTo(container);
     });
@@ -1509,6 +1508,17 @@ class Preview extends component {
     `);
 
     return section;
+  }
+
+  async _createImage1(url, className) {
+    const image = $("<img>")
+      .attr("src", url)
+      .attr("decoding", "async")
+      .addClass(className);
+
+    await decode(image[0]);
+
+    return image;
   }
 
   async _createIntro() {
@@ -1552,7 +1562,33 @@ class Preview extends component {
       );
   }
 
-  _bindEvents() {
+  _createMousemoveHandler(element) {
+    return (e) => {
+      const centerX = element.offset().left + element.width() / 2;
+      const centerY = element.offset().top + element.height() / 2;
+      const offsetX = e.pageX - centerX;
+      const offsetY = e.pageY - centerY;
+
+      // 計算響應式的旋轉角度，根據元素的寬度和高度進行調整
+      const base = { x: 520, y: 290 };
+      const scale = {
+        x: element.width() / base.x,
+        y: element.height() / base.y,
+      };
+      const responsiveRotateX = -offsetY / (9 * scale.x);
+      const responsiveRotateY = offsetX / (15 * scale.y);
+
+      gsap.to(element, {
+        overwrite: "auto",
+        ease: "back.out(10)",
+        duration: 0.5,
+        rotateX: responsiveRotateX,
+        rotateY: responsiveRotateY,
+      });
+    };
+  }
+
+  _bindSwitchEvents() {
     this.elements.lightBox.on(
       "click",
       ".light-box-image-container",
@@ -1582,6 +1618,34 @@ class Preview extends component {
         this._zoom.on();
       }
     );
+  }
+
+  _bindHoverEvents() {
+    const lightBox = this.elements.lightBox;
+    let mousemoveHandler;
+
+    lightBox.on("mouseenter", ".light-box-image-container", (e) => {
+      const figure = $(e.target);
+      const div = figure.children("div");
+
+      mousemoveHandler = this._createMousemoveHandler(div);
+
+      figure.on("mousemove", mousemoveHandler);
+    });
+    lightBox.on("mouseleave", ".light-box-image-container", (e) => {
+      const figure = $(e.target);
+      const div = figure.children("div");
+
+      figure.off("mousemove", mousemoveHandler);
+
+      gsap.to(div, {
+        overwrite: "auto",
+        ease: "set1",
+        duration: 0.5,
+        rotateX: 0,
+        rotateY: 0,
+      });
+    });
   }
 
   async show(category, index) {

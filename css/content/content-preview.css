@@ -2,8 +2,8 @@
   position: absolute;
   top: 115px;
   bottom: 85px;
-  left: 10px;
-  right: 10px;
+  left: 0;
+  right: 0;
 }
 .light-box-scroller {
   position: absolute;
@@ -15,6 +15,7 @@
   scrollbar-color: transparent transparent;
   scrollbar-gutter: stable both-edges;
   overflow-y: auto;
+  overflow-x: visible;
   transition: scrollbar-color 0.2s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 #sidebar:hover .light-box-scroller {
@@ -25,12 +26,13 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 35px;
+  gap: 15px;
   width: 100%;
 }
 .light-box-mask {
   pointer-events: none;
   position: absolute;
+  left: -10px;
   width: calc(100% - 20px);
   height: 100%;
   background: linear-gradient(
@@ -48,22 +50,35 @@
 /*  */
 
 .light-box-image-container {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
-  border-radius: 5px;
   cursor: pointer;
   margin: 0;
+  padding: 10px 0;
 }
-.light-box-image-container > * {
+.light-box-image-container:first-child {
+  padding: 0 0 10px 0;
+}
+.light-box-image-container:last-child {
+  padding: 10px 0 0 0;
+}
+.light-box-image-container > div {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   pointer-events: none;
+}
+.light-box-image-container > div > * {
   aspect-ratio: 16 / 9;
-  width: 85%;
+  width: 80%;
   height: auto;
   border-radius: 5px;
   translate: -15px;
-  transition: all 0.2s cubic-bezier(0.215, 0.61, 0.355, 1);
+  transition: 0.2s cubic-bezier(0.215, 0.61, 0.355, 1);
+  transition-property: scale, opacity, translate;
 }
 .light-box-image-back {
   position: absolute;
@@ -77,14 +92,14 @@
 
 /*  */
 
-.light-box-image-container:hover > * {
+.light-box-image-container:hover > div > * {
   scale: 1.05;
 }
 .light-box-image-container:hover .light-box-image-back {
   opacity: 1;
 }
-.light-box-image-container:active > * {
-  transition: all 0.1s cubic-bezier(0.455, 0.03, 0.515, 0.955);
+.light-box-image-container:active > div > * {
+  transition: 0.1s cubic-bezier(0.455, 0.03, 0.515, 0.955);
   scale: 0.98;
 }
 
@@ -93,10 +108,10 @@
 .light-box-active {
   pointer-events: none;
 }
-.light-box-active > * {
+.light-box-active > div > * {
   translate: 0px;
 }
-.light-box-active > .light-box-image {
+.light-box-active > div > .light-box-image {
   outline: white solid 3px;
 }
 .light-box-active::after {

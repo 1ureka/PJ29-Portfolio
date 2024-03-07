@@ -108,15 +108,6 @@
   bottom: 0;
   background: white;
 }
-/* .content-intro.Scene .text-mask {
-  background: #92e9ff;
-}
-.content-intro.Props .text-mask {
-  background: #ffff7a;
-}
-.content-intro.Nature .text-mask {
-  background: #8ce197;
-} */
 
 /*  */
 /* button */
@@ -389,13 +380,13 @@
 }
 
 /* init */
+.content-intro-card-container {
+  margin: 15px 0px;
+  height: auto;
+  opacity: 1;
+}
 .content-intro-card-container.Scene {
   margin: 0;
   height: 0;
   opacity: 0;
 }
-/* .content-intro-card-container.Scene {
-  margin: 15px 0px;
-  height: auto;
-  opacity: 1;
-} */

@@ -88,15 +88,11 @@ function createIndex() {
   const deleteImagePopup = new DeleteImagePopup();
   deleteImagePopup.appendTo("body");
 
-  const headerBulb = new HeaderBulb({
+  const header = new Header({
     Nature: "#8ce197",
     Props: "#ffff7a",
     Scene: "#92e9ff",
   });
-  headerBulb.appendTo("#header");
-  const headerButton = new HeaderButton();
-  headerButton.appendTo("#header");
-  const header = { bulb: headerBulb, button: headerButton };
 
   const intro = new Intro();
   intro.appendTo("#content");
@@ -176,7 +172,7 @@ $(document).ready(async function () {
       //
       CATEGORY = e.target;
       await intro.switchTab(e.target);
-      header.bulb.switchLight(e.target);
+      header.switchLight(e.target);
       //
     } else if (e.type === "learnMore") {
       //
@@ -197,7 +193,7 @@ $(document).ready(async function () {
       await Promise.all([
         preview.show(urls[0], title),
         lightBox.show(urls, 0),
-        header.button.show(),
+        header.show(),
       ]);
 
       maskbackground.hide();
@@ -206,7 +202,7 @@ $(document).ready(async function () {
 
     inTransition = false;
   });
-  header.button.onClick(async () => {
+  header.onReturn(async () => {
     if (inTransition) {
       console.log("停止執行了 mainButtons.onSelect");
       return;
@@ -214,8 +210,8 @@ $(document).ready(async function () {
 
     inTransition = true;
 
-    await delay(100);
-    await Promise.all([header.button.hide(), preview.hide(), lightBox.hide()]);
+    await delay(150);
+    await Promise.all([header.hide(), preview.hide(), lightBox.hide()]);
     await Promise.all([mainButtons.show(), intro.show()]);
 
     inTransition = false;
@@ -411,7 +407,7 @@ $(document).ready(async function () {
     opening.eventCallback("onComplete", resolve);
   });
 
-  header.bulb.switchLight("Scene");
+  header.switchLight("Scene");
 
   await Promise.all([intro.show(), mainButtons.show()]);
 

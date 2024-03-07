@@ -207,84 +207,39 @@ class ScrollButtons extends component {
 }
 
 /**
- * 這個類別用於創建和管理在header的燈泡元素
+ * 這個類別用於創建和管理在header的元素
  */
-class HeaderBulb extends component {
-  /**
-   * 建構一個新的 `HeaderBulb` 實例。
-   * @constructor @param {Object} colorMap - 用於配置圖片牆與燈泡顏色對應關係的映射表。
-   */
+class Header extends component {
   constructor(colorMap) {
     super();
 
+    this.element = $("#header");
+
     /** 燈泡目前的色彩。 @type {string | "off"} */
-    this.currentColor = "off";
-
-    this._timelines = {};
+    this._currentColor = "off";
     this._colorMap = colorMap;
+    this._bulb = new Bulb(30, 30);
 
-    /** 包含燈泡的 jQuery 物件。 @type {jQuery} */
-    this.element = this._createBulb();
+    // return button
+    const { button, makeImg, makeGif } = this._createReturnButton();
+    this._attachButtonEvents(button, makeImg, makeGif);
+
+    this.element.append(this._bulb.element, button);
   }
-
-  /**
-   * 創建燈泡元素。
-   * @private
-   * @returns {jQuery} - 燈泡元素的 jQuery 物件。
-   */
-  _createBulb() {
-    this.bulb = new Bulb(30, 30);
-
-    return this.bulb.element;
-  }
-
-  /**
-   * 終止所有時間軸動畫。
-   * @private
-   */
-  _killTimeline() {
-    const tlKeys = Object.values(this._colorMap);
-
-    tlKeys.forEach((color) => {
-      if (this._timelines[color]) {
-        this._timelines[color].kill();
-        this._timelines[color] = null;
-      }
-    });
-  }
-
-  /**
-   * 切換燈泡的顏色。
-   * @param {string} gallery
-   */
+  /** 切換燈泡的顏色。 @param {string} gallery */
   switchLight(gallery) {
-    this.currentColor = this._colorMap[gallery];
-
-    this.flickerLight();
-
+    this._currentColor = this._colorMap[gallery];
+    this._flickerLight();
+    return this;
+  }
+  /** 使燈泡的顏色閃爍。 @private */
+  _flickerLight() {
+    if (this._bulbTl) this._bulbTl.kill();
+    this._bulbTl = this._bulb.createTimeline(this._currentColor, 2).play();
     return this;
   }
 
-  /**
-   * 使燈泡的顏色閃爍。
-   */
-  flickerLight() {
-    this._killTimeline();
-    this._timelines[this.currentColor] = this.bulb
-      .createTimeline(this.currentColor, 2)
-      .play();
-
-    return this;
-  }
-}
-
-/**
- * 這個類別用於創建和管理在header的返回按鈕元素
- */
-class HeaderButton extends component {
-  constructor() {
-    super();
-
+  _createReturnButton() {
     const iconContainer = $("<div>").addClass("return-button-icon");
 
     const makeImg = () => {
@@ -293,6 +248,7 @@ class HeaderButton extends component {
         .addClass("return-img")
         .appendTo(iconContainer);
     };
+
     const makeGif = () => {
       const timestamp = $.now();
       return $("<img>")
@@ -305,11 +261,16 @@ class HeaderButton extends component {
 
     const button = $("<button>")
       .addClass("return-button")
+      .addClass("hide")
       .append(
         iconContainer,
         $("<span>").addClass("return-button-tip").text("返回")
       );
 
+    return { button, makeImg, makeGif };
+  }
+
+  _attachButtonEvents(button, makeImg, makeGif) {
     button.on("mouseenter", () => {
       const imgs = button.find(".return-img");
       const gif = makeGif().hide();
@@ -318,75 +279,30 @@ class HeaderButton extends component {
         gif.show();
       };
     });
+
     button.on("mouseleave", () => {
       const gifs = button.find(".return-gif");
       gifs.hide(500, () => gifs.remove());
       makeImg().hide().show(500);
     });
-
-    this.element = button;
-
-    this._tl = this._createTimeline();
-  }
-
-  _createTimeline() {
-    return gsap
-      .timeline({ defaults: { ease: "back.out(2)" }, paused: true })
-      .fromTo(
-        this.element,
-        {
-          autoAlpha: 0,
-          y: -30,
-          scale: 1.2,
-        },
-        {
-          autoAlpha: 1,
-          y: 0,
-          scale: 1,
-        }
-      );
   }
 
   async show() {
-    if (this._inAnimate || this._isShow) return;
-    this._inAnimate = true;
-    this._isShow = true;
-
-    this._tl.play();
-    this._tl.eventCallback("onComplete", null);
-    await new Promise((resolve) => {
-      this._tl.eventCallback("onComplete", resolve);
-    });
-
-    this._inAnimate = false;
-
-    return this;
+    this.element.find(".return-button").toggleClass("hide", false);
   }
 
   async hide() {
-    if (this._inAnimate || !this._isShow) return;
-    this._inAnimate = true;
-    this._isShow = false;
-
-    this._tl.reverse();
-    this._tl.eventCallback("onReverseComplete", null);
-    await new Promise((resolve) => {
-      this._tl.eventCallback("onReverseComplete", resolve);
-    });
-
-    this._inAnimate = false;
-
-    return this;
+    this.element.find(".return-button").toggleClass("hide", true);
   }
 
-  onClick(handler) {
+  onReturn(handler) {
     if (this._handler) this.element.off("click", this._handler);
 
     this._handler = function () {
       handler($(this));
     };
 
-    this.element.on("click", this._handler);
+    this.element.on("click", ".return-button", this._handler);
 
     return this;
   }

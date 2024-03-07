@@ -13,3 +13,12 @@
   pointer-events: none;
   transition: all 0.3s;
 }
+
+#loading-info {
+  position: fixed;
+  z-index: 99999;
+  bottom: 0;
+  right: 0;
+  background-color: hsl(240, 5%, 10%);
+  font-size: 15px;
+}

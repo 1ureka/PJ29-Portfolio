@@ -80,6 +80,9 @@
 .content-intro-info h2 {
   margin: 0;
 }
+.content-intro-info h1 {
+  font-size: 1.75em;
+}
 .content-intro-info p {
   transform-origin: left;
   font-size: 18px;

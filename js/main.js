@@ -224,13 +224,24 @@ $(document).ready(async function () {
 
     inTransition = true;
 
-    maskbackground.show();
-    loadingIcon.show();
+    let isLoading = true;
+    (async function () {
+      await delay(1500);
+      if (!isLoading) return;
+      maskbackground.show();
+      loadingIcon.show();
+    })();
 
     const fileList = await images.getList();
     const title = fileList[CATEGORY][index];
-    const url = await images.getImage(CATEGORY, index);
-    preview.paintImage(url, title);
+    const results = await Promise.all([
+      images.getImage(CATEGORY, index),
+      preview.hide(),
+    ]);
+    const url = results[0];
+    await preview.show(url, title);
+
+    isLoading = false;
 
     maskbackground.hide();
     loadingIcon.hide();

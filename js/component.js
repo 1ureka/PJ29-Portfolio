@@ -988,7 +988,7 @@ class Intro extends component {
       })
       .fromTo(
         this.element,
-        { autoAlpha: 0, filter: "blur(5px)" },
+        { autoAlpha: 0, filter: "blur(10px)" },
         { ease: "none", duration: 1, autoAlpha: 1, filter: "blur(0px)" }
       )
       .fromTo(
@@ -1126,75 +1126,76 @@ class Preview extends component {
 
     this.element = container;
 
-    this._tl = this._createTimeline();
+    this._createTimeline();
   }
 
   _createIntro() {
     return $("<section>")
       .addClass("preview-intro")
-      .append($("<div>").addClass("line"), $("<h1>"));
+      .append(
+        $("<div>").addClass("line"),
+        $("<h1>"),
+        $("<div>").addClass("text-mask")
+      );
   }
 
   _createImage() {
     return $("<section>")
       .addClass("preview-image-container")
-      .append(
-        $("<figure>").append(
-          $("<img>").addClass("preview-image-back"),
-          $("<img>").addClass("preview-image")
-        )
-      );
+      .append($("<figure>").append($("<img>").addClass("preview-image")));
   }
 
-  paintImage(url, title) {
+  async paintImage(url, title) {
+    console.log(title);
     const h1 = this.element.find("h1");
     const image = this.element.find(".preview-image");
-    const back = this.element.find(".preview-image-back");
 
     h1.text(title);
     image.attr("src", url);
-    back.attr("src", url);
+
+    await decode(image[0]);
+    await delay(100);
   }
 
   _createTimeline() {
-    return gsap
+    this._tl = gsap
       .timeline({ paused: true })
-      .fromTo(this.element, { autoAlpha: 0, y: 250 }, { autoAlpha: 1, y: 0 });
+      .fromTo(this.element, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5 })
+      .fromTo(
+        this.element.find(".preview-image"),
+        { filter: "blur(10px)" },
+        { duration: 0.5, filter: "blur(0px)" },
+        "<"
+      )
+      .fromTo(
+        this.element.find(".text-mask"),
+        { left: 0 },
+        { ease: "power2.in", duration: 0.5, left: "100%" },
+        "<"
+      )
+      .fromTo(
+        this.element.find(".preview-intro"),
+        { scaleX: 0 },
+        { duration: 0.5, scaleX: 1 },
+        "-=0.5"
+      );
   }
 
   async show(url, title) {
-    if (this._inAnimate || this._isShow) return this;
-    this._inAnimate = true;
-    this._isShow = true;
-
     await this.paintImage(url, title);
-
     this._tl.play();
     this._tl.eventCallback("onComplete", null);
     await new Promise((resolve) => {
       this._tl.eventCallback("onComplete", resolve);
     });
-
-    this._inAnimate = false;
-
-    return this;
   }
 
   async hide() {
-    if (this._inAnimate || !this._isShow) return this;
-    this._inAnimate = true;
-    this._isShow = false;
-
     this._tl.reverse();
     this._tl.eventCallback("onReverseComplete", null);
     await new Promise((resolve) => {
       this._tl.eventCallback("onReverseComplete", resolve);
     });
-
-    this.element.children().remove();
-    this._inAnimate = false;
-
-    return this;
   }
 }
 
@@ -1216,6 +1217,9 @@ class LightBox extends component {
 
     this.element = $("<section>").addClass("light-box");
     this.element.css("pointerEvents", "none");
+
+    this._bindHoverEvents();
+    this._bindSwitchEvents();
   }
 
   async _create(urls, index) {
@@ -1346,9 +1350,15 @@ class LightBox extends component {
   }
 
   _createTimeline() {
-    return gsap
-      .timeline({ paused: true })
-      .fromTo(this.element, { autoAlpha: 0, x: -100 }, { autoAlpha: 1, x: 0 });
+    return gsap.timeline({ paused: true }).fromTo(
+      this.element.find("figure"),
+      { scale: 0 },
+      {
+        scale: 1,
+        stagger: { from: "random", amount: 0.7 },
+        ease: "back.out(2)",
+      }
+    );
   }
 
   async show(urls, index) {
@@ -1359,9 +1369,6 @@ class LightBox extends component {
     const lightbox = await this._create(urls, index);
     const mask = $("<div>").addClass("light-box-mask");
     this.element.append(lightbox, mask);
-
-    this._bindHoverEvents();
-    this._bindSwitchEvents();
 
     this._tl = this._createTimeline();
 
@@ -1389,7 +1396,6 @@ class LightBox extends component {
     });
 
     this.element.children().remove();
-    this.element.off();
     this.element.css("pointerEvents", "none");
     this._inAnimate = false;
 

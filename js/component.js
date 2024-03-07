@@ -915,8 +915,6 @@ class Intro extends component {
   constructor() {
     super();
 
-    this.category = "Scene";
-
     this._map = {
       Scene: {
         h1: "場景",
@@ -1175,7 +1173,6 @@ class Intro extends component {
     //
     // show
     await this.show();
-    this.category = type;
   }
 
   async show() {
@@ -1198,180 +1195,63 @@ class Intro extends component {
 }
 
 /**
- * 這個類別用於創建和管理圖片庫組件。
+ * 這個類別用於創建和管理預覽圖片組件。
  */
-class Gallery extends component {
+class Preview extends component {
   constructor() {
     super();
+
+    const intro = this._createIntro();
+    const preview = this._createImage();
+
+    const container = $("<div>")
+      .addClass("preview-container")
+      .append(intro, preview);
+
+    this.element = container;
+
+    this._tl = this._createTimeline();
   }
 
-  /**
-   * 創建圖片庫的主要元素。 @private
-   * @param {string[]} urls - 所有要展示圖片的 URL。
-   * @returns {Promise<jQuery>} - 圖片庫的主要元素。
-   */
-  async _createGallery(urls) {
-    const gallery = $("<div>").addClass("gallery");
-    const grid = $("<div>").addClass("images-grid");
-
-    const images = await Promise.all(urls.map((url) => this._createImage(url)));
-
-    grid.append(images);
-    gallery.append(grid);
-
-    return gallery;
+  _createIntro() {
+    return $("<section>")
+      .addClass("preview-intro")
+      .append($("<div>").addClass("line"), $("<h1>"));
   }
 
-  /**
-   * 創建單個圖片元素。 @private
-   * @param {string} url - 圖片的 URL。
-   * @returns {Promise<jQuery>} - 創建的圖片容器元素。
-   */
-  async _createImage(url) {
-    const container = $("<div>").addClass("image-container");
-
-    const image = $("<img>").attr("src", url).attr("decoding", "async");
-    const reflexContainer = $("<div>")
-      .addClass("reflex-container")
-      .append($("<div>").addClass("reflex-plane"));
-
-    container.append(reflexContainer, image);
-
-    await decode(image[0]);
-
-    this._bindTimeline(container);
-
-    return container;
-  }
-
-  /**
-   * 綁定圖片元素的時間軸。 @private
-   * @param {jQuery} imageContainer - 圖片容器的jQuery對象。
-   */
-  _bindTimeline(imageContainer) {
-    const image = imageContainer.find("img");
-    const element = image.add(imageContainer.find(".reflex-plane"));
-
-    const t1 = gsap
-      .timeline({ paused: true })
-      .fromTo(
-        image,
-        { filter: "brightness(0.95)" },
-        { duration: 0.2, ease: "set1", filter: "brightness(1.12)" }
-      )
-      .fromTo(
-        imageContainer,
-        { scale: 1 },
-        { duration: 0.2, ease: "set1", scale: 1.02 },
-        "<"
+  _createImage() {
+    return $("<section>")
+      .addClass("preview-image-container")
+      .append(
+        $("<figure>").append(
+          $("<img>").addClass("preview-image-back"),
+          $("<img>").addClass("preview-image")
+        )
       );
-    const t2 = gsap.timeline({ paused: true }).to(imageContainer, {
-      duration: 0.15,
-      ease: "set1",
-      scale: 0.97,
-      repeat: 1,
-      yoyo: true,
-    });
-
-    const mousemoveHandler = this._createMousemoveHandler(element);
-
-    image.on("mouseenter", () => {
-      t1.play();
-
-      image.on("mousemove", mousemoveHandler);
-    });
-    image.on("mouseleave", () => {
-      t1.reverse();
-
-      image.off("mousemove", mousemoveHandler);
-
-      gsap.to(element, {
-        overwrite: "auto",
-        ease: "set1",
-        duration: 0.5,
-        rotateX: 0,
-        rotateY: 0,
-      });
-    });
-    image.on("click", () => t2.restart());
   }
 
-  /**
-   * 創建滑鼠移動事件處理器。 @private
-   * @param {jQuery} element - 被處理的元素。
-   * @returns {Function} - 滑鼠移動事件處理器函式。
-   */
-  _createMousemoveHandler(element) {
-    return (e) => {
-      const centerX = element.offset().left + element.width() / 2;
-      const centerY = element.offset().top + element.height() / 2;
-      const offsetX = e.pageX - centerX;
-      const offsetY = e.pageY - centerY;
+  paintImage(url, title) {
+    const h1 = this.element.find("h1");
+    const image = this.element.find(".preview-image");
+    const back = this.element.find(".preview-image-back");
 
-      // 計算響應式的旋轉角度，根據元素的寬度和高度進行調整
-      const base = { x: 520, y: 290 };
-      const scale = {
-        x: element.width() / base.x,
-        y: element.height() / base.y,
-      };
-      const responsiveRotateX = -offsetY / (9 * scale.x);
-      const responsiveRotateY = offsetX / (15 * scale.y);
-
-      gsap.to(element, {
-        overwrite: "auto",
-        ease: "back.out(10)",
-        duration: 0.5,
-        rotateX: responsiveRotateX,
-        rotateY: responsiveRotateY,
-      });
-    };
+    h1.text(title);
+    image.attr("src", url);
+    back.attr("src", url);
   }
 
-  /**
-   * 創建並初始化圖片庫的時間軸效果。 @private
-   * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
-   */
-  _createTimelines() {
-    const images = this.element.find(".image-container");
-    return gsap.timeline({ defaults: { ease: "set1" }, paused: true }).fromTo(
-      images,
-      {
-        autoAlpha: 0,
-        filter: "blur(30px)",
-      },
-      {
-        autoAlpha: 1,
-        filter: "",
-        stagger: { from: "random", amount: 0.35 },
-      }
-    );
+  _createTimeline() {
+    return gsap
+      .timeline({ paused: true })
+      .fromTo(this.element, { autoAlpha: 0, y: 250 }, { autoAlpha: 1, y: 0 });
   }
 
-  /**
-   * 初始化或重置整個gallery
-   * @param {string[]} urls - 所有要展示圖片的 URL。
-   */
-  async _reset(urls) {
-    this.element = await this._createGallery(urls);
-
-    if (this._selectHandler)
-      this.element.on("click", "img", this._selectHandler);
-
-    this._tl = this._createTimelines();
-    this.appendTo("#content");
-  }
-
-  /**
-   * 顯示圖片庫。 (包含創建元素)
-   * @param {string[]} urls - 所有要展示圖片的 URL。
-   * @returns {Promise<Gallery>} - 回傳 `Gallery` 實例，以便進行方法鏈結。
-   */
-  async show(urls) {
-    if (this._inAnimate || this._isShow) return;
+  async show(url, title) {
+    if (this._inAnimate || this._isShow) return this;
     this._inAnimate = true;
     this._isShow = true;
 
-    await this._reset(urls);
+    await this.paintImage(url, title);
 
     this._tl.play();
     this._tl.eventCallback("onComplete", null);
@@ -1384,16 +1264,10 @@ class Gallery extends component {
     return this;
   }
 
-  /**
-   * 隱藏圖片庫。
-   * @returns {Promise<Gallery>} - 回傳 `Gallery` 實例，以便進行方法鏈結。
-   */
   async hide() {
-    if (this._inAnimate || !this._isShow) return;
+    if (this._inAnimate || !this._isShow) return this;
     this._inAnimate = true;
     this._isShow = false;
-
-    this.element.find(".image-container").off();
 
     this._tl.reverse();
     this._tl.eventCallback("onReverseComplete", null);
@@ -1401,102 +1275,19 @@ class Gallery extends component {
       this._tl.eventCallback("onReverseComplete", resolve);
     });
 
-    this.element.remove();
-    this.element = null;
-    this._isAppendTo = false;
+    this.element.children().remove();
     this._inAnimate = false;
-
-    return this;
-  }
-
-  /**
-   * 設定圖片庫選擇事件的處理函數。
-   * @param {Function} handler - 選擇事件的處理函數。
-   * @returns {Gallery} - 回傳 `Gallery` 實例，以便進行方法鏈結。
-   */
-  onSelect(handler) {
-    if (this._selectHandler)
-      this.element.off("click", "img", this._selectHandler);
-
-    this._selectHandler = function () {
-      const index = $(this).parent().index();
-      handler(index);
-    };
 
     return this;
   }
 }
 
 /**
- * 這個類別用於創建和管理預覽圖片組件(包含lightBox)。
+ * 這個類別用於創建和管理lightBox組件。
  */
-class Preview extends component {
+class LightBox extends component {
   constructor() {
     super();
-  }
-
-  static referenceImages(imagesInstanceRef) {
-    Preview._images = imagesInstanceRef;
-  }
-
-  async _create(category, index) {
-    //
-    this.category = category;
-    this.index = index;
-
-    const lightBox = await this._createLightBox();
-    const intro = await this._createIntro();
-    const preview = await this._createImage();
-
-    this.elements = {
-      lightBox: lightBox.appendTo("#sidebar"),
-      content: $("<div>")
-        .addClass("preview-container")
-        .append(intro, preview)
-        .appendTo("#content"),
-    };
-
-    this._bindSwitchEvents();
-    this._bindHoverEvents();
-
-    this._tl = this._createTimeline();
-
-    this._zoom = new ImageZoom(preview.find("figure"));
-  }
-
-  async _createLightBox() {
-    const fileList = await Preview._images.getList();
-    const urls = await Promise.all(
-      fileList[this.category].map((name) =>
-        Preview._images.getThumbnail(this.category, name)
-      )
-    );
-
-    const section = $("<section>").addClass("light-box");
-    const scroller = $("<div>").addClass("light-box-scroller");
-    const mask = $("<div>").addClass("light-box-mask");
-    section.append(scroller, mask);
-
-    const container = $("<div>")
-      .addClass("light-box-images-container")
-      .appendTo(scroller);
-
-    const images = await Promise.all(
-      urls.map((url) => this._createImage1(url, "light-box-image"))
-    );
-    const imagesBack = await Promise.all(
-      urls.map((url) => this._createImage1(url, "light-box-image-back"))
-    );
-
-    images.forEach((_, index) => {
-      const imageContainer = $("<figure>")
-        .addClass("light-box-image-container")
-        .append($("<div>").append(imagesBack[index], images[index]));
-
-      if (index === this.index) imageContainer.addClass("light-box-active");
-
-      imageContainer.appendTo(container);
-    });
 
     const styleTag = document.createElement("style");
     document.head.appendChild(styleTag);
@@ -1507,10 +1298,47 @@ class Preview extends component {
     }
     `);
 
-    return section;
+    this.element = $("<section>").addClass("light-box");
+    this.element.css("pointerEvents", "none");
   }
 
-  async _createImage1(url, className) {
+  async _create(urls, index) {
+    const container = $("<div>").addClass("light-box-images-container");
+    const figures = await this._createFigures(urls, index);
+    figures.forEach((figure) => figure.appendTo(container));
+
+    const scroller = $("<div>")
+      .addClass("light-box-scroller")
+      .append(container);
+
+    return scroller;
+  }
+
+  async _createFigures(urls, index) {
+    const imagesFront = await Promise.all(
+      urls.map((url) => this._createImage(url, "light-box-image"))
+    );
+    const imagesBack = await Promise.all(
+      urls.map((url) => this._createImage(url, "light-box-image-back"))
+    );
+    const images = imagesFront.map((image, index) => {
+      return [imagesBack[index], image];
+    });
+
+    const figures = images.map((image, i) => {
+      const figure = $("<figure>")
+        .addClass("light-box-image-container")
+        .append($("<div>").append(image[0], image[1]));
+
+      if (i === index) figure.addClass("light-box-active");
+
+      return figure;
+    });
+
+    return figures;
+  }
+
+  async _createImage(url, className) {
     const image = $("<img>")
       .attr("src", url)
       .attr("decoding", "async")
@@ -1519,47 +1347,6 @@ class Preview extends component {
     await decode(image[0]);
 
     return image;
-  }
-
-  async _createIntro() {
-    const fileList = await Preview._images.getList();
-    const title = fileList[this.category][this.index];
-
-    return $("<section>")
-      .addClass("preview-intro")
-      .append($("<div>").addClass("line"), $("<h1>").text(title));
-  }
-
-  async _createImage() {
-    const url = await Preview._images.getImage(this.category, this.index);
-
-    const img = $("<img>").attr("src", url).attr("decoding", "async");
-    await decode(img[0]);
-
-    return $("<section>")
-      .addClass("preview-image-container")
-      .append(
-        $("<figure>").append(
-          img.clone().addClass("preview-image-back"),
-          img.clone().addClass("preview-image")
-        )
-      );
-  }
-
-  _createTimeline() {
-    return gsap
-      .timeline({ paused: true })
-      .fromTo(
-        this.elements.content,
-        { autoAlpha: 0, y: 250 },
-        { autoAlpha: 1, y: 0 }
-      )
-      .fromTo(
-        this.elements.lightBox,
-        { autoAlpha: 0, x: -100 },
-        { autoAlpha: 1, x: 0 },
-        "<0.3"
-      );
   }
 
   _createMousemoveHandler(element) {
@@ -1588,43 +1375,11 @@ class Preview extends component {
     };
   }
 
-  _bindSwitchEvents() {
-    this.elements.lightBox.on(
-      "click",
-      ".light-box-image-container",
-      async (e) => {
-        this._zoom.off();
-        await this._zoom.reset();
-
-        const { target } = e;
-        const index = $(target).index();
-
-        const title = (await Preview._images.getList())[this.category][index];
-        const url = await Preview._images.getImage(this.category, index);
-
-        this.elements.content.find("h1").text(title);
-        this.elements.content
-          .find(".preview-image, .preview-image-back")
-          .attr("src", url);
-
-        this.elements.lightBox
-          .find(".light-box-active")
-          .removeClass("light-box-active");
-        this.elements.lightBox
-          .find(".light-box-image-container")
-          .eq(index)
-          .addClass("light-box-active");
-
-        this._zoom.on();
-      }
-    );
-  }
-
   _bindHoverEvents() {
-    const lightBox = this.elements.lightBox;
+    /** @type {(e: any) => void} */
     let mousemoveHandler;
 
-    lightBox.on("mouseenter", ".light-box-image-container", (e) => {
+    this.element.on("mouseenter", ".light-box-image-container", (e) => {
       const figure = $(e.target);
       const div = figure.children("div");
 
@@ -1632,7 +1387,7 @@ class Preview extends component {
 
       figure.on("mousemove", mousemoveHandler);
     });
-    lightBox.on("mouseleave", ".light-box-image-container", (e) => {
+    this.element.on("mouseleave", ".light-box-image-container", (e) => {
       const figure = $(e.target);
       const div = figure.children("div");
 
@@ -1648,18 +1403,51 @@ class Preview extends component {
     });
   }
 
-  async show(category, index) {
+  _bindSwitchEvents() {
+    this.element.on("click", ".light-box-image-container", async (e) => {
+      const { target } = e;
+      const index = $(target).index();
+
+      this.element.find(".light-box-active").removeClass("light-box-active");
+      this.element
+        .find(".light-box-image-container")
+        .eq(index)
+        .addClass("light-box-active");
+    });
+  }
+
+  onSelect(handler) {
+    if (this._handler) return;
+
+    this._handler = (e) => {
+      const { target } = e;
+      const index = $(target).index();
+
+      handler(index);
+    };
+
+    this.element.on("click", ".light-box-image-container", this._handler);
+  }
+
+  _createTimeline() {
+    return gsap
+      .timeline({ paused: true })
+      .fromTo(this.element, { autoAlpha: 0, x: -100 }, { autoAlpha: 1, x: 0 });
+  }
+
+  async show(urls, index) {
     if (this._inAnimate || this._isShow) return this;
     this._inAnimate = true;
     this._isShow = true;
 
-    await this._create(category, index);
+    const lightbox = await this._create(urls, index);
+    const mask = $("<div>").addClass("light-box-mask");
+    this.element.append(lightbox, mask);
 
-    const targetElement = this.elements.lightBox.find(".light-box-active")[0];
-    targetElement.scrollIntoView({
-      behavior: "smooth",
-      block: "center",
-    });
+    this._bindHoverEvents();
+    this._bindSwitchEvents();
+
+    this._tl = this._createTimeline();
 
     this._tl.play();
     this._tl.eventCallback("onComplete", null);
@@ -1667,8 +1455,7 @@ class Preview extends component {
       this._tl.eventCallback("onComplete", resolve);
     });
 
-    this._zoom.on();
-
+    this.element.css("pointerEvents", "auto");
     this._inAnimate = false;
 
     return this;
@@ -1679,24 +1466,17 @@ class Preview extends component {
     this._inAnimate = true;
     this._isShow = false;
 
-    this._zoom.off();
-    await this._zoom.reset();
-    this._zoom = null;
-
     this._tl.reverse();
     this._tl.eventCallback("onReverseComplete", null);
     await new Promise((resolve) => {
       this._tl.eventCallback("onReverseComplete", resolve);
     });
 
-    Object.values(this.elements).forEach((element) => element.remove());
+    this.element.children().remove();
+    this.element.off();
+    this.element.css("pointerEvents", "none");
     this._inAnimate = false;
 
-    return this;
-  }
-
-  appendTo(selector) {
-    console.log("此組件在show與hide時會自動載入");
     return this;
   }
 }

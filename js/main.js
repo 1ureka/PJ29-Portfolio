@@ -104,17 +104,14 @@ function createIndex() {
   return { mainButtons, addImagePopup, deleteImagePopup, header, intro };
 }
 
-function createGallery() {
-  const gallery = new Gallery();
-  const scrollButtons = new ScrollButtons();
-  scrollButtons.appendTo("body");
-
-  return { gallery, scrollButtons };
-}
-
 function createPreview() {
   const preview = new Preview();
-  return { preview };
+  const lightBox = new LightBox();
+
+  preview.appendTo("#content");
+  lightBox.appendTo("#sidebar");
+
+  return { preview, lightBox };
 }
 
 $(document).ready(async function () {
@@ -157,17 +154,16 @@ $(document).ready(async function () {
       Nature: thumbnailImages[2],
     },
   });
-  Preview.referenceImages(images);
 
   const { mainButtons, addImagePopup, deleteImagePopup, header, intro } =
     createIndex();
 
-  const { gallery, scrollButtons } = createGallery();
-
-  const { preview } = createPreview();
+  const { preview, lightBox } = createPreview();
 
   //
   // 註冊組件間的交互邏輯
+  let CATEGORY = "Scene";
+
   intro.onSelect(async (e) => {
     if (inTransition) {
       console.log("停止執行了 intro.onSelect");
@@ -178,49 +174,35 @@ $(document).ready(async function () {
 
     if (e.type === "navigate") {
       //
+      CATEGORY = e.target;
       await intro.switchTab(e.target);
       header.bulb.switchLight(e.target);
       //
-    } else {
+    } else if (e.type === "learnMore") {
       //
+      await Promise.all([mainButtons.hide(), intro.hide()]);
+
+      waveBackground.show();
+      await delay(100);
+
       maskbackground.show();
       loadingIcon.show();
 
-      const category = e.target;
       const fileList = await images.getList();
+      const title = fileList[CATEGORY][0];
       const urls = await Promise.all(
-        fileList[category].map((name) => images.getThumbnail(category, name))
+        fileList[CATEGORY].map((name) => images.getThumbnail(CATEGORY, name))
       );
+
+      await Promise.all([
+        preview.show(urls[0], title),
+        lightBox.show(urls, 0),
+        header.button.show(),
+      ]);
 
       maskbackground.hide();
       loadingIcon.hide();
-
-      await intro.hide();
-
-      waveBackground.show();
-      scrollButtons.show();
-
-      await delay(100);
-
-      await Promise.all([gallery.show(urls), header.button.show()]);
-
-      scrollButtons.scrollElement = gallery.element;
     }
-
-    inTransition = false;
-  });
-  gallery.onSelect(async (index) => {
-    if (inTransition) {
-      console.log("停止執行了 gallery.onSelect");
-      return;
-    }
-
-    inTransition = true;
-
-    scrollButtons.hide();
-
-    await Promise.all([mainButtons.hide(), gallery.hide()]);
-    await preview.show(intro.category, index, images);
 
     inTransition = false;
   });
@@ -232,38 +214,34 @@ $(document).ready(async function () {
 
     inTransition = true;
 
-    if (gallery._isShow) {
-      $(".gallery .image-container").css("pointerEvents", "none");
-
-      await delay(100);
-
-      scrollButtons.hide();
-      waveBackground.hide();
-
-      await Promise.all([header.button.hide(), gallery.hide()]);
-      await intro.show();
-      //
-    } else if (preview._isShow) {
-      //
-      const category = intro.category;
-      const fileList = await images.getList();
-      const urls = await Promise.all(
-        fileList[category].map((name) => images.getThumbnail(category, name))
-      );
-
-      await preview.hide();
-      scrollButtons.show();
-      await Promise.all([mainButtons.show(), gallery.show(urls)]);
-
-      scrollButtons.scrollElement = gallery.element;
-      //
-    } else {
-      //
-      console.log("現在不應該按到返回按鈕才對啊");
-    }
+    await delay(100);
+    await Promise.all([header.button.hide(), preview.hide(), lightBox.hide()]);
+    await Promise.all([mainButtons.show(), intro.show()]);
 
     inTransition = false;
   });
+  lightBox.onSelect(async (index) => {
+    if (inTransition) {
+      console.log("停止執行了 intro.onSelect");
+      return;
+    }
+
+    inTransition = true;
+
+    maskbackground.show();
+    loadingIcon.show();
+
+    const fileList = await images.getList();
+    const title = fileList[CATEGORY][index];
+    const url = await images.getImage(CATEGORY, index);
+    preview.paintImage(url, title);
+
+    maskbackground.hide();
+    loadingIcon.hide();
+
+    inTransition = false;
+  });
+
   mainButtons.onSelect(async (option) => {
     if (inTransition) {
       console.log("停止執行了 mainButtons.onSelect");

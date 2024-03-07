@@ -190,14 +190,14 @@ $(document).ready(async function () {
         fileList[CATEGORY].map((name) => images.getThumbnail(CATEGORY, name))
       );
 
+      maskbackground.hide();
+      loadingIcon.hide();
+
       await Promise.all([
         preview.show(urls[0], title),
         lightBox.show(urls, 0),
         header.show(),
       ]);
-
-      maskbackground.hide();
-      loadingIcon.hide();
     }
 
     inTransition = false;

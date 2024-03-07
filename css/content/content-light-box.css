@@ -7,7 +7,8 @@
 }
 .light-box-scroller {
   position: absolute;
-  width: 100%;
+  right: 10px;
+  left: 0;
   height: 100%;
   box-sizing: border-box;
   padding: 45px 10px;
@@ -73,10 +74,10 @@
 }
 .light-box-image-container > div > * {
   aspect-ratio: 16 / 9;
-  width: 80%;
+  width: 85%;
   height: auto;
   border-radius: 5px;
-  translate: -15px;
+  translate: 0px;
   transition: 0.2s cubic-bezier(0.215, 0.61, 0.355, 1);
   transition-property: scale, opacity, translate;
 }
@@ -109,7 +110,7 @@
   pointer-events: none;
 }
 .light-box-active > div > * {
-  translate: 0px;
+  translate: 11px;
 }
 .light-box-active > div > .light-box-image {
   outline: white solid 3px;

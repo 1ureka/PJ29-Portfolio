@@ -10,4 +10,7 @@
   bottom: 0;
   display: flex;
   overflow: hidden;
+  /* init */
+  opacity: 0;
+  visibility: hidden;
 }

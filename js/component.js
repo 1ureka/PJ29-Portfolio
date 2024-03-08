@@ -879,16 +879,16 @@ class Intro extends component {
     const cards = this._createCards();
     cards.forEach((card) => card.appendTo(right));
 
-    container.append(left, right);
-    this.element = container;
+    container.append(this._createBackground(), left, right);
 
-    gsap.set(this.element, { autoAlpha: 0 });
+    this.element = container;
+    this._tl = this._createTimeline();
   }
 
   static createURLStyle(urlMap) {
     const backgroundStyle = Object.keys(urlMap.background).map(
       (key) =>
-        `.content-intro.${key}::before{background-image: url(${urlMap.background[key]});}`
+        `.content-background > .${key}{background-image: url(${urlMap.background[key]});}`
     );
 
     const cardStyle = Object.keys(urlMap.card).map(
@@ -899,6 +899,18 @@ class Intro extends component {
     $("<style>")
       .text([...backgroundStyle, ...cardStyle].join(""))
       .appendTo("head");
+  }
+
+  _createBackground() {
+    const background = $("<div>").addClass("content-background");
+
+    background.append(
+      $("<div>").addClass("Scene"),
+      $("<div>").addClass("Props"),
+      $("<div>").addClass("Nature")
+    );
+
+    return background;
   }
 
   _createInfo() {
@@ -987,7 +999,7 @@ class Intro extends component {
         paused: true,
       })
       .fromTo(
-        this.element,
+        this.element.find(".content-intro-info"),
         { autoAlpha: 0, filter: "blur(10px)" },
         { ease: "none", duration: 1, autoAlpha: 1, filter: "blur(0px)" }
       )
@@ -995,7 +1007,7 @@ class Intro extends component {
         this.element.find(".content-intro-info").children(),
         { scaleX: 0 },
         { stagger: 0.2, duration: 1, scaleX: 1 },
-        "-=0.5"
+        "<"
       )
       .fromTo(
         this.element.find(".content-intro-info").find(".text-mask"),
@@ -1051,14 +1063,23 @@ class Intro extends component {
 
   async switchTab(type) {
     //
+    // background
+    const changClass = () => {
+      const originalClass = this.element.attr("class").split(" ")[0];
+      this.element.attr("class", `${originalClass} ${type}`);
+    };
+    (async function () {
+      await delay(2200);
+      changClass();
+    })();
+
+    //
     // hide
     await this.hide();
 
     //
-    // background and blend mode
-    const originalClass = this.element.attr("class").split(" ")[0];
+    // blend mode
     this.element
-      .attr("class", `${originalClass} ${type}`)
       .find(".content-intro-left")
       .css("mix-blend-mode", this._map[type].mixMode);
 
@@ -1084,10 +1105,9 @@ class Intro extends component {
       height: 0,
     });
 
-    await delay(100);
-
     //
     // show
+    changClass();
     await this.show();
   }
 
@@ -1107,6 +1127,10 @@ class Intro extends component {
     await new Promise((resolve) => {
       this._tl.eventCallback("onReverseComplete", resolve);
     });
+  }
+
+  toggleClass(className, bool) {
+    this.element.toggleClass(className, bool);
   }
 }
 
@@ -1146,7 +1170,6 @@ class Preview extends component {
   }
 
   async paintImage(url, title) {
-    console.log(title);
     const h1 = this.element.find("h1");
     const image = this.element.find(".preview-image");
 

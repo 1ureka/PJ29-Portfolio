@@ -177,18 +177,24 @@ $(document).ready(async function () {
     } else if (e.type === "learnMore") {
       //
       await Promise.all([mainButtons.hide(), intro.hide()]);
+      intro.toggleClass("blur", true);
+      await delay(375);
 
-      waveBackground.show();
-      await delay(100);
-
-      maskbackground.show();
-      loadingIcon.show();
+      let isLoading = true;
+      (async function () {
+        await delay(1500);
+        if (!isLoading) return;
+        maskbackground.show();
+        loadingIcon.show();
+      })();
 
       const fileList = await images.getList();
       const title = fileList[CATEGORY][0];
       const urls = await Promise.all(
         fileList[CATEGORY].map((name) => images.getThumbnail(CATEGORY, name))
       );
+
+      isLoading = false;
 
       maskbackground.hide();
       loadingIcon.hide();
@@ -212,6 +218,7 @@ $(document).ready(async function () {
 
     await delay(150);
     await Promise.all([header.hide(), preview.hide(), lightBox.hide()]);
+    intro.toggleClass("blur", false);
     await Promise.all([mainButtons.show(), intro.show()]);
 
     inTransition = false;
@@ -400,26 +407,25 @@ $(document).ready(async function () {
 
   //
   // 載入完成
+  intro.toggleClass("blur", true);
   waveBackground.hide();
   await delay(500);
   maskbackground.hide();
   loadingIcon.hide();
+  await delay(500);
 
   //
   // 開場動畫
-  await delay(500);
-
   const opening = gsap
     .timeline({ defaults: { ease: "power2.out", duration: 0.6 }, paused: true })
-    .to("#header, #sidebar, #version-display", { x: 0, y: 0, stagger: 0.35 });
+    .to("#header, #sidebar, #version-display", { x: 0, y: 0, stagger: 0.35 })
+    .to("#content", { autoAlpha: 1, ease: "none", duration: 1 }, "<");
 
   opening.play();
-  await new Promise((resolve) => {
-    opening.eventCallback("onComplete", resolve);
-  });
+  intro.toggleClass("blur", false);
+  await new Promise((resolve) => opening.eventCallback("onComplete", resolve));
 
   header.switchLight("Scene");
-
   await Promise.all([intro.show(), mainButtons.show()]);
 
   inTransition = false;

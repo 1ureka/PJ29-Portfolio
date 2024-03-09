@@ -998,20 +998,12 @@ class Preview extends component {
   }
 
   _createImage() {
-    return $("<section>")
-      .addClass("preview-image-container")
-      .append($("<figure>").append($("<img>").addClass("preview-image")));
+    return $("<section>").addClass("preview-image-container");
   }
 
-  async paintImage(url, title) {
+  _changeTitle(title) {
     const h1 = this.element.find("h1");
-    const image = this.element.find(".preview-image");
-
     h1.text(title);
-    image.attr("src", url);
-
-    await decode(image[0]);
-    await delay(100);
   }
 
   _createTimeline() {
@@ -1037,8 +1029,8 @@ class Preview extends component {
       );
   }
 
-  async show(url, title) {
-    await this.paintImage(url, title);
+  async show(title) {
+    this._changeTitle(title);
     this._tl.play();
     this._tl.eventCallback("onComplete", null);
     await new Promise((resolve) => {

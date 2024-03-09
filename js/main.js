@@ -13,6 +13,7 @@
 /** @type {"Scene" | "Props" | "Nature"}*/ let CATEGORY = "Scene";
 /** @type {Boolean}                     */ let IN_TRANSITION = true;
 /** @type {Images}                      */ const IMAGES = new Images();
+/** @type {CustomCanvas}                */ let CANVAS;
 
 function createPre() {
   WAVE_BG = new WaveBackground(-1);
@@ -181,8 +182,10 @@ function bindNavEvents() {
     });
 
     // show
+    const originUrl = await IMAGES.getImage(CATEGORY, 0);
+    CANVAS.paintImage(originUrl);
     await Promise.all([
-      PREVIEW.show(urls[0], title),
+      PREVIEW.show(title),
       LIGHTBOX.show(urls, 0),
       HEADER.show(),
     ]);
@@ -209,7 +212,8 @@ function bindNavEvents() {
       ]);
 
       const url = results[0];
-      await PREVIEW.show(url, title);
+      CANVAS.paintImage(url);
+      await PREVIEW.show(title);
     });
   };
 
@@ -285,7 +289,6 @@ function bindMainEvents() {
   };
 
   const enterDelHandler = async () => {
-    console.log("object");
     const items = await IMAGES.getList();
     DEL_POPUP.show(items);
   };
@@ -358,10 +361,11 @@ $(document).ready(async function () {
   await IMAGES.syncImages();
 
   // 創建組件
-  createHeader();
   await createIntro();
+  createHeader();
   createGallery();
   createSidebar();
+  CANVAS = new CustomCanvas(".preview-image-container");
 
   // 註冊組件間的交互邏輯
   bindNavEvents();

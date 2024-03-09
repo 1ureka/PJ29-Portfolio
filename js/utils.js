@@ -245,7 +245,7 @@ class CustomCanvas {
       resize: () => {
         const image = this.CANVAS.getObjects()[0];
         this._resizeCanvas();
-        this._limit(image);
+        if (image) this._limit(image);
       },
     };
 
@@ -415,7 +415,7 @@ class CustomCanvas {
    *  @private
    */
   _bindEvents() {
-    console.log("bind");
+    if (this._isbind) console.warn("重複呼叫了 _bindEvents");
     this.CANVAS.on("mouse:wheel", this._handlers.zoom);
     this.CANVAS.on("object:moving", this._handlers.move);
     this.CANVAS.on("mouse:dblclick", this._handlers.dbclick);
@@ -427,7 +427,7 @@ class CustomCanvas {
    *  @private
    */
   _unbindEvents() {
-    console.log("unbind");
+    if (!this._isbind) console.warn("重複呼叫了 _unbindEvents");
     this.CANVAS.off("mouse:wheel", this._handlers.zoom);
     this.CANVAS.off("object:moving", this._handlers.move);
     this.CANVAS.off("mouse:dblclick", this._handlers.dbclick);

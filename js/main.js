@@ -172,17 +172,17 @@ function bindNavEvents() {
     await delay(375); // for blur
 
     // loading
-    let title, urls;
+    let title, urls, originUrl;
     await loadingWrapper(async () => {
       const fileList = await IMAGES.getList();
       title = fileList[CATEGORY][0];
+      originUrl = await IMAGES.getImage(CATEGORY, 0);
       urls = await Promise.all(
         fileList[CATEGORY].map((name) => IMAGES.getThumbnail(CATEGORY, name))
       );
     });
 
     // show
-    const originUrl = await IMAGES.getImage(CATEGORY, 0);
     CANVAS.paintImage(originUrl);
     await Promise.all([
       PREVIEW.show(title),

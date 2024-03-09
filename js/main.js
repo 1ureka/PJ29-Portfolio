@@ -1,27 +1,24 @@
-let inTransition = true;
+// component
+/** @type {WaveBackground}  */ let WAVE_BG;
+/** @type {LoadingIcon}     */ let LOADING_ICON;
+/** @type {MainButtons}     */ let MAIN_BUTTONS;
+/** @type {AddImagePopup}   */ let ADD_POPUP;
+/** @type {DeleteImagePopup}*/ let DEL_POPUP;
+/** @type {header}          */ let HEADER;
+/** @type {Intro}           */ let INTRO;
+/** @type {Preview}         */ let PREVIEW;
+/** @type {LightBox}        */ let LIGHTBOX;
 
-function createBackground() {
-  const waveBackground = new WaveBackground(-1);
+// var
+/** @type {"Scene" | "Props" | "Nature"}*/ let CATEGORY = "Scene";
+/** @type {Boolean}                     */ let IN_TRANSITION = true;
+/** @type {Images}                      */ const IMAGES = new Images();
+/** @type {CustomCanvas}                */ let CANVAS;
 
-  const loadingIcon = new LoadingIcon();
-  loadingIcon.appendTo("body");
-
-  const maskbackground = {
-    show: (blur = 5, brightness = 0.9) => {
-      $("#mask-background").css({
-        "backdrop-filter": `blur(${blur}px) brightness(${brightness})`,
-        "pointer-events": "all",
-      });
-    },
-    hide: () => {
-      $("#mask-background").css({
-        "backdrop-filter": "",
-        "pointer-events": "none",
-      });
-    },
-  };
-
-  return { waveBackground, maskbackground, loadingIcon };
+function createPre() {
+  WAVE_BG = new WaveBackground(-1);
+  LOADING_ICON = new LoadingIcon();
+  LOADING_ICON.appendTo("body");
 }
 
 async function login() {
@@ -80,69 +77,35 @@ async function login() {
   $("#login-container").remove();
 }
 
-function createIndex() {
-  const mainButtons = new MainButtons();
-  mainButtons.appendTo("#sidebar");
-  const addImagePopup = new AddImagePopup();
-  addImagePopup.appendTo("body");
-  const deleteImagePopup = new DeleteImagePopup();
-  deleteImagePopup.appendTo("body");
+function createSidebar() {
+  MAIN_BUTTONS = new MainButtons();
+  ADD_POPUP = new AddImagePopup();
+  DEL_POPUP = new DeleteImagePopup();
 
-  const headerBulb = new HeaderBulb({
+  MAIN_BUTTONS.appendTo("#sidebar");
+  ADD_POPUP.appendTo("#popup-container");
+  DEL_POPUP.appendTo("#popup-container");
+}
+
+function createHeader() {
+  HEADER = new Header({
     Nature: "#8ce197",
     Props: "#ffff7a",
     Scene: "#92e9ff",
   });
-  headerBulb.appendTo("#header");
-  const headerButton = new HeaderButton();
-  headerButton.appendTo("#header");
-  const header = { bulb: headerBulb, button: headerButton };
-
-  const intro = new Intro();
-  intro.appendTo("#content");
-
-  return { mainButtons, addImagePopup, deleteImagePopup, header, intro };
 }
 
-function createGallery() {
-  const gallery = new Gallery();
-  const scrollButtons = new ScrollButtons();
-  scrollButtons.appendTo("body");
-
-  return { gallery, scrollButtons };
-}
-
-function createPreview() {
-  const preview = new Preview();
-  return { preview };
-}
-
-$(document).ready(async function () {
-  //
-  // 初始化與等待登入
-  const { waveBackground, maskbackground, loadingIcon } = createBackground();
-  waveBackground.show();
-  await login();
-
-  //
-  // 載入資源
-  maskbackground.show();
-  loadingIcon.show();
-  const images = new Images();
-  await images.syncImages();
-
-  //
-  // 創建首頁與圖片牆
+async function createIntro() {
   const backgroundImages = await Promise.all([
-    images.getImage("Scene", 0),
-    images.getImage("Props", 0),
-    images.getImage("Nature", 3),
+    IMAGES.getImage("Scene", 0),
+    IMAGES.getImage("Props", 0),
+    IMAGES.getImage("Nature", 3),
   ]);
 
   const thumbnailImages = await Promise.all([
-    images.getThumbnail("Scene", 0),
-    images.getThumbnail("Props", 0),
-    images.getThumbnail("Nature", 3),
+    IMAGES.getThumbnail("Scene", 0),
+    IMAGES.getThumbnail("Props", 0),
+    IMAGES.getThumbnail("Nature", 3),
   ]);
 
   Intro.createURLStyle({
@@ -157,153 +120,154 @@ $(document).ready(async function () {
       Nature: thumbnailImages[2],
     },
   });
-  Preview.referenceImages(images);
 
-  const { mainButtons, addImagePopup, deleteImagePopup, header, intro } =
-    createIndex();
+  INTRO = new Intro();
+  INTRO.appendTo("#content");
+}
 
-  const { gallery, scrollButtons } = createGallery();
+function createGallery() {
+  PREVIEW = new Preview();
+  LIGHTBOX = new LightBox();
 
-  const { preview } = createPreview();
+  PREVIEW.appendTo("#content");
+  LIGHTBOX.appendTo("#sidebar");
+}
 
-  //
-  // 註冊組件間的交互邏輯
-  intro.onSelect(async (e) => {
-    if (inTransition) {
-      console.log("停止執行了 intro.onSelect");
-      return;
-    }
+async function loadingWrapper(handler) {
+  let isLoading = true;
+  (async function () {
+    await delay(1500);
+    if (!isLoading) return;
+    LOADING_ICON.show();
+  })();
 
-    inTransition = true;
+  await handler();
 
-    if (e.type === "navigate") {
-      //
-      await intro.switchTab(e.target);
-      header.bulb.switchLight(e.target);
-      //
-    } else {
-      //
-      maskbackground.show();
-      loadingIcon.show();
+  isLoading = false;
+  LOADING_ICON.hide();
+}
 
-      const category = e.target;
-      const fileList = await images.getList();
-      const urls = await Promise.all(
-        fileList[category].map((name) => images.getThumbnail(category, name))
+async function transitionWrapper(handler) {
+  if (IN_TRANSITION) {
+    console.log(`停止執行了 ${handler}`);
+    return;
+  }
+
+  IN_TRANSITION = true;
+  await handler();
+  IN_TRANSITION = false;
+}
+
+function bindNavEvents() {
+  const navHandler = async (target) => {
+    CATEGORY = target;
+    await INTRO.switchTab(target);
+    HEADER.switchLight(target);
+  };
+
+  const learnMoreHandler = async () => {
+    // hide
+    await Promise.all([MAIN_BUTTONS.hide(), INTRO.hide()]);
+    INTRO.toggleClass("blur", true);
+    await delay(375); // for blur
+
+    // loading
+    let title, urls;
+    await loadingWrapper(async () => {
+      const fileList = await IMAGES.getList();
+      title = fileList[CATEGORY][0];
+      urls = await Promise.all(
+        fileList[CATEGORY].map((name) => IMAGES.getThumbnail(CATEGORY, name))
       );
+    });
 
-      maskbackground.hide();
-      loadingIcon.hide();
+    // show
+    const originUrl = await IMAGES.getImage(CATEGORY, 0);
+    CANVAS.paintImage(originUrl);
+    await Promise.all([
+      PREVIEW.show(title),
+      LIGHTBOX.show(urls, 0),
+      HEADER.show(),
+    ]);
+  };
 
-      await intro.hide();
+  const returnHandler = async () => {
+    // hide
+    await delay(150); // for button active animate
+    await Promise.all([HEADER.hide(), PREVIEW.hide(), LIGHTBOX.hide()]);
 
-      waveBackground.show();
-      scrollButtons.show();
+    // show
+    INTRO.toggleClass("blur", false);
+    await Promise.all([MAIN_BUTTONS.show(), INTRO.show()]);
+  };
 
-      await delay(100);
+  const lightboxHandler = async (index) => {
+    await loadingWrapper(async () => {
+      const fileList = await IMAGES.getList();
+      const title = fileList[CATEGORY][index];
 
-      await Promise.all([gallery.show(urls), header.button.show()]);
+      const results = await Promise.all([
+        IMAGES.getImage(CATEGORY, index),
+        PREVIEW.hide(),
+      ]);
 
-      scrollButtons.scrollElement = gallery.element;
-    }
+      const url = results[0];
+      CANVAS.paintImage(url);
+      await PREVIEW.show(title);
+    });
+  };
 
-    inTransition = false;
+  INTRO.onSelect((e) => {
+    transitionWrapper(async () => {
+      if (e.type === "navigate") await navHandler(e.target);
+      if (e.type === "learnMore") await learnMoreHandler();
+    });
   });
-  gallery.onSelect(async (index) => {
-    if (inTransition) {
-      console.log("停止執行了 gallery.onSelect");
-      return;
-    }
 
-    inTransition = true;
-
-    scrollButtons.hide();
-
-    await Promise.all([mainButtons.hide(), gallery.hide()]);
-    await preview.show(intro.category, index, images);
-
-    inTransition = false;
+  HEADER.onReturn(() => {
+    transitionWrapper(async () => {
+      await returnHandler();
+    });
   });
-  header.button.onClick(async () => {
-    if (inTransition) {
-      console.log("停止執行了 mainButtons.onSelect");
-      return;
-    }
 
-    inTransition = true;
-
-    if (gallery._isShow) {
-      $(".gallery .image-container").css("pointerEvents", "none");
-
-      await delay(100);
-
-      scrollButtons.hide();
-      waveBackground.hide();
-
-      await Promise.all([header.button.hide(), gallery.hide()]);
-      await intro.show();
-      //
-    } else if (preview._isShow) {
-      //
-      const category = intro.category;
-      const fileList = await images.getList();
-      const urls = await Promise.all(
-        fileList[category].map((name) => images.getThumbnail(category, name))
-      );
-
-      await preview.hide();
-      scrollButtons.show();
-      await Promise.all([mainButtons.show(), gallery.show(urls)]);
-
-      scrollButtons.scrollElement = gallery.element;
-      //
-    } else {
-      //
-      console.log("現在不應該按到返回按鈕才對啊");
-    }
-
-    inTransition = false;
+  LIGHTBOX.onSelect((index) => {
+    transitionWrapper(async () => {
+      await lightboxHandler(index);
+    });
   });
-  mainButtons.onSelect(async (option) => {
-    if (inTransition) {
-      console.log("停止執行了 mainButtons.onSelect");
-      return;
-    }
+}
 
-    inTransition = true;
+function bindMainEvents() {
+  const enterAddHandler = async () => {
+    // 使用者輸入
+    let files = await new Promise((resolve) => {
+      const html = `<input type="file" accept="image/*" multiple style="display:none;position:"fixed" />`;
+      const input = $(html).appendTo("body");
 
-    if (option === "新增") {
-      //
-      inTransition = false;
-      // 使用者輸入
-      let files = await new Promise((resolve) => {
-        const html = `<input type="file" accept="image/*" multiple style="display:none;position:"fixed" />`;
-        const input = $(html).appendTo("body");
-
-        input.one("change", function () {
-          resolve(this.files);
-          $(this).remove();
-        });
-
-        input.click();
+      input.one("change", function () {
+        resolve(this.files);
+        $(this).remove();
       });
 
-      maskbackground.show();
-      loadingIcon.show();
+      input.click();
+    });
 
-      // 判斷合法性
-      if (!files.length) {
-        alert("沒有選擇檔案");
-        return;
-      }
-      files = Object.values(files).filter((file) => typeof file !== Number); // 排除length
-      if (!files.every((file) => file.type.match("image.*"))) {
-        alert("請選擇一個圖像文件");
-        return;
-      }
+    LOADING_ICON.show();
 
-      // 壓縮圖片
-      const compressTasks = files.map(async (file) => {
+    // 判斷合法性
+    if (!files.length) {
+      alert("沒有選擇檔案");
+      return;
+    }
+    files = Object.values(files).filter((file) => typeof file !== Number); // 排除length
+    if (!files.every((file) => file.type.match("image.*"))) {
+      alert("請選擇一個圖像文件");
+      return;
+    }
+
+    // 壓縮圖片
+    const dataUrls = await Promise.all(
+      files.map(async (file) => {
         const origin = await compressImage(file, 1920 * 2, 1080 * 2);
         const thumbnail = await compressImage(file, 1920, 1080);
         return {
@@ -311,131 +275,121 @@ $(document).ready(async function () {
           thumbnail,
           name: file.name.replace(".png", ".webp"),
         };
-      });
-      const dataUrls = await Promise.all(compressTasks);
+      })
+    );
 
-      // 製作預覽
-      const previews = dataUrls.map((url) => {
-        return { url1: url.origin, url2: url.thumbnail, title: url.name };
-      });
-
-      loadingIcon.hide();
-
-      await delay(250);
-
-      addImagePopup.show(previews);
-      //
-    } else if (option === "刪除") {
-      maskbackground.show();
-      const list = await images.getList();
-      deleteImagePopup.show(list);
-      //
-    } else if (option === "同步") {
-      loadingIcon.show();
-
-      await images.syncImages();
-
-      loadingIcon.hide();
-    }
-
-    inTransition = false;
-  });
-  addImagePopup.onClose(async () => {
-    if (inTransition) {
-      console.log("停止執行了 addImagePopup.onClose");
-      return;
-    }
-
-    inTransition = true;
-
-    await addImagePopup.hide();
-    maskbackground.hide();
-
-    inTransition = false;
-  });
-  addImagePopup.onSubmit(async (e) => {
-    if (inTransition) {
-      console.log("停止執行了 addImagePopup.onSelect");
-      return;
-    }
-
-    inTransition = true;
-
-    const { category, files } = e;
-
-    const manifest = files.map((file) => {
-      let { url1, url2, title } = file;
-      url1 = dataUrlToBase64(url1);
-      url2 = dataUrlToBase64(url2);
-      return { category, url1, url2, name: title };
+    // 製作預覽
+    const items = dataUrls.map((url) => {
+      return { url1: url.origin, url2: url.thumbnail, title: url.name };
     });
 
-    await addImagePopup.hide();
-    loadingIcon.show();
+    LOADING_ICON.hide();
+    await delay(250); // for LOADING_ICON.hide();
+    ADD_POPUP.show(items);
+  };
 
-    await images.addImages(manifest);
+  const enterDelHandler = async () => {
+    const items = await IMAGES.getList();
+    DEL_POPUP.show(items);
+  };
 
-    maskbackground.hide();
-    loadingIcon.hide();
+  const syncHandler = async () => {
+    LOADING_ICON.show();
+    await IMAGES.syncImages();
+    LOADING_ICON.hide();
+  };
 
-    inTransition = false;
-  });
-  deleteImagePopup.onClose(async () => {
-    if (inTransition) {
-      console.log("停止執行了 deleteImagePopup.onClose");
-      return;
-    }
-
-    inTransition = true;
-
-    await deleteImagePopup.hide();
-    maskbackground.hide();
-
-    inTransition = false;
-  });
-  deleteImagePopup.onSelect(async (e) => {
-    if (inTransition) {
-      console.log("停止執行了 deleteImagePopup.onSelect");
-      return;
-    }
-
-    inTransition = true;
-
-    const { category, name, element } = e;
-
-    element.hide(500, () => element.remove());
-    loadingIcon.show();
-
-    await images.deleteImages([{ category, name }]);
-
-    loadingIcon.hide();
-
-    inTransition = false;
+  MAIN_BUTTONS.onSelect(async (option) => {
+    transitionWrapper(async () => {
+      if (option === "新增") await enterAddHandler();
+      if (option === "刪除") await enterDelHandler();
+      if (option === "同步") await syncHandler();
+    });
   });
 
-  //
-  // 載入完成
-  waveBackground.hide();
-  await delay(500);
-  maskbackground.hide();
-  loadingIcon.hide();
+  ADD_POPUP.onClose(async () => {
+    transitionWrapper(async () => {
+      await ADD_POPUP.hide();
+    });
+  });
 
-  //
+  ADD_POPUP.onSubmit(async (e) => {
+    transitionWrapper(async () => {
+      const { category, files } = e;
+
+      const manifest = files.map((file) => {
+        let { url1, url2, title } = file;
+        url1 = dataUrlToBase64(url1);
+        url2 = dataUrlToBase64(url2);
+        return { category, url1, url2, name: title };
+      });
+
+      await ADD_POPUP.hide();
+      LOADING_ICON.show();
+      await IMAGES.addImages(manifest);
+      LOADING_ICON.hide();
+    });
+  });
+
+  DEL_POPUP.onClose(async () => {
+    transitionWrapper(async () => {
+      await DEL_POPUP.hide();
+    });
+  });
+
+  DEL_POPUP.onSelect(async (e) => {
+    transitionWrapper(async () => {
+      const { category, name, element } = e;
+
+      element.hide(500, () => element.remove());
+
+      LOADING_ICON.show();
+      await IMAGES.deleteImages([{ category, name }]);
+      LOADING_ICON.hide();
+    });
+  });
+}
+
+$(document).ready(async function () {
+  // 登入
+  createPre();
+  WAVE_BG.show();
+  await login();
+
+  // 載入資源
+  LOADING_ICON.show();
+  await IMAGES.syncImages();
+
+  // 創建組件
+  await createIntro();
+  createHeader();
+  createGallery();
+  createSidebar();
+  CANVAS = new CustomCanvas(".preview-image-container");
+
+  // 註冊組件間的交互邏輯
+  bindNavEvents();
+  bindMainEvents();
+
+  // 隱藏載入畫面
+  INTRO.toggleClass("blur", true);
+  WAVE_BG.hide();
+  await delay(500); // for WAVE_BG.hide();
+  LOADING_ICON.hide();
+  await delay(500); // for LOADING_ICON.hide();
+
   // 開場動畫
-  await delay(500);
-
   const opening = gsap
     .timeline({ defaults: { ease: "power2.out", duration: 0.6 }, paused: true })
-    .to("#header, #sidebar, #version-display", { x: 0, y: 0, stagger: 0.35 });
+    .to("#header, #sidebar, #version-display", { x: 0, y: 0, stagger: 0.35 })
+    .to("#content", { autoAlpha: 1, ease: "none", duration: 1 }, "<");
 
   opening.play();
-  await new Promise((resolve) => {
-    opening.eventCallback("onComplete", resolve);
-  });
+  INTRO.toggleClass("blur", false);
+  await new Promise((resolve) => opening.eventCallback("onComplete", resolve));
 
-  header.bulb.switchLight("Scene");
+  HEADER.switchLight("Scene");
+  await Promise.all([INTRO.show(), MAIN_BUTTONS.show()]);
 
-  await Promise.all([intro.show(), mainButtons.show()]);
-
-  inTransition = false;
+  IN_TRANSITION = false;
 });

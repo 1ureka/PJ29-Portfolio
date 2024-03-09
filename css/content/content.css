@@ -1,6 +1,6 @@
 @import url("content-intro.css");
-@import url("content-gallery.css");
 @import url("content-preview.css");
+@import url("content-light-box.css");
 
 #content {
   position: fixed;
@@ -10,4 +10,7 @@
   bottom: 0;
   display: flex;
   overflow: hidden;
+  /* init */
+  opacity: 0;
+  visibility: hidden;
 }

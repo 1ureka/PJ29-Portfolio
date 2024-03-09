@@ -2,15 +2,33 @@
 @import url("popup-add-image.css");
 @import url("popup-delete-image.css");
 
+#popup-container {
+  position: fixed;
+  width: 0;
+  height: 0;
+  z-index: 50;
+}
+
+.popup-container {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(10px) brightness(0.8);
+}
+
 .popup {
   display: flex;
   justify-content: center;
   align-items: center;
-  position: fixed;
+  position: absolute;
   padding: 15px;
   border-radius: 10px;
   box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 0px 2px,
     rgba(0, 0, 0, 0.8) 0px 4px 6px -1px,
     rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
-  z-index: 50;
 }

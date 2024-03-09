@@ -17,194 +17,20 @@ class component {
     this.element = this.element.appendTo(selector);
     return this;
   }
+
+  /**
+   * 開關class
+   * @param {string}   className 類名
+   * @param {string} bool
+   */
+  toggleClass(className, bool) {
+    this.element.toggleClass(className, bool);
+  }
 }
 
 /**
- * header, aside
+ * header
  */
-
-/**
- * 這個類別提供創建和控制上下滾動按鈕的功能。
- */
-class ScrollButtons extends component {
-  /**
-   * 建構一個新的 `ScrollButtons` 實例。@constructor
-   */
-  constructor() {
-    super();
-    this._timelines = {};
-    this._handlers = {};
-
-    this.isShow = false;
-
-    /**
-     * 包含上下滾動按鈕的 jQuery 物件。
-     * @type {jQuery}
-     */
-    const container = $("<div>")
-      .addClass("scroll-buttons-container")
-      .append(this._createScrollButton("up"), this._createScrollButton("down"));
-
-    this.element = container;
-
-    this._createTimelines();
-  }
-
-  /**
-   * 創建上下滾動按鈕。
-   * @private
-   * @param {string} type - 按鈕類型，可以是 "up" 或 "down"。
-   * @returns {jQuery} - 上下滾動按鈕的 jQuery 物件。
-   */
-  _createScrollButton(type) {
-    const button = $("<button>").addClass("scroll-button").addClass(type);
-    const icon = new ScrollIcon();
-    if (type === "down") gsap.set(icon.element, { rotate: 180 });
-
-    button.append(icon.element);
-
-    const hoverTls = [
-      ...icon.timeline,
-      createBackgroundColorTl(button, "#ea81af"),
-    ];
-
-    const clickTl = createScaleYoyoTl(button, 0.6);
-
-    this._bindTimeline(button, hoverTls, clickTl);
-
-    return button;
-  }
-
-  /**
-   * 將時間軸綁定到按鈕的不同事件。
-   * @param {jQuery} button - 要綁定的按鈕元素。
-   * @param {TimelineMax[]} hover - 滑鼠進入時觸發的時間軸陣列。
-   * @param {TimelineMax} click - 按鈕點擊時觸發的時間軸。
-   */
-  _bindTimeline(button, hover, click) {
-    button.on("mouseenter", () => {
-      hover.forEach((tl) => {
-        tl.play();
-      });
-    });
-    button.on("mouseleave", () => {
-      hover.forEach((tl) => {
-        tl.reverse();
-      });
-    });
-
-    button.on("click", () => click.restart());
-  }
-
-  /**
-   * 創建並初始化上滾動按鈕的時間軸效果。
-   * @private
-   * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
-   */
-  _createTimelines() {
-    this._timelines.show = gsap
-      .timeline({
-        defaults: { ease: "back.out(4)", duration: 0.35 },
-        paused: true,
-      })
-      .from(this.element.children(), { scale: 0.5, stagger: 0.15 })
-      .from(
-        this.element.children(),
-        { ease: "set1", autoAlpha: 0, stagger: 0.15 },
-        "<"
-      );
-
-    return this;
-  }
-
-  /**
-   * 將滾動元素設定為指定的 jQuery 元素，同時設定上滾動和下滾動按鈕的點擊事件處理程序。
-   * @param {jQuery} element - 欲添加滾動按鈕的 jQuery 元素。
-   */
-  set scrollElement(element) {
-    /** @type {HTMLElement} */
-    this._scrollElement = element[0];
-
-    if (this._handlers.up) this.element.off("click", ".up", this._handlers.up);
-
-    this._handlers.up = () => this._up();
-    this.element.on("click", ".up", this._handlers.up);
-
-    if (this._handlers.down)
-      this.element.off("click", ".down", this._handlers.down);
-
-    this._handlers.down = () => this._down();
-    this.element.on("click", ".down", this._handlers.down);
-  }
-
-  /**
-   * 捲動至頂部的方法。
-   * @private
-   */
-  _up() {
-    if (this._scrollElement)
-      this._scrollElement.scrollTo({ top: 0, behavior: "smooth" });
-
-    return this;
-  }
-
-  /**
-   * 捲動至底部的方法。
-   * @private
-   */
-  _down() {
-    if (this._scrollElement)
-      this._scrollElement.scrollTo({
-        top: this._scrollElement.scrollHeight,
-        behavior: "smooth",
-      });
-
-    return this;
-  }
-
-  /**
-   * 解除所有事件處理程序的註冊。
-   * @returns {ScrollButtons} - 回傳 `ScrollButtons` 實例，以便進行方法鏈結。
-   */
-  off() {
-    this.element.off("click", ".up", this._handlers.up);
-    this._handlers.up = null;
-    this.element.off("click", ".down", this._handlers.down);
-    this._handlers.down = null;
-
-    return this;
-  }
-
-  /**
-   * 顯示上滾動按鈕。
-   */
-  show() {
-    if (this.isShow) return this;
-
-    this.isShow = true;
-    this._timelines.show.play();
-
-    return this;
-  }
-
-  /**
-   * 隱藏上滾動按鈕。
-   */
-  async hide() {
-    if (!this.isShow) return this;
-
-    this.isShow = false;
-    this._timelines.show.reverse();
-
-    this._timelines.show.eventCallback("onReverseComplete", null);
-
-    await new Promise((resolve) => {
-      this._timelines.show.eventCallback("onReverseComplete", resolve);
-    });
-
-    return this;
-  }
-}
 
 /**
  * 這個類別用於創建和管理在header的元素
@@ -430,7 +256,7 @@ class AddImagePopup extends component {
       buttons.close
     );
 
-    this.element = container;
+    this.element = $("<div>").addClass("popup-container").append(container);
 
     this._tl = this._createTimeline();
   }
@@ -535,8 +361,14 @@ class AddImagePopup extends component {
       })
       .fromTo(
         this.element,
+        { autoAlpha: 0 },
+        { duration: 0.25, autoAlpha: 1, ease: "none" }
+      )
+      .fromTo(
+        this.element.children(),
         { autoAlpha: 0, y: -200 },
-        { duration: 0.7, autoAlpha: 1, y: 0 }
+        { duration: 0.7, autoAlpha: 1, y: 0 },
+        "<"
       );
   }
 
@@ -620,7 +452,7 @@ class DeleteImagePopup extends component {
       this._createButton()
     );
 
-    this.element = container;
+    this.element = $("<div>").addClass("popup-container").append(container);
 
     this._tl = this._createTimeline();
   }
@@ -742,8 +574,14 @@ class DeleteImagePopup extends component {
       })
       .fromTo(
         this.element,
+        { autoAlpha: 0 },
+        { duration: 0.25, autoAlpha: 1, ease: "none" }
+      )
+      .fromTo(
+        this.element.children(),
         { autoAlpha: 0, y: -200 },
-        { duration: 0.7, autoAlpha: 1, y: 0 }
+        { duration: 0.7, autoAlpha: 1, y: 0 },
+        "<"
       );
   }
 
@@ -1128,10 +966,6 @@ class Intro extends component {
       this._tl.eventCallback("onReverseComplete", resolve);
     });
   }
-
-  toggleClass(className, bool) {
-    this.element.toggleClass(className, bool);
-  }
 }
 
 /**
@@ -1423,5 +1257,56 @@ class LightBox extends component {
     this._inAnimate = false;
 
     return this;
+  }
+}
+
+/**
+ * other
+ */
+
+/**
+ * 這個類別用於創建和管理LoadingIcon組件。
+ */
+class LoadingIcon extends component {
+  constructor() {
+    super();
+
+    const wrapper = $("<div>").addClass("loading-icon-wrapper");
+    const array = [0, 1, 2, 3];
+
+    array.forEach(() =>
+      $("<div>").addClass("loading-icon-circle").appendTo(wrapper)
+    );
+    array.forEach(() =>
+      $("<div>").addClass("loading-icon-shadow").appendTo(wrapper)
+    );
+
+    this.element = wrapper;
+    this._tl = this._createTimeline();
+  }
+
+  _createTimeline() {
+    return gsap
+      .timeline({
+        defaults: { ease: "set1" },
+        paused: true,
+      })
+      .fromTo(this.element, { scale: 0 }, { duration: 0.65, scale: 1 });
+  }
+
+  async show() {
+    this._tl.play();
+    this._tl.eventCallback("onComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onComplete", resolve);
+    });
+  }
+
+  async hide() {
+    this._tl.reverse();
+    this._tl.eventCallback("onReverseComplete", null);
+    await new Promise((resolve) => {
+      this._tl.eventCallback("onReverseComplete", resolve);
+    });
   }
 }

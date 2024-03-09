@@ -1017,11 +1017,10 @@ class Preview extends component {
   _createTimeline() {
     this._tl = gsap
       .timeline({ paused: true })
-      .fromTo(this.element, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5 })
       .fromTo(
-        this.element.find(".preview-image"),
-        { filter: "blur(10px)" },
-        { duration: 0.5, filter: "blur(0px)" },
+        this.element,
+        { autoAlpha: 0, filter: "blur(10px)" },
+        { duration: 0.5, autoAlpha: 1, filter: "blur(0px)" },
         "<"
       )
       .fromTo(
@@ -1291,7 +1290,11 @@ class LoadingIcon extends component {
         defaults: { ease: "set1" },
         paused: true,
       })
-      .fromTo(this.element, { scale: 0 }, { duration: 0.65, scale: 1 });
+      .fromTo(
+        this.element,
+        { autoAlpha: 0, filter: "blur(10px)" },
+        { duration: 0.65, autoAlpha: 1, filter: "blur(0px)" }
+      );
   }
 
   async show() {

@@ -197,204 +197,241 @@ class Images {
 }
 
 /**
- * 用於處理圖片縮放與拖曳的類別。
+ * 這是一個使用 Fabric.js 的 Canvas 類別的管理工具
  */
-class ImageZoom {
+class CustomCanvas {
   /**
-   * ImageZoom 類別的建構函數。
-   * @param {jQuery} imageContainer - jQuery 對象，代表要進行縮放與拖曳的圖片容器。
+   * 創建一個新的 MyCanvas 實例
+   * @param {*} target - 要附著到的DOM(必須已經渲染)
+   * @constructor
    */
-  constructor(imageContainer) {
-    this._image = imageContainer.find("img");
-    this._container = imageContainer;
+  constructor(target) {
+    const { container, id } = this._create();
+    this.element = container.appendTo(target);
+    this._parent = target;
 
-    this._isDrag = false;
-    this._isBind = false;
-    this._scale = 1;
-    this._mouseX = 0;
-    this._mouseY = 0;
-    this._lastX = 0;
-    this._lastY = 0;
-    this._translateX = 0;
-    this._translateY = 0;
-    this._interval = null;
+    /**
+     * Canvas 對象
+     * @type {fabric.Canvas}
+     * @private
+     */
+    this.CANVAS = new fabric.Canvas(id, {
+      hoverCursor: "grab",
+      moveCursor: "grabbing",
+      stopContextMenu: true,
+    });
 
+    this._resizeCanvas();
+
+    /**
+     * 事件處理程序
+     * @type {Object.<string, Function>}
+     * @private
+     */
     this._handlers = {
-      mousedown: (e) => {
-        e.preventDefault();
-
-        if (e.which === 1) this._startDragging();
-
-        if (e.which === 3) this.reset();
+      zoom: (event) => {
+        const image = this.CANVAS.getObjects()[0];
+        const { e } = event;
+        this._startZoom(image, e);
       },
-      mouseup: (e) => {
-        e.preventDefault();
-
-        if (e.which === 1 && this._isDrag) this._stopDragging();
+      move: () => {
+        const image = this.CANVAS.getObjects()[0];
+        this._limit(image);
       },
-      mousemove: (e) => {
-        e.preventDefault();
-
-        this._mouseX = e.clientX;
-        this._mouseY = e.clientY;
-
-        if (this._isDrag) this._dragging();
+      dbclick: () => {
+        const image = this.CANVAS.getObjects()[0];
+        this._resetZoom(image);
       },
-      mousewheel: (e) => {
-        this._scaling(e.originalEvent.deltaY, e.shiftKey ? 0.2 : 0.1);
+      resize: () => {
+        const image = this.CANVAS.getObjects()[0];
+        this._resizeCanvas();
+        this._limit(image);
       },
     };
+
+    this._isbind = false;
+
+    $(window).on("resize", this._handlers.resize);
   }
 
   /**
-   * 更新圖片的轉換效果。
-   * @param {number} time - 動畫的持續時間（毫秒）。
-   * @param {string} ease - 動畫的緩和函數。
-   * @returns {Promise<void>} 當動畫完成時解析的 Promise。
-   * @private
+   * 創建元素
    */
-  async _updateTransform(time, ease) {
-    return new Promise((resolve) => {
-      gsap
-        .timeline({
-          defaults: { duration: time / 1000, ease: ease },
-          onComplete: resolve,
-        })
-        .to(this._image, { x: this._translateX, y: this._translateY })
-        .to(this._container, { scale: this._scale }, "<");
+  _create() {
+    const id = idGenerator.generateUUID();
+    const container = $("<div>")
+      .addClass("preview-canvas-container")
+      .append(
+        $("<canvas>").attr("id", id),
+        $("<div>")
+          .addClass("canvas-mask")
+          .append($("<div>"), $("<div>"), $("<div>"), $("<div>"))
+      );
+
+    return { container, id };
+  }
+
+  /**
+   * 繪製圖像到 Canvas
+   * @param {string} url - 圖像的 URL
+   */
+  paintImage(url) {
+    const objects = this.CANVAS.getObjects();
+
+    if (objects.length > 0) {
+      objects.map((object) => {
+        this.CANVAS.remove(object);
+      });
+    }
+
+    if (this._isbind) this._unbindEvents();
+
+    fabric.Image.fromURL(url, async (img) => {
+      const scaleX = this.CANVAS.width / img.width;
+      const scaleY = this.CANVAS.height / img.height;
+      const scale = Math.max(scaleX, scaleY);
+
+      img.hasControls = false;
+
+      img.scale(scale);
+
+      this.CANVAS.viewportCenterObject(img);
+      this.CANVAS.add(img);
+
+      this._resetZoom(img);
     });
+
+    this._bindEvents();
   }
 
   /**
-   * 限制拖曳的範圍，避免圖片移動超出邊界。
+   * 限制圖像的提示出現
+   * @param {string} direction - 限制位置
    * @private
    */
-  _limitTranslation() {
-    if (
-      Math.abs(this._translateX * 2) > this._image.width() ||
-      Math.abs(this._translateY * 2) > this._image.height()
-    ) {
-      this._translateX = 0;
-      this._translateY = 0;
-      this._updateTransform(500, "back.inOut(2)");
+  async _limitHint(direction) {
+    const maskContainer = this.element.find(".canvas-mask");
+
+    maskContainer.addClass(direction);
+    await delay(500);
+    maskContainer.removeClass(direction);
+  }
+
+  /**
+   * 限制圖像的移動範圍
+   * @param {fabric.Image} image - 圖像對象
+   * @private
+   */
+  _limit(image) {
+    const imgWidth = image.width * image.scaleX;
+    const imgHeight = image.height * image.scaleY;
+    const imgLeft = image.left;
+    const imgRight = image.left + imgWidth;
+    const imgTop = image.top;
+    const imgBottom = image.top + imgHeight;
+
+    // 限制拖曳範圍，讓圖片緊貼Canvas的邊界
+    const { tl, br } = this.CANVAS.calcViewportBoundaries();
+    const left = tl.x;
+    const right = br.x;
+    const top = tl.y;
+    const bottom = br.y;
+
+    // 檢查是否超出邊界，如果是，則設置座標
+    if (imgLeft > left) {
+      image.left = left;
+      this._limitHint("left");
+    }
+    if (imgTop > top) {
+      image.top = top;
+      this._limitHint("top");
+    }
+    if (imgRight < right) {
+      image.left = right - imgWidth;
+      this._limitHint("right");
+    }
+    if (imgBottom < bottom) {
+      image.top = bottom - imgHeight;
+      this._limitHint("bottom");
     }
   }
 
   /**
-   * 開始拖曳圖片。
+   * 開始縮放 Canvas
+   * @param {fabric.Image} image - 圖像對象
+   * @param {MouseEvent} event - 事件對象
    * @private
    */
-  _startDragging() {
-    $("body").css("cursor", "grab");
+  _startZoom(image, event) {
+    const { deltaY, offsetX, offsetY } = event;
 
-    this._isDrag = true;
+    const startZoom = this.CANVAS.getZoom();
+    const targetZoom = clamp(1, startZoom - deltaY / 200, 6);
 
-    this._interval = setInterval(() => {
-      this._lastX = this._mouseX;
-      this._lastY = this._mouseY;
-    }, 10);
+    const getProgress = () => {
+      return $("body").css("--zoomProgress");
+    };
+    const onUpdate = () => {
+      this.CANVAS.zoomToPoint(
+        { x: offsetX, y: offsetY },
+        (targetZoom - startZoom) * getProgress() + startZoom
+      );
+      this._limit(image);
+    };
+
+    gsap.fromTo(
+      "body",
+      { "--zoomProgress": 0 },
+      {
+        "--zoomProgress": 1,
+        duration: 0.15,
+        onUpdate,
+      }
+    );
   }
 
   /**
-   * 停止拖曳圖片。
+   * 重置 Canvas 的縮放
+   * @param {fabric.Image} image - 圖像對象
    * @private
    */
-  _stopDragging() {
-    $("body").css("cursor", "auto");
-
-    this._isDrag = false;
-
-    clearInterval(this._interval);
-
-    this._limitTranslation();
+  _resetZoom(image) {
+    this.CANVAS.setZoom(1);
+    this.CANVAS.viewportCenterObject(image);
   }
 
   /**
-   * 處理拖曳中的操作。
+   * 調整 Canvas 的大小
    * @private
    */
-  _dragging() {
-    $("body").css("cursor", "grabbing");
-
-    const deltaX = (this._mouseX - this._lastX) / this._scale;
-    const deltaY = (this._mouseY - this._lastY) / this._scale;
-
-    if (Math.abs(deltaX) + Math.abs(deltaY) > 150 / this._scale) return;
-
-    if (deltaX !== 0 || deltaY !== 0) {
-      this._translateX += deltaX;
-      this._translateY += deltaY;
-      this._updateTransform(0, "none");
-    }
+  _resizeCanvas() {
+    const width = $(this._parent).innerWidth();
+    const height = $(this._parent).innerHeight();
+    this.CANVAS.setDimensions({ width, height });
   }
 
   /**
-   * 處理縮放操作。
-   * @param {number} deltaY - 滾輪滾動的距離。
-   * @param {number} scaleFac - 縮放因子。
-   * @private
+   * 啟用 Canvas 的事件監聽
+   *  @private
    */
-  _scaling(deltaY, scaleFac) {
-    if (deltaY < 0) {
-      this._translateX -=
-        (this._mouseX - window.innerWidth / 2) / 7 / this._scale;
-      this._translateY -=
-        (this._mouseY - window.innerHeight / 2) / 7 / this._scale;
-      this._scale += scaleFac;
-      this._updateTransform(100, "linear");
-
-      this._limitTranslation();
-    } else {
-      if (this._scale <= 1) return;
-
-      this._scale -= scaleFac;
-      this._updateTransform(100, "linear");
-    }
+  _bindEvents() {
+    console.log("bind");
+    this.CANVAS.on("mouse:wheel", this._handlers.zoom);
+    this.CANVAS.on("object:moving", this._handlers.move);
+    this.CANVAS.on("mouse:dblclick", this._handlers.dbclick);
+    this._isbind = true;
   }
 
   /**
-   * 啟動事件綁定，開始處理圖片拖曳與縮放。
+   * 停用 Canvas 的事件監聽
+   *  @private
    */
-  on() {
-    if (this._isBind) return;
-
-    this._isBind = true;
-
-    this._container.on("contextmenu", (e) => e.preventDefault());
-
-    Object.keys(this._handlers).forEach((eventType) => {
-      this._container.on(eventType, this._handlers[eventType]);
-    });
-  }
-
-  /**
-   * 解除事件綁定，停止處理圖片拖曳與縮放。
-   */
-  off() {
-    if (!this._isBind) return;
-
-    this._isBind = false;
-
-    this._container.off("contextmenu");
-
-    Object.keys(this._handlers).forEach((eventType) => {
-      this._container.off(eventType, this._handlers[eventType]);
-    });
-  }
-
-  /**
-   * 重置圖片的縮放與拖曳效果。
-   * @returns {Promise<void>} 當重置完成時解析的 Promise。
-   */
-  async reset() {
-    if (this._translateX === 0 && this._translateY === 0 && this._scale === 1)
-      return;
-
-    this._translateX = 0;
-    this._translateY = 0;
-    this._scale = 1;
-
-    await this._updateTransform(500, "back.inOut(2)");
+  _unbindEvents() {
+    console.log("unbind");
+    this.CANVAS.off("mouse:wheel", this._handlers.zoom);
+    this.CANVAS.off("object:moving", this._handlers.move);
+    this.CANVAS.off("mouse:dblclick", this._handlers.dbclick);
+    this._isbind = false;
   }
 }
 
@@ -435,6 +472,15 @@ class UUIDGenerator {
 }
 // 預先創建
 const idGenerator = new UUIDGenerator();
+
+/**
+ * 類似minMax。
+ * @param {number} min @param {number} value @param {number} max
+ * @returns {number}
+ */
+function clamp(min, value, max) {
+  return Math.min(Math.max(value, min), max);
+}
 
 /**
  * 延遲執行的 Promise 函式，用於等待一定的時間。

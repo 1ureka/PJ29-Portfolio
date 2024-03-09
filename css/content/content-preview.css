@@ -63,3 +63,49 @@
   width: 100%;
   height: 100%;
 }
+
+/*  */
+/*  */
+
+.preview-canvas-container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+.canvas-mask {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+.canvas-mask > div {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+.canvas-mask > div {
+  box-shadow: 0 0 0px 0px #ea81af90, 0 0 0px 0px #ea81af;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.canvas-mask > div:nth-child(1) {
+  top: -100%;
+}
+.canvas-mask > div:nth-child(2) {
+  right: -100%;
+}
+.canvas-mask > div:nth-child(3) {
+  bottom: -100%;
+}
+.canvas-mask > div:nth-child(4) {
+  left: -100%;
+}
+.canvas-mask.top > div:nth-child(1),
+.canvas-mask.right > div:nth-child(2),
+.canvas-mask.bottom > div:nth-child(3),
+.canvas-mask.left > div:nth-child(4) {
+  box-shadow: 0 0 15px 10px #ea81af90, 0 0 3px 2px #ea81af;
+}

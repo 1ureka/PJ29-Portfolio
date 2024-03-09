@@ -569,10 +569,8 @@ async function checkInfo() {
  * @param {string} [message="Upload file"] - 上傳的提交訊息。
  * @returns {Promise<void>} 當上傳完成時解析的 Promise。
  */
-async function uploadFile(file, path, message = "Upload file") {
-  const currentDate = new Date().toISOString().split("T")[0];
-  message += ` ${currentDate}`;
-
+async function uploadFile(file, path, message = "PJ29/upload") {
+  message += ` ${Date()}`;
   const id = idGenerator.generateUUID();
   const detail = { file, path, message, id };
   window.dispatchEvent(new CustomEvent("uploadFile", { detail }));
@@ -609,7 +607,8 @@ async function loadFile(path) {
  * @param {string} [message="Delete file"] - 刪除的提交訊息。
  * @returns {Promise<void>} 當刪除完成時解析的 Promise。
  */
-async function deleteFile(path, message = "Delete file") {
+async function deleteFile(path, message = "PJ29/delete") {
+  message += ` ${Date()}`;
   const id = idGenerator.generateUUID();
   const detail = { path, message, id };
   window.dispatchEvent(new CustomEvent("deleteFile", { detail }));

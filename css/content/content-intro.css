@@ -164,16 +164,16 @@
 }
 .content-intro-learnmore > .circle {
   transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
-  box-shadow: rgba(0, 0, 0, 0.75) 0px 3px 4px,
-    rgba(0, 0, 0, 0.35) 5px 8px 3px -3px, rgba(0, 0, 0, 0.45) 0px -2px 0px inset,
-    rgba(255, 255, 255, 0.3) 2px 5px 3px -3px inset;
   position: relative;
   display: block;
   margin: 0;
   width: 48px;
   height: 48px;
-  background: #282936;
-  border-radius: 1.625rem;
+  background: hsl(225, 7.5%, 5%);
+  border-radius: 24px;
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 0px 2px,
+    rgba(0, 0, 0, 0.8) 0px 4px 6px -1px,
+    rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
 }
 .content-intro-learnmore > .circle > .icon {
   transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
@@ -255,8 +255,8 @@
   flex-direction: column;
   justify-content: space-between;
   width: 100%;
-  background-color: rgba(128, 128, 128, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: hsla(225, 7.5%, 5%, 0.65);
+  border: 2px solid hsl(225, 7.5%, 5%);
   backdrop-filter: blur(10px);
   border-radius: 8px;
   transition: all 0.2s cubic-bezier(0.65, 0.05, 0.36, 1);
@@ -306,12 +306,10 @@
   opacity: 1;
 }
 .content-intro-card-container:hover > .content-intro-card {
-  border: 1px solid rgba(255, 255, 255, 0.5);
   transform: scale(1.04) rotate(1deg);
 }
 .content-intro-card-container:active > .content-intro-card {
   transition: none;
-  border: 1px solid rgba(255, 255, 255, 1);
   transform: scale(0.98) rotate(-1deg);
 }
 

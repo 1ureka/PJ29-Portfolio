@@ -161,8 +161,11 @@ async function transitionWrapper(handler) {
 function bindNavEvents() {
   const navHandler = async (target) => {
     CATEGORY = target;
+    (async function () {
+      await delay(2200);
+      HEADER.switchLight(target);
+    })();
     await INTRO.switchTab(target);
-    HEADER.switchLight(target);
   };
 
   const learnMoreHandler = async () => {

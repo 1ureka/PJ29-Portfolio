@@ -488,7 +488,17 @@ function clamp(min, value, max) {
  * @returns {Promise<void>} 一個 Promise，在指定時間後被解析。
  */
 function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) => {
+    let start = performance.now();
+    function frame(time) {
+      if (time - start >= ms) {
+        resolve();
+      } else {
+        requestAnimationFrame(frame);
+      }
+    }
+    requestAnimationFrame(frame);
+  });
 }
 
 /**

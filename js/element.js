@@ -136,9 +136,8 @@ class Bulb {
     const i = toIntensity;
     const c = toColor;
 
-    const bulb = this.element.find(".bulb");
+    const bulb = this.element.find(".bulb").css("filter", "brightness(1)");
     const bulbFilter = this.element.find(".bulb-filter");
-
     const tl = gsap
       .timeline({
         defaults: { duration: 0.5, ease: "set1" },
@@ -147,7 +146,20 @@ class Bulb {
       .to(bulb, { backgroundColor: c }, "<")
       .to(bulbFilter, { filter: "blur(3px)" }, "<")
       .to(bulb, { boxShadow: `0 0 20px ${i * 5}px ${c}` }, "<")
-      .to(bulb, { boxShadow: `0 0 20px 0px ${c}` });
+      .to(bulb, { boxShadow: `0 0 20px 0px ${c}` })
+      .to(bulb, {
+        keyframes: [
+          {
+            filter: "brightness(2)",
+            boxShadow: `0 0 35px ${i * 3.5}px ${c}`,
+          },
+          { filter: "brightness(1)", boxShadow: `0 0 20px 0px ${c}` },
+        ],
+        ease: "set1",
+        duration: 2,
+        repeat: -1,
+        repeatDelay: 1.5,
+      });
 
     return tl;
   }
